@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartHVAC — Painel Administrativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#050608;--bg-1:#0a0c10;--bg-2:#11141a;--bg-3:#161a22;--line:#1e232d;--line-2:#262c38;--ink:#e7ecf2;--ink-dim:#8a94a6;--ink-muted:#525d70;--cyan:#00e5ff;--cyan-dim:#00b8d4;--cyan-soft:rgba(0,229,255,.12);--hot:#ff5b3c;--warm:#ffb547;--ok:#34d399;--violet:#9d7bff;--grid:rgba(255,255,255,.03);--radius:10px;--font-sans:'Geist','Inter',sans-serif;--font-mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select{font:inherit;color:inherit}
+.atmosphere{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,229,255,.08),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(157,123,255,.05),transparent 60%),linear-gradient(180deg,#050608 0%,#07090d 100%)}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,black 40%,transparent 100%)}
+.i{width:16px;height:16px;stroke-width:1.75;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;transition:all .18s;border:1px solid transparent;white-space:nowrap}
+.btn-ghost{color:var(--ink-dim)}
+.btn-ghost:hover{color:var(--ink);background:var(--bg-2)}
+.btn-outline{border-color:var(--line-2);color:var(--ink)}
+.btn-outline:hover{border-color:var(--ink-muted);background:var(--bg-2)}
+.btn-primary{background:linear-gradient(180deg,#00e5ff 0%,#00b8d4 100%);color:#001419;font-weight:600;box-shadow:0 0 0 1px rgba(0,229,255,.4),0 6px 20px -8px rgba(0,229,255,.6)}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-lg{padding:14px 22px;font-size:14px}
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:40px 20px;position:relative;z-index:2}
+.auth-card{width:100%;max-width:440px;background:var(--bg-1);border:1px solid var(--line-2);border-radius:14px;padding:44px 40px;position:relative;box-shadow:0 40px 100px -20px rgba(0,0,0,.8)}
+.auth-card::before{content:"";position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.auth-logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;margin-bottom:32px;justify-content:center}
+.auth-logo .accent{color:var(--cyan)}
+.auth-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;background:rgba(157,123,255,.12);color:var(--violet);border:1px solid rgba(157,123,255,.25);border-radius:100px;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.auth-eyebrow svg{width:11px;height:11px}
+.auth-card h1{font-size:26px;font-weight:500;letter-spacing:-.02em;margin-bottom:8px}
+.auth-card > p{font-size:13px;color:var(--ink-dim);margin-bottom:28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:7px}
+.field input,.field select{width:100%;padding:11px 14px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:8px;font-size:14px;transition:all .2s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--cyan-dim);box-shadow:0 0 0 3px var(--cyan-soft)}
+.field input.field-error{border-color:var(--hot);box-shadow:0 0 0 3px rgba(255,91,60,.15);animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.demo-creds-box{margin-top:20px;padding:14px 16px;background:var(--bg-2);border:1px dashed var(--line-2);border-radius:8px}
+.demo-creds-head{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:12px}
+.demo-creds-row{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;padding:6px 0;font-size:11.5px}
+.demo-creds-row + .demo-creds-row{border-top:1px solid var(--line)}
+.demo-creds-label{color:var(--cyan);font-weight:500;font-family:var(--font-mono)}
+.demo-creds-row code{background:var(--bg-3);padding:3px 8px;border-radius:4px;font-family:var(--font-mono);font-size:11px;color:var(--ink);cursor:pointer;transition:all .15s}
+.demo-creds-row code:hover{background:var(--cyan-soft);color:var(--cyan)}
+.app{position:relative;z-index:2;min-height:100vh;grid-template-columns:240px 1fr;display:none}
+.app.active{display:grid}
+.sidebar{background:var(--bg-1);border-right:1px solid var(--line);padding:24px 20px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;margin-bottom:40px}
+.logo .accent{color:var(--cyan)}
+.sb-section{margin-bottom:32px}
+.sb-title{font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;padding:0 8px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-size:13px;color:var(--ink-dim);margin-bottom:2px;cursor:pointer}
+.sb-item:hover{background:var(--bg-2);color:var(--ink)}
+.sb-item.active{background:var(--cyan-soft);color:var(--cyan);border:1px solid rgba(0,229,255,.2)}
+.sb-item svg{width:15px;height:15px}
+.sb-user{margin-top:auto;padding:12px;border-radius:8px;background:var(--bg-2);display:flex;align-items:center;gap:10px;border:1px solid var(--line)}
+.sb-avatar{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--cyan),var(--violet));display:grid;place-items:center;font-weight:600;color:#001419;font-size:13px;flex-shrink:0}
+.sb-user-info{font-size:12px;flex:1;min-width:0;overflow:hidden}
+.sb-user-info .name{color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-info .role{color:var(--ink-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logout-btn{padding:6px;color:var(--ink-muted);cursor:pointer;border-radius:4px;transition:all .15s}
+.logout-btn:hover{color:var(--hot);background:rgba(255,91,60,.08)}
+.main{background:var(--bg);min-height:100vh;position:relative;padding-bottom:40px}
+.topbar{padding:18px 32px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:rgba(5,6,8,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:20}
+.crumbs{font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);display:flex;align-items:center;gap:10px}
+.crumbs .sep{opacity:.4}
+.crumbs .now{color:var(--ink)}
+.admin-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(157,123,255,.12);color:var(--violet);border:1px solid rgba(157,123,255,.25);border-radius:100px;font-family:var(--font-mono);font-size:11px}
+.admin-badge.projects{background:rgba(0,229,255,.12);color:var(--cyan);border-color:rgba(0,229,255,.25)}
+.admin-badge svg{width:12px;height:12px}
+.page{padding:32px}
+.page-head{margin-bottom:32px}
+.page-head h1{font-size:32px;font-weight:500;letter-spacing:-.02em;margin-bottom:4px}
+.page-head p{color:var(--ink-dim);font-size:14px;max-width:60ch}
+.admin-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.admin-tab{padding:12px 20px;font-size:13px;color:var(--ink-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:8px}
+.admin-tab:hover{color:var(--ink)}
+.admin-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.tab-badge{padding:1px 6px;background:var(--cyan-soft);color:var(--cyan);border-radius:100px;font-family:var(--font-mono);font-size:10px}
+.admin-panel{display:none}
+.admin-panel.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px}
+.stat{padding:20px;background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius)}
+.stat-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:10px}
+.stat-value{font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1}
+.stat-value .unit{font-size:13px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono)}
+.stat-sub{font-size:11px;color:var(--ok);margin-top:8px;font-family:var(--font-mono)}
+.stat-sub.neutral{color:var(--ink-muted)}
+.approval-list{display:flex;flex-direction:column;gap:10px}
+.approval-item{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius)}
+.approval-item:hover{border-color:var(--line-2);background:var(--bg-2)}
+.approval-item.resolved{opacity:.5}
+.apr-left{display:flex;align-items:center;gap:14px;flex:1}
+.apr-avatar{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--violet));display:grid;place-items:center;color:#001419;font-weight:600;font-size:14px;flex-shrink:0}
+.apr-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.apr-meta{display:flex;gap:8px;font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono);flex-wrap:wrap}
+.apr-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-outline.approve:hover{border-color:var(--ok);color:var(--ok);background:rgba(52,211,153,.08)}
+.btn-outline.reject:hover{border-color:var(--hot);color:var(--hot);background:rgba(255,91,60,.08)}
+.status-pill{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:100px;font-weight:500}
+.status-pill.ok{background:rgba(52,211,153,.12);color:var(--ok);border:1px solid rgba(52,211,153,.25)}
+.status-pill.warn{background:rgba(255,181,71,.12);color:var(--warm);border:1px solid rgba(255,181,71,.25)}
+.status-pill.bad{background:rgba(255,91,60,.12);color:var(--hot);border:1px solid rgba(255,91,60,.25)}
+.card{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.table-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--bg-2)}
+.table-head h3{font-size:14px;font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{text-align:left;font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td{padding:10px 14px;border-bottom:1px solid rgba(30,35,45,.5);color:var(--ink)}
+tbody tr:hover{background:var(--bg-2)}
+.tag-you{font-family:var(--font-mono);font-size:9px;padding:1px 6px;background:var(--cyan-soft);color:var(--cyan);border-radius:3px;text-transform:uppercase}
+.role-select{padding:5px 8px;background:var(--bg-2);border:1px solid var(--line);border-radius:5px;font-size:12px;color:var(--ink);cursor:pointer}
+.role-select:hover{border-color:var(--line-2)}
+.role-select:focus{outline:none;border-color:var(--cyan)}
+.user-actions{display:flex;gap:4px;justify-content:flex-end}
+.btn-icon-mini{width:28px;height:28px;border-radius:6px;background:var(--bg-2);border:1px solid var(--line);color:var(--ink-dim);cursor:pointer;display:grid;place-items:center;transition:all .15s}
+.btn-icon-mini:hover{background:var(--bg-3);color:var(--ink);border-color:var(--line-2)}
+.btn-icon-mini.block:hover{color:var(--warm);border-color:var(--warm)}
+.btn-icon-mini.unblock:hover{color:var(--ok);border-color:var(--ok)}
+.btn-icon-mini.danger:hover{color:var(--hot);border-color:var(--hot)}
+.audit-log{display:flex;flex-direction:column;gap:2px}
+.audit-entry{display:grid;grid-template-columns:auto 60px 1fr;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(30,35,45,.5)}
+.audit-entry:last-child{border-bottom:none}
+.audit-dot{width:8px;height:8px;border-radius:50%;background:var(--ink-muted)}
+.audit-dot.ok{background:var(--ok);box-shadow:0 0 6px rgba(52,211,153,.5)}
+.audit-dot.bad{background:var(--hot);box-shadow:0 0 6px rgba(255,91,60,.5)}
+.audit-time{font-family:var(--font-mono);font-size:11px;color:var(--ink-muted)}
+.audit-msg{font-size:13px;color:var(--ink-dim)}
+.audit-msg strong{color:var(--ink);font-weight:500}
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal-card{width:100%;max-width:520px;background:var(--bg-1);border:1px solid var(--line-2);border-radius:14px;box-shadow:0 40px 100px -20px rgba(0,0,0,.8);max-height:90vh;overflow-y:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 28px 20px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:18px;font-weight:500}
+.modal-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;color:var(--cyan);text-transform:uppercase;margin-bottom:6px}
+.modal-body{padding:24px 28px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:18px 28px;border-top:1px solid var(--line)}
+.alert-inline{margin-top:14px;padding:10px 14px;background:rgba(255,181,71,.08);border:1px solid rgba(255,181,71,.2);border-radius:6px;display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--ink);line-height:1.45}
+.alert-inline svg{flex-shrink:0;margin-top:1px}
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{pointer-events:auto;background:var(--bg-2);border:1px solid var(--line-2);border-radius:10px;padding:14px 18px;min-width:300px;max-width:420px;display:flex;align-items:center;gap:12px;box-shadow:0 20px 40px -10px rgba(0,0,0,.6)}
+.toast.success{border-color:rgba(52,211,153,.3)}
+.toast.success .toast-icon{background:rgba(52,211,153,.12);color:var(--ok)}
+.toast.info .toast-icon{background:var(--cyan-soft);color:var(--cyan)}
+.toast.warn{border-color:rgba(255,181,71,.3)}
+.toast.warn .toast-icon{background:rgba(255,181,71,.12);color:var(--warm)}
+.toast.error{border-color:rgba(255,91,60,.3)}
+.toast.error .toast-icon{background:rgba(255,91,60,.12);color:var(--hot)}
+.toast-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.toast-body{flex:1}
+.toast-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.toast-sub{font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)}
+@media (max-width:1100px){.app{grid-template-columns:1fr}.sidebar{display:none}.stats-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="atmosphere"></div>
+<div class="grid-bg"></div>
+
+<div class="auth-wrap" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg viewBox="0 0 28 28" width="28" height="28">
+        <defs><linearGradient id="lg1" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#00b8d4"/></linearGradient></defs>
+        <path d="M4 8 L14 3 L24 8 L24 20 L14 25 L4 20 Z" fill="none" stroke="url(#lg1)" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="1.8" fill="#00e5ff"/>
+      </svg>
+      <span>Smart<span class="accent">HVAC</span></span>
+    </div>
+    <span class="auth-eyebrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      PAINEL ADMINISTRATIVO
+    </span>
+    <h1>Acesso restrito</h1>
+    <p>Apenas administradores autorizados. Use suas credenciais corporativas.</p>
+    <div class="field"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com.br"/></div>
+    <div class="field"><label>Senha</label><input type="password" id="loginPass" placeholder="sua senha"/></div>
+    <button class="btn btn-primary btn-lg" style="width:100%;margin-top:8px" onclick="doLogin()">Entrar no painel<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    <div class="demo-creds-box">
+      <div class="demo-creds-head">
+        <svg class="i" viewBox="0 0 24 24" style="color:var(--cyan);width:12px;height:12px"><path d="M9 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2h-4M9 11V7a3 3 0 016 0v4"/></svg>
+        Credenciais · clique para preencher
+      </div>
+      <div class="demo-creds-row"><span class="demo-creds-label">Admin Geral</span><code onclick="fillCreds('admin@smarthvac.io','admin@2026')">admin@smarthvac.io / admin@2026</code></div>
+      <div class="demo-creds-row"><span class="demo-creds-label">Admin Projetos</span><code onclick="fillCreds('projetos@smarthvac.io','projetos@2026')">projetos@smarthvac.io / projetos@2026</code></div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="adminApp">
+  <aside class="sidebar">
+    <div class="logo">
+      <svg viewBox="0 0 28 28" width="28" height="28">
+        <defs><linearGradient id="lg2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#00b8d4"/></linearGradient></defs>
+        <path d="M4 8 L14 3 L24 8 L24 20 L14 25 L4 20 Z" fill="none" stroke="url(#lg2)" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="1.8" fill="#00e5ff"/>
+      </svg>
+      <span>Smart<span class="accent">HVAC</span></span>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">Administração</div>
+      <div class="sb-item active"><svg class="i" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Painel</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">—</div>
+      <div class="sb-user-info">
+        <div class="name" id="sbName">—</div>
+        <div class="role" id="sbRole">—</div>
+      </div>
+      <div class="logout-btn" onclick="doLogout()" title="Sair">
+        <svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs"><span>WORKSPACE</span><span class="sep">/</span><span class="now">ADMINISTRAÇÃO</span></div>
+      <span class="admin-badge" id="roleBadge">
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span id="roleBadgeText">Admin</span>
+      </span>
+    </div>
+
+    <div class="page">
+      <div class="page-head">
+        <h1 id="pageTitle">Painel administrativo</h1>
+        <p id="pageSubtitle">—</p>
+      </div>
+
+      <div class="admin-tabs" id="adminTabs">
+        <div class="admin-tab" data-tab="approvals" onclick="switchTab(event,'approvals')">
+          <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M9 12l2 2 4-4M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2 0 4 .7 5.5 2"/></svg>
+          Aprovações <span class="tab-badge">3</span>
+        </div>
+        <div class="admin-tab" data-tab="users" onclick="switchTab(event,'users')">
+          <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Usuários e papéis
+        </div>
+        <div class="admin-tab" data-tab="audit" onclick="switchTab(event,'audit')">
+          <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          Auditoria
+        </div>
+      </div>
+
+      <!-- APPROVALS -->
+      <div class="admin-panel" id="panel-approvals">
+        <div class="stats-row">
+          <div class="stat"><div class="stat-label">Aguardando</div><div class="stat-value" style="color:var(--warm)">3</div><div class="stat-sub neutral">últimas 24h</div></div>
+          <div class="stat"><div class="stat-label">Aprovados hoje</div><div class="stat-value">7</div><div class="stat-sub">+40% vs ontem</div></div>
+          <div class="stat"><div class="stat-label">Rejeitados (mês)</div><div class="stat-value">2</div><div class="stat-sub neutral">não conformidade</div></div>
+          <div class="stat"><div class="stat-label">Tempo médio</div><div class="stat-value">14<span class="unit">min</span></div><div class="stat-sub neutral">SLA 2h</div></div>
+        </div>
+        <div class="approval-list">
+          <div class="approval-item" id="approval-1">
+            <div class="apr-left">
+              <div class="apr-avatar">MS</div>
+              <div><div class="apr-title">Hospital São Lucas · v04</div><div class="apr-meta"><span>Maria Silva</span><span>·</span><span>3.420 m²</span><span>·</span><span>892 kW</span><span>·</span><span>há 2h</span></div></div>
+            </div>
+            <div class="apr-actions">
+              <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="toast('Abrindo projeto','Hospital São Lucas v04','info')">Revisar</button>
+              <button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-1','approve','Hospital São Lucas v04')">Aprovar</button>
+              <button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-1','reject','Hospital São Lucas v04')">Rejeitar</button>
+            </div>
+          </div>
+          <div class="approval-item" id="approval-2">
+            <div class="apr-left">
+              <div class="apr-avatar" style="background:linear-gradient(135deg,#ffb547,#ff5b3c)">JA</div>
+              <div><div class="apr-title">Edifício Atlântico · v01</div><div class="apr-meta"><span>João Almeida</span><span>·</span><span>820 m²</span><span>·</span><span>rascunho</span><span>·</span><span>há 5h</span></div></div>
+            </div>
+            <div class="apr-actions">
+              <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="toast('Abrindo projeto','Edifício Atlântico v01','info')">Revisar</button>
+              <button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-2','approve','Edifício Atlântico v01')">Aprovar</button>
+              <button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-2','reject','Edifício Atlântico v01')">Rejeitar</button>
+            </div>
+          </div>
+          <div class="approval-item" id="approval-3">
+            <div class="apr-left">
+              <div class="apr-avatar" style="background:linear-gradient(135deg,#34d399,#00b8d4)">CA</div>
+              <div><div class="apr-title">Shopping Bela Vista · v03</div><div class="apr-meta"><span>Carlos Alves</span><span>·</span><span>5.100 m²</span><span>·</span><span>1.240 kW</span><span>·</span><span>há 8h</span></div></div>
+            </div>
+            <div class="apr-actions">
+              <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="toast('Abrindo projeto','Shopping Bela Vista v03','info')">Revisar</button>
+              <button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-3','approve','Shopping Bela Vista v03')">Aprovar</button>
+              <button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-3','reject','Shopping Bela Vista v03')">Rejeitar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="admin-panel" id="panel-users">
+        <div class="stats-row">
+          <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="sUsers">0</div><div class="stat-sub neutral">usuários</div></div>
+          <div class="stat"><div class="stat-label">Administradores</div><div class="stat-value" id="sAdmins">0</div><div class="stat-sub neutral">geral + projetos</div></div>
+          <div class="stat"><div class="stat-label">Engenheiros</div><div class="stat-value" id="sEng">0</div><div class="stat-sub neutral">podem calcular</div></div>
+          <div class="stat"><div class="stat-label">Bloqueados</div><div class="stat-value" id="sBlocked" style="color:var(--hot)">0</div><div class="stat-sub neutral">acesso suspenso</div></div>
+        </div>
+        <div class="card">
+          <div class="table-head">
+            <h3>Usuários da organização · <span id="userCount">0</span></h3>
+            <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openCreateUser()">
+              <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>
+              Criar nova conta
+            </button>
+          </div>
+          <table>
+            <thead><tr><th>Usuário</th><th>E-mail</th><th>Papel</th><th>Status</th><th>Últ. acesso</th><th style="text-align:right">Ações</th></tr></thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AUDIT -->
+      <div class="admin-panel" id="panel-audit">
+        <div class="card" style="padding:24px">
+          <h3 style="font-size:16px;font-weight:500;margin-bottom:18px">Log de auditoria</h3>
+          <div class="audit-log" id="auditLog"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CREATE USER MODAL -->
+<div class="modal-overlay" id="createUserModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div><div class="modal-eyebrow">ADMINISTRAÇÃO</div><h3>Criar nova conta</h3></div>
+      <button class="btn btn-ghost" onclick="closeCreateUser()" style="padding:6px"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Nome completo *</label><input type="text" id="newName" placeholder="Ex: Maria Silva"/></div>
+      <div class="field"><label>E-mail corporativo *</label><input type="email" id="newEmail" placeholder="maria@empresa.com.br"/></div>
+      <div class="field"><label>Empresa / CREA</label><input type="text" id="newCompany" placeholder="HVAC Brasil · CREA-BA 12345"/></div>
+      <div class="field"><label>Papel *</label>
+        <select id="newRole">
+          <option value="engineer">Engenheiro HVAC — calcula, edita, gera entregáveis</option>
+          <option value="admin_projects">Admin de Projetos — aprova e rejeita projetos</option>
+          <option value="admin_general">Admin Geral — gerencia apenas usuários</option>
+          <option value="viewer">Visualizador — apenas consulta projetos</option>
+        </select>
+      </div>
+      <div class="field"><label>Senha temporária *</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newPass" placeholder="mínimo 8 caracteres" style="flex:1"/>
+          <button class="btn btn-outline" onclick="genPass()" style="padding:10px 14px"><svg class="i" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeCreateUser()">Cancelar</button>
+      <button class="btn btn-primary" onclick="createUser()"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD RESET MODAL -->
+<div class="modal-overlay" id="passResetModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div><div class="modal-eyebrow">SENHA REDEFINIDA</div><h3 id="prmName">—</h3></div>
+      <button class="btn btn-ghost" onclick="document.getElementById('passResetModal').classList.remove('active')" style="padding:6px"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Envie esta senha ao usuário por um canal seguro. Só será exibida uma vez.</p>
+      <div class="field"><label>E-mail</label><input type="text" id="prmEmail" readonly style="background:var(--bg-2)"/></div>
+      <div class="field"><label>Nova senha temporária</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="prmPass" readonly style="flex:1;font-family:var(--font-mono);background:var(--bg-2)"/>
+          <button class="btn btn-outline" onclick="copyPrmPass()" style="padding:10px 14px"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+        </div>
+      </div>
+      <div class="alert-inline">
+        <svg class="i" viewBox="0 0 24 24" style="color:var(--warm)"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        O usuário deverá alterar a senha no primeiro login.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="document.getElementById('passResetModal').classList.remove('active')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const STORAGE_KEY='smarthvac.users',SESSION_KEY='smarthvac.session',AUDIT_KEY='smarthvac.audit';
+function loadUsers(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch(e){return{}}}
+function saveUsers(u){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(u))}catch(e){}}
+function loadSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}}
+function saveSession(u){try{localStorage.setItem(SESSION_KEY,JSON.stringify(u))}catch(e){}}
+function clearSession(){try{localStorage.removeItem(SESSION_KEY)}catch(e){}}
+function loadAudit(){try{return JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]')}catch(e){return[]}}
+function saveAudit(a){try{localStorage.setItem(AUDIT_KEY,JSON.stringify(a))}catch(e){}}
+function hashPass(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0}return'h_'+Math.abs(h).toString(36)}
+function getInitials(n){if(!n)return'?';const p=n.trim().split(/\s+/);return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
+function genRandomPass(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<12;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function genPass(){document.getElementById('newPass').value=genRandomPass()}
+
+// Bootstrap: cria os dois administradores
+(function(){
+  const users=loadUsers();
+  if(!users['admin@smarthvac.io']){
+    users['admin@smarthvac.io']={name:'Administrador Geral',email:'admin@smarthvac.io',company:'SmartHVAC',role:'admin_general',passHash:hashPass('admin@2026'),plan:'Enterprise',status:'active',createdAt:new Date().toISOString(),lastLoginAt:null};
+  }
+  if(!users['projetos@smarthvac.io']){
+    users['projetos@smarthvac.io']={name:'Administrador de Projetos',email:'projetos@smarthvac.io',company:'SmartHVAC',role:'admin_projects',passHash:hashPass('projetos@2026'),plan:'Enterprise',status:'active',createdAt:new Date().toISOString(),lastLoginAt:null};
+  }
+  saveUsers(users);
+  const audit=loadAudit();
+  if(audit.length===0){
+    saveAudit([
+      {time:'13:42',who:'Administrador Geral',msg:'criou conta de Maria Silva como Engenheira',type:'ok'},
+      {time:'12:18',who:'Admin de Projetos',msg:'aprovou Torre Corporate v02',type:'ok'},
+      {time:'11:05',who:'Administrador Geral',msg:'redefiniu senha de Pedro Lima',type:''},
+      {time:'ontem',who:'Admin de Projetos',msg:'rejeitou Galpão Industrial v01',type:'bad'}
+    ]);
+  }
+})();
+
+let currentUser=null;
+
+function fillCreds(email,pass){
+  document.getElementById('loginEmail').value=email;
+  document.getElementById('loginPass').value=pass;
+}
+
+function doLogin(){
+  const emailEl=document.getElementById('loginEmail'),passEl=document.getElementById('loginPass');
+  emailEl.classList.remove('field-error');passEl.classList.remove('field-error');
+  const email=emailEl.value.trim().toLowerCase(),pass=passEl.value;
+  if(!email){emailEl.classList.add('field-error');toast('E-mail obrigatório','','warn');return}
+  if(!pass){passEl.classList.add('field-error');toast('Senha obrigatória','','warn');return}
+  const users=loadUsers(),user=users[email];
+  if(!user){emailEl.classList.add('field-error');toast('Conta não encontrada','Solicite acesso ao administrador','error');return}
+  if(user.passHash!==hashPass(pass)){passEl.classList.add('field-error');toast('Senha incorreta','','error');return}
+  if(user.status==='suspended'){toast('Acesso bloqueado','Contate o administrador geral','error');return}
+  const isAdmin=user.role==='admin_general'||user.role==='admin_projects'||user.role==='admin';
+  if(!isAdmin){toast('Acesso negado','Este painel é restrito a administradores','error');return}
+  user.lastLoginAt=new Date().toISOString();users[email]=user;saveUsers(users);
+  currentUser=user;saveSession(user);
+  enterAdmin();
+}
+
+function doLogout(){
+  if(!confirm('Deseja sair?'))return;
+  currentUser=null;clearSession();
+  document.getElementById('loginEmail').value='';document.getElementById('loginPass').value='';
+  document.getElementById('adminApp').classList.remove('active');
+  document.getElementById('authScreen').style.display='grid';
+  toast('Sessão encerrada','','info');
+}
+
+function enterAdmin(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('adminApp').classList.add('active');
+  applyUser();
+  if(currentUser.role==='admin_general')switchTabByName('users');
+  else switchTabByName('approvals');
+}
+
+function applyUser(){
+  const u=currentUser;if(!u)return;
+  document.getElementById('sbAvatar').textContent=getInitials(u.name);
+  document.getElementById('sbName').textContent=u.name;
+  const labels={admin_general:'Admin Geral',admin_projects:'Admin de Projetos',admin:'Administrador'};
+  document.getElementById('sbRole').textContent=labels[u.role]+' · '+(u.plan||'Free');
+  const badge=document.getElementById('roleBadge'),bt=document.getElementById('roleBadgeText');
+  if(u.role==='admin_general'){badge.classList.remove('projects');bt.textContent='Admin Geral'}
+  else if(u.role==='admin_projects'){badge.classList.add('projects');bt.textContent='Admin de Projetos'}
+  else{badge.classList.remove('projects');bt.textContent='Administrador'}
+  const tA=document.querySelector('[data-tab="approvals"]'),tU=document.querySelector('[data-tab="users"]'),tAu=document.querySelector('[data-tab="audit"]');
+  if(u.role==='admin_general'){
+    tA.style.display='none';tU.style.display='';tAu.style.display='';
+    document.getElementById('pageTitle').textContent='Gestão de contas';
+    document.getElementById('pageSubtitle').textContent='Gerencie usuários, papéis, senhas e bloqueios. Você não acessa projetos nem aprovações.';
+  }else if(u.role==='admin_projects'){
+    tA.style.display='';tU.style.display='none';tAu.style.display='none';
+    document.getElementById('pageTitle').textContent='Aprovação de projetos';
+    document.getElementById('pageSubtitle').textContent='Revise e aprove/rejeite os projetos submetidos pelos engenheiros.';
+  }else{
+    tA.style.display='';tU.style.display='';tAu.style.display='';
+    document.getElementById('pageTitle').textContent='Painel administrativo';
+    document.getElementById('pageSubtitle').textContent='Gerencie aprovações de projetos, usuários e papéis da equipe.';
+  }
+}
+
+function switchTab(e,tab){
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(e&&e.currentTarget)e.currentTarget.classList.add('active');
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='users')renderUsers();
+  if(tab==='audit')renderAudit();
+}
+function switchTabByName(n){const t=document.querySelector('[data-tab="'+n+'"]');if(t)t.click()}
+
+function handleApproval(id,action,name){
+  const item=document.getElementById(id);if(!item)return;
+  item.classList.add('resolved');
+  const acts=item.querySelector('.apr-actions');
+  if(acts)acts.innerHTML='<span class="status-pill '+(action==='approve'?'ok':'bad')+'">'+(action==='approve'?'aprovado':'rejeitado')+'</span>';
+  addAudit((action==='approve'?'aprovou':'rejeitou')+' projeto '+name,action==='approve'?'ok':'bad');
+  toast(action==='approve'?'Projeto aprovado':'Projeto rejeitado',name,action==='approve'?'success':'warn');
+}
+
+function renderUsers(){
+  const tbody=document.getElementById('userTableBody'),countEl=document.getElementById('userCount');
+  if(!tbody)return;
+  const users=loadUsers(),emails=Object.keys(users);
+  if(countEl)countEl.textContent=emails.length;
+  document.getElementById('sUsers').textContent=emails.length;
+  document.getElementById('sAdmins').textContent=emails.filter(e=>users[e].role==='admin_general'||users[e].role==='admin_projects'||users[e].role==='admin').length;
+  document.getElementById('sEng').textContent=emails.filter(e=>users[e].role==='engineer').length;
+  document.getElementById('sBlocked').textContent=emails.filter(e=>users[e].status==='suspended').length;
+  if(emails.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-muted)">Nenhuma conta criada.</td></tr>';return}
+  const palettes=['linear-gradient(135deg,#00e5ff,#9d7bff)','linear-gradient(135deg,#ffb547,#ff5b3c)','linear-gradient(135deg,#34d399,#00b8d4)','linear-gradient(135deg,#9d7bff,#00b8d4)','linear-gradient(135deg,#00b8d4,#34d399)'];
+  tbody.innerHTML=emails.map(function(em,idx){
+    const u=users[em],isYou=currentUser&&currentUser.email===em,initials=getInitials(u.name),grad=palettes[idx%palettes.length];
+    const last=u.lastLoginAt?new Date(u.lastLoginAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const isSusp=u.status==='suspended';
+    const statusL=isSusp?'<span class="status-pill bad">bloqueado</span>':(u.lastLoginAt?'<span class="status-pill ok">ativo</span>':'<span class="status-pill warn">convidado</span>');
+    const rOpts='<option value="admin_general"'+(u.role==='admin_general'?' selected':'')+'>Admin Geral</option><option value="admin_projects"'+(u.role==='admin_projects'?' selected':'')+'>Admin de Projetos</option><option value="engineer"'+(u.role==='engineer'?' selected':'')+'>Engenheiro</option><option value="viewer"'+(u.role==='viewer'?' selected':'')+'>Visualizador</option>';
+    const rBtn=isYou?'':'<button class="btn-icon-mini" title="Redefinir senha" onclick="resetPass(\''+em+'\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16"/></svg></button>';
+    const bBtn=isYou?'':(isSusp?'<button class="btn-icon-mini unblock" title="Liberar acesso" onclick="setStatus(\''+em+'\',\'active\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M9 11V7a3 3 0 016 0M5 11h14v11H5z"/></svg></button>':'<button class="btn-icon-mini block" title="Bloquear acesso" onclick="setStatus(\''+em+'\',\'suspended\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></button>');
+    const dBtn=isYou?'':'<button class="btn-icon-mini danger" title="Remover conta" onclick="deleteUser(\''+em+'\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>';
+    return '<tr'+(isSusp?' style="opacity:.55"':'')+'><td><div style="display:flex;gap:10px;align-items:center"><div class="apr-avatar" style="width:28px;height:28px;font-size:11px;background:'+grad+'">'+initials+'</div>'+u.name+(isYou?' <span class="tag-you">você</span>':'')+'</div></td><td style="font-family:var(--font-mono);font-size:12px">'+u.email+'</td><td><select class="role-select"'+(isYou?' disabled':'')+' onchange="changeRole(\''+em+'\', this.value)">'+rOpts+'</select></td><td>'+statusL+'</td><td style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted)">'+last+'</td><td><div class="user-actions">'+rBtn+bBtn+dBtn+'</div></td></tr>';
+  }).join('');
+}
+
+function changeRole(email,newRole){
+  const users=loadUsers();if(!users[email])return;
+  users[email].role=newRole;saveUsers(users);
+  if(currentUser&&currentUser.email===email){currentUser.role=newRole;saveSession(currentUser);applyUser()}
+  renderUsers();
+  const labels={admin_general:'Admin Geral',admin_projects:'Admin de Projetos',engineer:'Engenheiro',viewer:'Visualizador'};
+  addAudit('alterou papel de '+users[email].name+' para '+labels[newRole],'ok');
+  toast('Papel atualizado',users[email].name+' agora é '+labels[newRole],'info');
+}
+
+function setStatus(email,status){
+  const users=loadUsers();if(!users[email])return;
+  users[email].status=status;saveUsers(users);renderUsers();
+  const lbl=status==='suspended'?'bloqueou':'liberou';
+  addAudit(lbl+' acesso de '+users[email].name,status==='suspended'?'bad':'ok');
+  toast('Acesso '+(status==='suspended'?'bloqueado':'liberado'),users[email].name,status==='suspended'?'warn':'success');
+}
+
+function resetPass(email){
+  const users=loadUsers();if(!users[email])return;
+  if(!confirm('Redefinir senha de '+users[email].name+'?'))return;
+  const newPass=genRandomPass();
+  users[email].passHash=hashPass(newPass);users[email].lastLoginAt=null;saveUsers(users);renderUsers();
+  addAudit('redefiniu senha de '+users[email].name,'');
+  document.getElementById('prmName').textContent=users[email].name;
+  document.getElementById('prmEmail').value=email;
+  document.getElementById('prmPass').value=newPass;
+  document.getElementById('passResetModal').classList.add('active');
+}
+
+function copyPrmPass(){
+  const el=document.getElementById('prmPass');if(!el)return;
+  el.select();
+  try{document.execCommand('copy');toast('Senha copiada','','success')}
+  catch(e){toast('Copie manualmente','','warn')}
+}
+
+function deleteUser(email){
+  const users=loadUsers();if(!users[email])return;
+  if(!confirm('Remover conta de '+users[email].name+'?'))return;
+  const name=users[email].name;delete users[email];saveUsers(users);renderUsers();
+  addAudit('removeu conta de '+name,'bad');
+  toast('Conta removida',email,'warn');
+}
+
+function openCreateUser(){
+  ['newName','newEmail','newCompany','newPass'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.classList.remove('field-error')}});
+  document.getElementById('newRole').value='engineer';
+  document.getElementById('createUserModal').classList.add('active');
+}
+function closeCreateUser(){document.getElementById('createUserModal').classList.remove('active')}
+
+function createUser(){
+  const name=document.getElementById('newName').value.trim(),email=document.getElementById('newEmail').value.trim().toLowerCase(),company=document.getElementById('newCompany').value.trim(),role=document.getElementById('newRole').value,pass=document.getElementById('newPass').value;
+  ['newName','newEmail','newPass'].forEach(id=>document.getElementById(id).classList.remove('field-error'));
+  if(!name||name.length<3){document.getElementById('newName').classList.add('field-error');toast('Nome inválido','Mínimo 3 caracteres','warn');return}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){document.getElementById('newEmail').classList.add('field-error');toast('E-mail inválido','','warn');return}
+  if(!pass||pass.length<8){document.getElementById('newPass').classList.add('field-error');toast('Senha muito curta','Mínimo 8 caracteres','warn');return}
+  const users=loadUsers();
+  if(users[email]){document.getElementById('newEmail').classList.add('field-error');toast('E-mail já existe','','error');return}
+  users[email]={name:name,email:email,company:company,role:role,passHash:hashPass(pass),plan:'Pro',status:'invited',createdAt:new Date().toISOString(),lastLoginAt:null};
+  saveUsers(users);closeCreateUser();renderUsers();
+  const labels={admin_general:'Admin Geral',admin_projects:'Admin de Projetos',engineer:'Engenheiro',viewer:'Visualizador'};
+  addAudit('criou conta de '+name+' ('+labels[role]+')','ok');
+  toast('Conta criada',name+' · '+labels[role],'success');
+}
+
+function addAudit(msg,type){
+  const audit=loadAudit(),now=new Date();
+  audit.unshift({time:now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),who:currentUser?currentUser.name:'Sistema',msg:msg,type:type||''});
+  saveAudit(audit.slice(0,50));
+}
+
+function renderAudit(){
+  const log=document.getElementById('auditLog');if(!log)return;
+  const audit=loadAudit();
+  if(audit.length===0){log.innerHTML='<div style="text-align:center;padding:40px;color:var(--ink-muted);font-size:13px">Nenhuma atividade registrada.</div>';return}
+  log.innerHTML=audit.map(function(e){
+    const dc=e.type==='bad'?'bad':e.type==='ok'?'ok':'';
+    return '<div class="audit-entry"><div class="audit-dot '+dc+'"></div><div class="audit-time">'+e.time+'</div><div class="audit-msg"><strong>'+e.who+'</strong> '+e.msg+'</div></div>';
+  }).join('');
+}
+
+let toastId=0;
+function toast(title,subtitle,type){
+  type=type||'info';
+  const wrap=document.getElementById('toastWrap');if(!wrap)return;
+  const id='toast-'+(++toastId);
+  const icons={success:'<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>',info:'<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',warn:'<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>',error:'<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'};
+  const t=document.createElement('div');
+  t.className='toast '+type;t.id=id;
+  t.innerHTML='<div class="toast-icon">'+icons[type]+'</div><div class="toast-body"><div class="toast-title">'+title+'</div>'+(subtitle?'<div class="toast-sub">'+subtitle+'</div>':'')+'</div>';
+  wrap.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},300)},3500);
+}
+
+// Restaura sessão
+const saved=loadSession();
+if(saved&&(saved.role==='admin_general'||saved.role==='admin_projects'||saved.role==='admin')){
+  currentUser=saved;enterAdmin();
+}
+</script>
+</body>
+</html>
