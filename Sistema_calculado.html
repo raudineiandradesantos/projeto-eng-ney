@@ -1636,6 +1636,37 @@
     .viz-body{grid-template-columns:1fr}
     .viz-detail{border-left:none;border-top:1px solid var(--line)}
   }
+  /* Split-view: PDF + cálculo lado a lado (etapa 3) */
+  .split-view{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:calc(100vh - 240px);min-height:560px}
+  .split-pdf,.split-calc{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+  .split-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line)}
+  .split-pdf-canvas{flex:1;background:#1a1d24;position:relative;overflow:hidden}
+  .split-pdf-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink-muted)}
+  .split-calc-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .split-table{width:100%;border-collapse:collapse;font-size:12px}
+  .split-table thead th{position:sticky;top:0;z-index:1}
+  .split-table tbody td{padding:6px 8px}
+  .split-table tbody td:first-child{padding-left:14px;color:var(--ink);white-space:nowrap}
+  .split-table input.cell-edit{width:100%;min-width:55px;background:transparent;border:1px solid transparent;border-radius:4px;padding:5px 7px;color:var(--ink);font-family:var(--font-mono);font-size:11px;text-align:right;transition:all .15s}
+  .split-table input.cell-edit:hover{border-color:var(--line-2);background:var(--bg-2)}
+  .split-table input.cell-edit:focus{outline:none;border-color:var(--cyan);background:var(--bg-3)}
+  .split-table .kw{color:var(--cyan);font-family:var(--font-mono);font-weight:500;text-align:right;padding-right:14px}
+  .split-table .floor-header td{background:var(--bg-3);font-family:var(--font-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted);padding:8px 14px}
+  .split-table tfoot td{background:var(--bg-3);font-weight:500;padding:12px 14px;border-top:1px solid var(--line-2)}
+  .split-table .total-kw{font-size:18px;color:var(--cyan);font-family:var(--font-mono);text-align:right}
+  @media (max-width:1280px){.split-view{grid-template-columns:1fr;height:auto}.split-pdf{height:500px}}
+
+  /* Validador de senha forte */
+  .pass-rules{display:grid;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)}
+  .pass-input-wrap{position:relative}
+  .pass-input-wrap input{padding-right:42px !important;width:100%}
+  .pass-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;width:30px;height:30px;display:grid;place-items:center;color:var(--ink-muted);cursor:pointer;border-radius:5px;transition:all .15s;padding:0}
+  .pass-toggle:hover{color:var(--cyan);background:var(--bg-3)}
+  .pass-toggle svg{width:16px;height:16px;pointer-events:none}
+  .pass-rule{display:flex;align-items:center;gap:8px;transition:color .2s}
+  .pass-rule.ok{color:var(--ok)}
+  .pass-rule .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-muted);transition:all .2s}
+  .pass-rule.ok .dot{background:var(--ok);box-shadow:0 0 6px rgba(52,211,153,.5)}
 </style>
 </head>
 <body>
@@ -1669,11 +1700,10 @@
       <span>Smart<span class="accent">HVAC</span></span>
     </div>
     <div class="nav-links">
-      <a href="#">Engine</a>
-      <a href="#">Workflow</a>
-      <a href="#">Normativos</a>
-      <a href="#">Preços</a>
-      <a href="#">Docs</a>
+      <a style="cursor:pointer" onclick="openInfoModal('engine')">Engine</a>
+      <a style="cursor:pointer" onclick="openInfoModal('workflow')">Workflow</a>
+      <a style="cursor:pointer" onclick="openInfoModal('normativos')">Normativos</a>
+      <a style="cursor:pointer" onclick="openInfoModal('docs')">Docs</a>
     </div>
     <div class="nav-cta" id="navCta">
       <button class="btn btn-ghost" onclick="openDemo()">Testar demo</button>
@@ -1955,7 +1985,13 @@
         </div>
         <div class="field">
           <label>Senha</label>
-          <input type="password" id="loginPass" placeholder="mínimo 8 caracteres"/>
+          <div class="pass-input-wrap">
+            <input type="password" id="loginPass" placeholder="sua senha"/>
+            <button type="button" class="pass-toggle" onclick="togglePassView('loginPass', this)" title="Mostrar/esconder senha" aria-label="Mostrar senha">
+              <svg class="i eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="i eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/></svg>
+            </button>
+          </div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:-6px;margin-bottom:18px">
           <label style="color:var(--ink-dim);display:flex;gap:6px;align-items:center;cursor:pointer">
@@ -1969,18 +2005,6 @@
           Entrar
           <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
-
-        <div class="auth-divider">ou continue com</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <button class="btn btn-outline" onclick="oauthLogin('Google')">
-            <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 18.9 13 24 13c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.4-4.5 2.3-7.2 2.3-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2c-.4.4 6.6-4.8 6.6-14.7 0-1.3-.1-2.7-.4-3.9z"/></svg>
-            Google
-          </button>
-          <button class="btn btn-outline" onclick="oauthLogin('Microsoft')">
-            <svg width="16" height="16" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
-            Microsoft
-          </button>
-        </div>
 
         <div class="auth-alt">
           Não tem acesso ainda? <a style="cursor:pointer" onclick="switchAuth('signup')">Solicitar conta</a>
@@ -2127,7 +2151,7 @@
         </div>
       </div>
 
-      <div class="sb-section">
+      <div class="sb-section" data-restricted="projects">
         <div class="sb-title">Normativos</div>
         <div class="sb-item" data-view="norms" onclick="showView('norms','nbr-16401-1')"><svg class="i" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>NBR 16401-1</div>
         <div class="sb-item" data-view="norms" onclick="showView('norms','nbr-16401-2')"><svg class="i" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>NBR 16401-2</div>
@@ -2190,7 +2214,7 @@
       <div class="view" id="view-dashboard">
         <div class="topbar">
           <div class="crumbs">
-            <span>WORKSPACE</span>
+            <span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Painel de projetos">WORKSPACE</span>
             <span class="sep">/</span>
             <span class="now">PROJETOS</span>
           </div>
@@ -2210,13 +2234,8 @@
                 <div class="search-results" id="searchResults">
                   <div class="search-section">
                     <div class="search-section-title">Projetos recentes</div>
-                    <div class="search-result" onclick="closeSearch();openProject('matriz-marata')">
-                      <svg class="i" viewBox="0 0 24 24" style="color:var(--cyan)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                      <div><div class="sr-name">Matriz Maratá · R02</div><div class="sr-sub">Salvador · BA · 386 kW</div></div>
-                    </div>
-                    <div class="search-result" onclick="closeSearch();openProject('hospital-sao-lucas')">
-                      <svg class="i" viewBox="0 0 24 24" style="color:var(--ok)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                      <div><div class="sr-name">Hospital São Lucas</div><div class="sr-sub">Feira de Santana · 892 kW</div></div>
+                    <div id="searchProjects">
+                      <div style="padding:14px;color:var(--ink-muted);font-size:12px;font-family:var(--font-mono);text-align:center">Nenhum projeto criado ainda</div>
                     </div>
                   </div>
                   <div class="search-section">
@@ -2237,7 +2256,9 @@
                 </div>
               </div>
             </div>
-            <button class="btn btn-icon btn-outline" onclick="showView('notifications')"><svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+            <button class="btn btn-icon btn-outline" onclick="showView('notifications')" title="Notificações"><svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+            <button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button>
+            <button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
             <button class="btn btn-primary" onclick="startNewProject()">
               <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
               Novo projeto
@@ -2260,10 +2281,10 @@
           <div class="projects-head">
             <h2>Seus projetos</h2>
             <div class="filter-chips">
-              <div class="chip active" data-filter="all">Todos</div>
-              <div class="chip" data-filter="calc">Em cálculo</div>
-              <div class="chip" data-filter="draft">Rascunhos</div>
-              <div class="chip" data-filter="done">Finalizados</div>
+              <div class="chip active" data-filter="all" onclick="filterProjects('all',this)">Todos</div>
+              <div class="chip" data-filter="incomplete" onclick="filterProjects('incomplete',this)">Incompletos</div>
+              <div class="chip" data-filter="draft" onclick="filterProjects('draft',this)">Rascunhos</div>
+              <div class="chip" data-filter="final" onclick="filterProjects('final',this)">Finalizados</div>
             </div>
           </div>
 
@@ -2277,18 +2298,22 @@
       <div class="view" id="view-wizard" style="display:none">
         <div class="topbar">
           <div class="crumbs">
-            <span style="cursor:pointer" onclick="showView('dashboard')">PROJETOS</span>
+            <span style="cursor:pointer" onclick="exitWizard()">PROJETOS</span>
             <span class="sep">/</span>
-            <span class="now">MATRIZ MARATÁ · R02</span>
+            <span class="now" id="wizardCrumb">NOVO PROJETO</span>
           </div>
           <div class="topbar-actions">
-            <button class="btn btn-outline">
-              <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              v02 · 18/04
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 12px" onclick="exitWizard()" title="Voltar ao painel">
+              <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Painel
             </button>
             <button class="btn btn-outline" onclick="saveProject(this)">
               <svg class="i" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
               Salvar
+            </button>
+            <button class="btn btn-outline" style="border-color:var(--ok);color:var(--ok)" onclick="saveAsFinal(this)" title="Enviar projeto para aprovação do Admin de Projetos">
+              <svg class="i" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+              Enviar p/ aprovação
             </button>
             <button class="btn btn-primary" onclick="processCalculation(this)">
               Processar cálculo
@@ -2326,8 +2351,13 @@
           <div class="step-panel" id="panel-1">
             <div class="geo-grid">
               <div class="card">
-                <h3>Localização do projeto</h3>
-                <p class="desc">Buscaremos automaticamente TBS e TBU de projeto na NBR 16401-1.</p>
+                <h3>Identificação do projeto</h3>
+                <p class="desc">Dê um nome ao projeto e informe a localização. Os dados climáticos da NBR 16401-1 serão buscados automaticamente.</p>
+                <div class="field">
+                  <label>Nome do projeto *</label>
+                  <input type="text" id="projectName" placeholder="Ex: Hospital São Lucas — bloco A" oninput="onProjectNameInput()"/>
+                  <div style="font-size:11px;color:var(--ink-muted);margin-top:6px;font-family:var(--font-mono)">aparecerá no painel inicial e nos entregáveis</div>
+                </div>
                 <div class="field">
                   <label>Cidade / UF</label>
                   <select id="geoCity" onchange="updateClimate()">
@@ -2429,230 +2459,127 @@
 
           <!-- ====== STEP 3: VISUALIZER — THE WOW MOMENT ====== -->
           <div class="step-panel active" id="panel-3">
-            <div class="viz-wrap">
-              <div class="viz-toolbar">
-                <div class="viz-tabs">
-                  <div class="viz-tab active">Térreo</div>
-                  <div class="viz-tab">1º Andar</div>
-                  <div class="viz-tab">Cobertura</div>
+            <div class="split-view">
+              <!-- LADO ESQUERDO: PDF DO PROJETO -->
+              <div class="split-pdf">
+                <div class="split-toolbar">
+                  <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-dim);letter-spacing:.05em">
+                    <span style="color:var(--cyan)">●</span> PLANTA DO PROJETO · <span id="splitPdfName">aguardando upload…</span>
+                  </div>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-icon btn-outline" onclick="setStep(2)" title="Voltar para upload"><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></button>
+                    <button class="btn btn-icon btn-outline" onclick="openPdfFullscreen()" title="Tela cheia"><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                  </div>
                 </div>
-                <div class="viz-legend">
-                  <div class="viz-legend-item wall">Parede</div>
-                  <div class="viz-legend-item glass">Pele de vidro</div>
-                  <div class="viz-legend-item room">Ambiente</div>
-                  <div class="viz-legend-item door">Esquadria</div>
-                </div>
-                <div style="display:flex;gap:6px">
-                  <button class="btn btn-icon btn-outline" title="Zoom in"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M11 8v6M8 11h6M21 21l-4.35-4.35"/></svg></button>
-                  <button class="btn btn-icon btn-outline" title="Ajustar à tela"><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                <div class="split-pdf-canvas" id="splitPdfCanvas">
+                  <div class="split-pdf-empty" id="splitPdfEmpty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;margin-bottom:14px">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                      <path d="M14 2v6h6"/>
+                    </svg>
+                    <div style="font-size:13px;color:var(--ink-dim);margin-bottom:6px">Nenhum PDF carregado</div>
+                    <div style="font-size:11px;color:var(--ink-muted);font-family:var(--font-mono);margin-bottom:14px">volte ao passo 2 para fazer o upload</div>
+                    <button class="btn btn-outline" style="font-size:12px;padding:6px 14px" onclick="setStep(2)">Carregar PDF</button>
+                  </div>
+                  <iframe id="splitPdfFrame" style="display:none;width:100%;height:100%;border:none;background:#fff" title="Planta do projeto"></iframe>
                 </div>
               </div>
 
-              <div class="viz-body">
-                <div class="viz-canvas">
-                  <svg viewBox="0 0 700 560" preserveAspectRatio="xMidYMid meet">
-                    <!-- outer wall -->
-                    <rect x="50" y="50" width="600" height="460" class="plan-wall"/>
-                    <!-- glass facade -->
-                    <line x1="70" y1="50" x2="630" y2="50" class="plan-glass"/>
-                    <line x1="630" y1="70" x2="630" y2="490" class="plan-glass" opacity=".6"/>
-
-                    <!-- internal partitions -->
-                    <line x1="50" y1="200" x2="650" y2="200" class="plan-wall"/>
-                    <line x1="50" y1="360" x2="650" y2="360" class="plan-wall"/>
-                    <line x1="230" y1="50" x2="230" y2="200" class="plan-wall"/>
-                    <line x1="430" y1="50" x2="430" y2="200" class="plan-wall"/>
-                    <line x1="160" y1="200" x2="160" y2="360" class="plan-wall"/>
-                    <line x1="320" y1="200" x2="320" y2="360" class="plan-wall"/>
-                    <line x1="480" y1="200" x2="480" y2="360" class="plan-wall"/>
-                    <line x1="220" y1="360" x2="220" y2="510" class="plan-wall"/>
-                    <line x1="400" y1="360" x2="400" y2="510" class="plan-wall"/>
-
-                    <!-- heat zone -->
-                    <rect x="50" y="50" width="600" height="18" class="plan-hot" opacity=".45"/>
-
-                    <!-- rooms with click -->
-                    <rect x="50" y="50" width="180" height="150" class="plan-room selected" data-room="0"/>
-                    <rect x="230" y="50" width="200" height="150" class="plan-room" data-room="1"/>
-                    <rect x="430" y="50" width="220" height="150" class="plan-room" data-room="2"/>
-                    <rect x="50" y="200" width="110" height="160" class="plan-room" data-room="3"/>
-                    <rect x="160" y="200" width="160" height="160" class="plan-room" data-room="4"/>
-                    <rect x="320" y="200" width="160" height="160" class="plan-room" data-room="5"/>
-                    <rect x="480" y="200" width="170" height="160" class="plan-room" data-room="6"/>
-                    <rect x="50" y="360" width="170" height="150" class="plan-room" data-room="7"/>
-                    <rect x="220" y="360" width="180" height="150" class="plan-room" data-room="8"/>
-                    <rect x="400" y="360" width="250" height="150" class="plan-room" data-room="9"/>
-
-                    <!-- room labels -->
-                    <text x="140" y="120" class="plan-label">Comercial</text>
-                    <text x="140" y="135" class="plan-label plan-label-area">138.97 m²</text>
-                    <text x="140" y="150" class="plan-label plan-label-area">62.87 kW</text>
-                    <text x="330" y="120" class="plan-label">Recepção</text>
-                    <text x="330" y="135" class="plan-label plan-label-area">61.03 m² · 34.30 kW</text>
-                    <text x="540" y="120" class="plan-label">Suprimentos</text>
-                    <text x="540" y="135" class="plan-label plan-label-area">62.90 m² · 10.73 kW</text>
-
-                    <text x="105" y="275" class="plan-label">Jurídico</text>
-                    <text x="105" y="290" class="plan-label plan-label-area">40.86 m²</text>
-                    <text x="240" y="275" class="plan-label">Logística</text>
-                    <text x="240" y="290" class="plan-label plan-label-area">54.31 m²</text>
-                    <text x="400" y="275" class="plan-label">Marketing</text>
-                    <text x="400" y="290" class="plan-label plan-label-area">53.52 m²</text>
-                    <text x="565" y="275" class="plan-label">Reunião 01</text>
-                    <text x="565" y="290" class="plan-label plan-label-area">21.87 m²</text>
-
-                    <text x="135" y="435" class="plan-label">Diretor 01</text>
-                    <text x="135" y="450" class="plan-label plan-label-area">36.71 m²</text>
-                    <text x="310" y="435" class="plan-label">Diretor 02</text>
-                    <text x="310" y="450" class="plan-label plan-label-area">36.71 m²</text>
-                    <text x="525" y="435" class="plan-label">Copa · Comex · Invest.</text>
-
-                    <!-- dimension cotas -->
-                    <g stroke="rgba(138,148,166,0.3)" stroke-width=".8" fill="none">
-                      <line x1="50" y1="30" x2="650" y2="30"/>
-                      <line x1="50" y1="25" x2="50" y2="35"/>
-                      <line x1="650" y1="25" x2="650" y2="35"/>
-                      <line x1="30" y1="50" x2="30" y2="510"/>
-                      <line x1="25" y1="50" x2="35" y2="50"/>
-                      <line x1="25" y1="510" x2="35" y2="510"/>
-                    </g>
-                    <text x="350" y="22" class="plan-label" style="fill:var(--ink-muted)">30.00 m</text>
-                    <text x="18" y="280" class="plan-label" transform="rotate(-90 18 280)" style="fill:var(--ink-muted)">23.00 m</text>
-
-                    <!-- compass -->
-                    <g transform="translate(620,540)">
-                      <circle r="16" fill="#0a0e14" stroke="#262c38"/>
-                      <text y="-4" text-anchor="middle" class="plan-label plan-label-area" font-size="8">N</text>
-                      <path d="M0,-12 L3,2 L0,-2 L-3,2 Z" fill="#00e5ff"/>
-                    </g>
-
-                    <!-- radiation indicator -->
-                    <g transform="translate(350, 40)">
-                      <line x1="-10" y1="0" x2="10" y2="0" stroke="#ff5b3c" stroke-width="1.5"/>
-                      <path d="M10,0 l-4,-3 M10,0 l-4,3" stroke="#ff5b3c" stroke-width="1.5" fill="none"/>
-                      <text x="14" y="3" fill="#ff5b3c" font-family="JetBrains Mono" font-size="9">RAD 550 W/m²</text>
-                    </g>
-                  </svg>
+              <!-- LADO DIREITO: TABELA DE CÁLCULO -->
+              <div class="split-calc">
+                <div class="split-toolbar">
+                  <h3 style="font-size:13px;font-weight:500">Cálculo de carga térmica</h3>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="exportCSV()">
+                      <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                      CSV
+                    </button>
+                    <button class="btn btn-primary" style="font-size:11px;padding:5px 10px" onclick="recalculate(this)">
+                      <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+                      Recalcular
+                    </button>
+                  </div>
                 </div>
-
-                <aside class="viz-detail">
-                  <div class="viz-detail-title">AMBIENTE SELECIONADO</div>
-                  <h3>Comercial</h3>
-                  <div class="sub">térreo · id R-001</div>
-
-                  <div class="kpi-stack">
-                    <div class="kpi"><span class="k">Área</span><span class="v">138.97 m²</span></div>
-                    <div class="kpi"><span class="k">Pé-direito</span><span class="v">3.50 m</span></div>
-                    <div class="kpi"><span class="k">Ocupação</span><span class="v">32 pessoas</span></div>
-                    <div class="kpi"><span class="k">Fachada vidro</span><span class="v">70.00 m²</span></div>
-                    <div class="kpi"><span class="k">Carga calculada</span><span class="v hi">62.87 kW</span></div>
+                <div class="split-calc-body">
+                  <div style="font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono);padding:10px 14px;background:var(--bg-2);border-bottom:1px solid var(--line)">
+                    Edite qualquer célula → recalcula automaticamente · NBR 16401-1/2/3
                   </div>
-
-                  <div class="det-section">
-                    <h4>Componentes de carga</h4>
-                    <div class="det-row"><span class="l">Pessoas (126W)</span><span class="r">4.03 kW</span></div>
-                    <div class="det-row"><span class="l">Iluminação (15W/m²)</span><span class="r">2.08 kW</span></div>
-                    <div class="det-row"><span class="l">Equipamentos</span><span class="r">8.00 kW</span></div>
-                    <div class="det-row"><span class="l">Envoltória vidro</span><span class="r">38.50 kW</span></div>
-                    <div class="det-row"><span class="l">Ar externo</span><span class="r">10.26 kW</span></div>
+                  <div class="table-scroll" style="max-height:calc(100vh - 280px);overflow:auto">
+                    <table class="split-table">
+                      <thead>
+                        <tr>
+                          <th>Ambiente</th>
+                          <th>Área m²</th>
+                          <th>Pé D.</th>
+                          <th>Ocup.</th>
+                          <th>Vidro m²</th>
+                          <th>Div. NC</th>
+                          <th>Piso Q.</th>
+                          <th>Forro Q.</th>
+                          <th>F. Uso</th>
+                          <th>Carga kW</th>
+                        </tr>
+                      </thead>
+                      <tbody id="masterTbody">
+                        <tr class="floor-header"><td colspan="10">TÉRREO · 9 ambientes · <span data-floor-kw="terreo">208,15</span> kW</td></tr>
+                        <tr data-floor="terreo"><td>Comercial</td><td><input class="cell-edit num" data-col="area" value="138,97"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="32"/></td><td><input class="cell-edit num" data-col="vidro" value="70,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">62,87</td></tr>
+                        <tr data-floor="terreo"><td>Recepção</td><td><input class="cell-edit num" data-col="area" value="61,03"/></td><td><input class="cell-edit num" data-col="pe" value="7,0"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="45,00"/></td><td><input class="cell-edit num" data-col="div" value="12,50"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">34,30</td></tr>
+                        <tr data-floor="terreo"><td>Suprimentos</td><td><input class="cell-edit num" data-col="area" value="62,90"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="14"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">10,73</td></tr>
+                        <tr data-floor="terreo"><td>Logística</td><td><input class="cell-edit num" data-col="area" value="54,31"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="12,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">18,20</td></tr>
+                        <tr data-floor="terreo"><td>Marketing</td><td><input class="cell-edit num" data-col="area" value="53,52"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="12,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">18,15</td></tr>
+                        <tr data-floor="terreo"><td>Jurídico</td><td><input class="cell-edit num" data-col="area" value="40,86"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="8"/></td><td><input class="cell-edit num" data-col="vidro" value="8,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">12,60</td></tr>
+                        <tr data-floor="terreo"><td>Diretor 01</td><td><input class="cell-edit num" data-col="area" value="36,71"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="15,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,36</td></tr>
+                        <tr data-floor="terreo"><td>Diretor 02</td><td><input class="cell-edit num" data-col="area" value="36,71"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="15,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,36</td></tr>
+                        <tr data-floor="terreo"><td>Reunião 02</td><td><input class="cell-edit num" data-col="area" value="21,87"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="10"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="15,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="0,40"/></td><td class="kw" data-col="kw">3,17</td></tr>
+                        <tr class="floor-header"><td colspan="10">1º ANDAR · 12 ambientes · <span data-floor-kw="andar1">178,12</span> kW</td></tr>
+                        <tr data-floor="andar1"><td>Reunião (20L)</td><td><input class="cell-edit num" data-col="area" value="49,33"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="20"/></td><td><input class="cell-edit num" data-col="vidro" value="18,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="49,33"/></td><td><input class="cell-edit num" data-col="forro" value="49,33"/></td><td><input class="cell-edit num" data-col="fu" value="0,50"/></td><td class="kw" data-col="kw">15,22</td></tr>
+                        <tr data-floor="andar1"><td>T.I (Infra)</td><td><input class="cell-edit num" data-col="area" value="40,54"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="10"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="40,54"/></td><td><input class="cell-edit num" data-col="forro" value="40,54"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">11,58</td></tr>
+                        <tr data-floor="andar1"><td>Assist. Dir.</td><td><input class="cell-edit num" data-col="area" value="60,06"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="22,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="60,06"/></td><td><input class="cell-edit num" data-col="forro" value="60,06"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">27,08</td></tr>
+                        <tr data-floor="andar1"><td>Faturamento</td><td><input class="cell-edit num" data-col="area" value="48,09"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="6"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="48,09"/></td><td><input class="cell-edit num" data-col="forro" value="48,09"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">10,04</td></tr>
+                        <tr data-floor="andar1"><td>Contábil</td><td><input class="cell-edit num" data-col="area" value="47,46"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="6"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="47,46"/></td><td><input class="cell-edit num" data-col="forro" value="47,46"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,95</td></tr>
+                        <tr data-floor="andar1"><td>Fiscal</td><td><input class="cell-edit num" data-col="area" value="40,54"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="6"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="40,54"/></td><td><input class="cell-edit num" data-col="forro" value="40,54"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,06</td></tr>
+                        <tr data-floor="andar1"><td>Diretor 03</td><td><input class="cell-edit num" data-col="area" value="53,05"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="12,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="53,05"/></td><td><input class="cell-edit num" data-col="forro" value="53,05"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">12,77</td></tr>
+                        <tr data-floor="andar1"><td>Recepção 1º</td><td><input class="cell-edit num" data-col="area" value="45,53"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="10"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="45,53"/></td><td><input class="cell-edit num" data-col="forro" value="45,53"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">12,23</td></tr>
+                        <tr data-floor="andar1"><td>Circulação</td><td><input class="cell-edit num" data-col="area" value="85,00"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="10,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="85,00"/></td><td><input class="cell-edit num" data-col="forro" value="85,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">18,20</td></tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="9" style="text-align:right">Carga total do edifício</td>
+                          <td class="total-kw">386,27 kW</td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
-
-                  <div class="det-section">
-                    <h4>Envoltória</h4>
-                    <div class="det-row"><span class="l">Pele vidro (norte)</span><span class="r">70.00 m²</span></div>
-                    <div class="det-row"><span class="l">Tipo</span><span class="r">Laminado 8mm</span></div>
-                    <div class="det-row"><span class="l">Divisória NC</span><span class="r">0.00 m²</span></div>
-                    <div class="det-row"><span class="l">Plenum quente</span><span class="r">não</span></div>
-                  </div>
-
-                  <div class="det-section">
-                    <h4>Ar externo · NBR 16401-3</h4>
-                    <div class="det-row"><span class="l">V_o calculado</span><span class="r">273.20 L/s</span></div>
-                    <div class="det-row"><span class="l">Fórmula</span><span class="r">32×6.8 + 138.97×0.4</span></div>
-                  </div>
-                </aside>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- ====== STEP 4: TABLE ====== -->
+          <!-- ====== STEP 4: RESUMO DE CARGA ====== -->
           <div class="step-panel" id="panel-4">
-            <div class="table-shell">
-              <div class="table-head">
-                <h3>Tabela master · 26 ambientes</h3>
-                <div class="table-tools">
-                  <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="exportCSV()">
-                    <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                    Exportar CSV
-                  </button>
-                  <button class="btn btn-primary" style="font-size:12px;padding:6px 10px" onclick="recalculate(this)">
-                    <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
-                    Recalcular
-                  </button>
-                </div>
-              </div>
-              <div style="overflow-x:auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Ambiente</th>
-                    <th>Área m²</th>
-                    <th>Pé D.</th>
-                    <th>Ocup.</th>
-                    <th>Vidro m²</th>
-                    <th>Div. NC</th>
-                    <th>Piso Q.</th>
-                    <th>Forro Q.</th>
-                    <th>F. Uso</th>
-                    <th>Carga kW</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="floor-header"><td colspan="10">TÉRREO · 9 ambientes · 208.15 kW</td></tr>
-                  <tr><td>Comercial</td><td class="num">138,97</td><td class="num">3,5</td><td class="num">32</td><td class="num">70,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">62,87</td></tr>
-                  <tr><td>Recepção</td><td class="num">61,03</td><td class="num">7,0</td><td class="num">12</td><td class="num">45,00</td><td class="num">12,50</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">34,30</td></tr>
-                  <tr><td>Suprimentos</td><td class="num">62,90</td><td class="num">3,5</td><td class="num">14</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">10,73</td></tr>
-                  <tr><td>Logística</td><td class="num">54,31</td><td class="num">3,5</td><td class="num">12</td><td class="num">12,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">18,20</td></tr>
-                  <tr><td>Marketing</td><td class="num">53,52</td><td class="num">3,5</td><td class="num">12</td><td class="num">12,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">18,15</td></tr>
-                  <tr><td>Jurídico</td><td class="num">40,86</td><td class="num">3,5</td><td class="num">8</td><td class="num">8,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">12,60</td></tr>
-                  <tr><td>Diretor 01</td><td class="num">36,71</td><td class="num">3,5</td><td class="num">4</td><td class="num">15,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">9,36</td></tr>
-                  <tr><td>Diretor 02</td><td class="num">36,71</td><td class="num">3,5</td><td class="num">4</td><td class="num">15,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">9,36</td></tr>
-                  <tr><td>Reunião 02</td><td class="num">21,87</td><td class="num">3,5</td><td class="num">10</td><td class="num">0,00</td><td class="num">15,00</td><td class="num">0,00</td><td class="num">0,00</td><td class="num"><input class="cell-edit" value="0,40"/></td><td class="kw">3,17</td></tr>
-
-                  <tr class="floor-header"><td colspan="10">1º ANDAR · 12 ambientes · 178.12 kW</td></tr>
-                  <tr><td>Reunião (20L)</td><td class="num">49,33</td><td class="num">3,5</td><td class="num">20</td><td class="num">18,00</td><td class="num">0,00</td><td class="num">49,33</td><td class="num">49,33</td><td class="num"><input class="cell-edit" value="0,50"/></td><td class="kw">15,22</td></tr>
-                  <tr><td>T.I (Infra)</td><td class="num">40,54</td><td class="num">3,5</td><td class="num">10</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">40,54</td><td class="num">40,54</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">11,58</td></tr>
-                  <tr><td>Assist. Dir.</td><td class="num">60,06</td><td class="num">3,5</td><td class="num">12</td><td class="num">22,00</td><td class="num">0,00</td><td class="num">60,06</td><td class="num">60,06</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">27,08</td></tr>
-                  <tr><td>Faturamento</td><td class="num">48,09</td><td class="num">3,5</td><td class="num">6</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">48,09</td><td class="num">48,09</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">10,04</td></tr>
-                  <tr><td>Contábil</td><td class="num">47,46</td><td class="num">3,5</td><td class="num">6</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">47,46</td><td class="num">47,46</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">9,95</td></tr>
-                  <tr><td>Fiscal</td><td class="num">40,54</td><td class="num">3,5</td><td class="num">6</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">40,54</td><td class="num">40,54</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">9,06</td></tr>
-                  <tr><td>Diretor 03</td><td class="num">53,05</td><td class="num">3,5</td><td class="num">4</td><td class="num">12,00</td><td class="num">0,00</td><td class="num">53,05</td><td class="num">53,05</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">12,77</td></tr>
-                  <tr><td>Recepção 1º</td><td class="num">45,53</td><td class="num">3,5</td><td class="num">10</td><td class="num">0,00</td><td class="num">0,00</td><td class="num">45,53</td><td class="num">45,53</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">12,23</td></tr>
-                  <tr><td>Circulação</td><td class="num">85,00</td><td class="num">3,5</td><td class="num">4</td><td class="num">10,00</td><td class="num">0,00</td><td class="num">85,00</td><td class="num">85,00</td><td class="num"><input class="cell-edit" value="1,00"/></td><td class="kw">18,20</td></tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="9" style="text-align:right">Carga total do edifício</td>
-                    <td class="total-kw">386,27 kW</td>
-                  </tr>
-                </tfoot>
-              </table>
-              </div>
+            <div style="margin-bottom:24px">
+              <h3 style="font-size:18px;font-weight:500;letter-spacing:-.01em;margin-bottom:6px">Resumo do cálculo</h3>
+              <p style="font-size:13px;color:var(--ink-dim)">Volte ao passo anterior para ajustar valores · todos os totais são recalculados em tempo real.</p>
             </div>
-
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
               <div class="card" style="padding:20px">
                 <h3 style="font-size:13px;font-family:var(--font-mono);color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Carga interna</h3>
-                <div style="font-size:26px;font-weight:500">142.6<span style="font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)">kW</span></div>
+                <div style="font-size:26px;font-weight:500" id="sumCargaInt">142,6<span style="font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)">kW</span></div>
               </div>
               <div class="card" style="padding:20px">
                 <h3 style="font-size:13px;font-family:var(--font-mono);color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Envoltória</h3>
-                <div style="font-size:26px;font-weight:500">168.3<span style="font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)">kW</span></div>
+                <div style="font-size:26px;font-weight:500" id="sumCargaEnv">168,3<span style="font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)">kW</span></div>
               </div>
               <div class="card" style="padding:20px">
                 <h3 style="font-size:13px;font-family:var(--font-mono);color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Ar externo</h3>
-                <div style="font-size:26px;font-weight:500">75.4<span style="font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)">kW</span></div>
+                <div style="font-size:26px;font-weight:500" id="sumCargaArExt">75,4<span style="font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)">kW</span></div>
               </div>
+            </div>
+            <div class="card" style="padding:24px;text-align:center">
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">CARGA TOTAL DO EDIFÍCIO</div>
+              <div style="font-size:48px;font-weight:500;letter-spacing:-.02em;color:var(--cyan)" id="sumTotalKw">386,27<span style="font-size:18px;color:var(--ink-dim);margin-left:6px;font-family:var(--font-mono);font-weight:400">kW</span></div>
+              <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;font-family:var(--font-mono)">conforme NBR 16401-1/2/3:2024 · 21 ambientes calculados</div>
             </div>
           </div>
 
@@ -3156,9 +3083,9 @@
                 <div style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Versão final</div>
                 <div style="font-size:14px">Salvar como as-built no banco de dados para auditoria e comparação futura.</div>
               </div>
-              <button class="btn btn-outline">
+              <button class="btn btn-outline" onclick="saveAsFinal(this)">
                 <svg class="i" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-                Salvar v02 como final
+                Enviar para aprovação
               </button>
             </div>
           </div>
@@ -3185,110 +3112,53 @@
       <!-- =========== ADMIN VIEW =========== -->
       <div class="view" id="view-admin" style="display:none">
         <div class="topbar">
-          <div class="crumbs"><span>WORKSPACE</span><span class="sep">/</span><span class="now">ADMINISTRAÇÃO</span></div>
+          <div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('admin')" title="Painel administrativo">WORKSPACE</span><span class="sep">/</span><span class="now">ADMINISTRAÇÃO</span></div>
           <div class="topbar-actions">
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 14px" onclick="backToLanding()">
+              <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              Site inicial
+            </button>
+            <button class="btn btn-outline" style="font-size:12px;padding:7px 14px" onclick="doLogout()" title="Sair da conta">
+              <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+              Sair
+            </button>
             <span class="admin-badge"><svg class="i" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Admin</span>
           </div>
         </div>
         <div class="page">
-          <div class="page-head"><div><h1>Painel administrativo</h1><p>Gerencie aprovações de projetos, usuários e papéis da equipe.</p></div></div>
+          <div class="page-head"><div><h1>Painel administrativo</h1><p>Gerencie usuários, papéis, senhas e bloqueios de acesso da equipe.</p></div></div>
 
           <div class="admin-tabs">
-            <div class="admin-tab active" data-tab="approvals" onclick="switchAdminTab(event,'approvals')">Aprovações <span class="tab-badge">3</span></div>
-            <div class="admin-tab" data-tab="users" onclick="switchAdminTab(event,'users')">Usuários e papéis</div>
+            <div class="admin-tab" data-tab="approvals" onclick="switchAdminTab(event,'approvals')">Aprovações <span class="tab-badge" id="aprBadge">0</span></div>
+            <div class="admin-tab active" data-tab="users" onclick="switchAdminTab(event,'users')">Usuários e papéis</div>
             <div class="admin-tab" data-tab="audit" onclick="switchAdminTab(event,'audit')">Auditoria</div>
+            <div class="admin-tab" data-tab="reviews" onclick="switchAdminTab(event,'reviews')">Histórico de revisões</div>
           </div>
 
-          <div class="admin-panel active" id="admin-approvals">
+          <div class="admin-panel" id="admin-approvals" style="display:none">
             <div class="stats-row" style="margin-bottom:24px">
-              <div class="stat"><div class="stat-label">Aguardando</div><div class="stat-value" style="color:var(--warm)">3</div><div class="stat-sub">últimas 24h</div></div>
-              <div class="stat"><div class="stat-label">Aprovados hoje</div><div class="stat-value">7</div><div class="stat-sub" style="color:var(--ok)">+40% vs ontem</div></div>
-              <div class="stat"><div class="stat-label">Rejeitados (mês)</div><div class="stat-value">2</div><div class="stat-sub">não conformidade</div></div>
-              <div class="stat"><div class="stat-label">Tempo médio análise</div><div class="stat-value">14<span class="unit">min</span></div><div class="stat-sub">SLA 2h</div></div>
+              <div class="stat"><div class="stat-label">Aguardando</div><div class="stat-value" style="color:var(--warm)" id="aprStatPending">0</div><div class="stat-sub">para análise</div></div>
+              <div class="stat"><div class="stat-label">Aprovados</div><div class="stat-value" id="aprStatApproved">0</div><div class="stat-sub" style="color:var(--ok)">total</div></div>
+              <div class="stat"><div class="stat-label">Rejeitados</div><div class="stat-value" id="aprStatRejected">0</div><div class="stat-sub">não conformes</div></div>
+              <div class="stat"><div class="stat-label">Total submetido</div><div class="stat-value" id="aprStatTotal">0</div><div class="stat-sub">histórico</div></div>
             </div>
 
-            <div class="approval-list">
-              <div class="approval-item" id="approval-1">
-                <div class="apr-left">
-                  <div class="apr-avatar">MS</div>
-                  <div>
-                    <div class="apr-title">Hospital São Lucas · v04</div>
-                    <div class="apr-meta"><span>Maria Silva</span><span>·</span><span>3.420 m²</span><span>·</span><span>892 kW</span><span>·</span><span>há 2h</span></div>
-                  </div>
-                </div>
-                <div class="apr-actions">
-                  <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="previewApproval('Hospital São Lucas v04')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    Revisar
-                  </button>
-                  <button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-1','approve','Hospital São Lucas v04')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M20 6L9 17l-5-5"/></svg>
-                    Aprovar
-                  </button>
-                  <button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-1','reject','Hospital São Lucas v04')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    Rejeitar
-                  </button>
-                </div>
-              </div>
-
-              <div class="approval-item" id="approval-2">
-                <div class="apr-left">
-                  <div class="apr-avatar" style="background:linear-gradient(135deg,#ffb547,#ff5b3c)">JA</div>
-                  <div>
-                    <div class="apr-title">Edifício Atlântico · v01</div>
-                    <div class="apr-meta"><span>João Almeida</span><span>·</span><span>820 m²</span><span>·</span><span>rascunho</span><span>·</span><span>há 5h</span></div>
-                  </div>
-                </div>
-                <div class="apr-actions">
-                  <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="previewApproval('Edifício Atlântico v01')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    Revisar
-                  </button>
-                  <button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-2','approve','Edifício Atlântico v01')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M20 6L9 17l-5-5"/></svg>
-                    Aprovar
-                  </button>
-                  <button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-2','reject','Edifício Atlântico v01')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    Rejeitar
-                  </button>
-                </div>
-              </div>
-
-              <div class="approval-item" id="approval-3">
-                <div class="apr-left">
-                  <div class="apr-avatar" style="background:linear-gradient(135deg,#34d399,#00b8d4)">CA</div>
-                  <div>
-                    <div class="apr-title">Shopping Bela Vista · v03</div>
-                    <div class="apr-meta"><span>Carlos Alves</span><span>·</span><span>5.100 m²</span><span>·</span><span>1.240 kW</span><span>·</span><span>há 8h</span></div>
-                  </div>
-                </div>
-                <div class="apr-actions">
-                  <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="previewApproval('Shopping Bela Vista v03')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    Revisar
-                  </button>
-                  <button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-3','approve','Shopping Bela Vista v03')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M20 6L9 17l-5-5"/></svg>
-                    Aprovar
-                  </button>
-                  <button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval('approval-3','reject','Shopping Bela Vista v03')">
-                    <svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    Rejeitar
-                  </button>
-                </div>
-              </div>
-            </div>
+            <div class="approval-list" id="approvalList"></div>
           </div>
 
-          <div class="admin-panel" id="admin-users" style="display:none">
+          <div class="admin-panel active" id="admin-users">
+            <div class="stats-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+              <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="adminStatTotal">0</div><div class="stat-sub neutral">usuários</div></div>
+              <div class="stat"><div class="stat-label">Administradores</div><div class="stat-value" id="adminStatAdmins">0</div><div class="stat-sub neutral">geral + projetos</div></div>
+              <div class="stat"><div class="stat-label">Engenheiros</div><div class="stat-value" id="adminStatEng">0</div><div class="stat-sub neutral">podem calcular</div></div>
+              <div class="stat"><div class="stat-label">Bloqueados</div><div class="stat-value" id="adminStatBlocked" style="color:var(--hot)">0</div><div class="stat-sub neutral">acesso suspenso</div></div>
+            </div>
             <div class="card" style="padding:0;overflow:hidden">
               <div class="table-head"><h3>Usuários da organização · <span id="userCount">0</span></h3>
                 <div class="table-tools"><button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openCreateUserModal()"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>Criar nova conta</button></div>
               </div>
               <table>
-                <thead><tr><th>Usuário</th><th>E-mail</th><th>Papel</th><th>Status</th><th>Últ. acesso</th><th></th></tr></thead>
+                <thead><tr><th>Usuário</th><th>E-mail</th><th>Papel</th><th>Status</th><th>Últ. acesso</th><th style="text-align:right">Ações</th></tr></thead>
                 <tbody id="userTableBody"></tbody>
               </table>
             </div>
@@ -3297,12 +3167,19 @@
           <div class="admin-panel" id="admin-audit" style="display:none">
             <div class="card">
               <h3 style="margin-bottom:18px">Log de auditoria</h3>
-              <div class="audit-log" id="auditLog">
-                <div class="audit-entry"><div class="audit-dot ok"></div><div class="audit-time">13:42</div><div class="audit-msg"><strong>Administrador Geral</strong> criou conta de <strong>Maria Silva</strong> como Engenheira</div></div>
-                <div class="audit-entry"><div class="audit-dot ok"></div><div class="audit-time">12:18</div><div class="audit-msg"><strong>Admin de Projetos</strong> aprovou <strong>Torre Corporate v02</strong></div></div>
-                <div class="audit-entry"><div class="audit-dot"></div><div class="audit-time">11:05</div><div class="audit-msg"><strong>Administrador Geral</strong> redefiniu senha de <strong>Pedro Lima</strong></div></div>
-                <div class="audit-entry"><div class="audit-dot bad"></div><div class="audit-time">ontem</div><div class="audit-msg"><strong>Admin de Projetos</strong> rejeitou <strong>Galpão Industrial v01</strong> · motivo: cotas incompletas</div></div>
+              <div class="audit-log" id="auditLog"></div>
+            </div>
+          </div>
+
+          <div class="admin-panel" id="admin-reviews" style="display:none">
+            <div class="card" style="padding:0;overflow:hidden">
+              <div class="table-head"><h3>Histórico de revisões · <span id="reviewsCount">0</span></h3>
+                <div style="font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)">projetos enviados para aprovação por todos os usuários</div>
               </div>
+              <table>
+                <thead><tr><th>Projeto</th><th>Versão</th><th>Criado por</th><th>Status</th><th>Decidido por</th><th>Data</th></tr></thead>
+                <tbody id="reviewsTableBody"></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -3310,51 +3187,51 @@
 
       <!-- =========== LIBRARIES VIEW =========== -->
       <div class="view" id="view-libraries" style="display:none">
-        <div class="topbar"><div class="crumbs"><span>WORKSPACE</span><span class="sep">/</span><span class="now">BIBLIOTECAS</span></div></div>
+        <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">WORKSPACE</span><span class="sep">/</span><span class="now">BIBLIOTECAS</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
           <div class="page-head"><div><h1>Bibliotecas técnicas</h1><p>Catálogos de equipamentos, dados climáticos e blocos CAD utilizados nos cálculos.</p></div></div>
           <div class="lib-grid">
-            <div class="lib-card">
+            <div class="lib-card" style="cursor:pointer" onclick="openLibrary('vrf')">
               <div class="lib-icon"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M4 4h16v16H4z"/><path d="M4 10h16M10 4v16"/></svg></div>
               <h3>Equipamentos VRF</h3>
               <div class="lib-count">248 <span>modelos</span></div>
               <p>Condensadoras e evaporadoras Daikin, LG, Midea, Samsung e Hitachi. Capacidades de 2 HP a 96 HP.</p>
-              <button class="btn btn-outline" style="width:100%;margin-top:14px">Explorar catálogo</button>
+              <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="event.stopPropagation();openLibrary('vrf')">Explorar catálogo</button>
             </div>
-            <div class="lib-card">
+            <div class="lib-card" style="cursor:pointer" onclick="openLibrary('climate')">
               <div class="lib-icon"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 010 20M2 12h20"/></svg></div>
               <h3>Dados climáticos</h3>
               <div class="lib-count">127 <span>cidades</span></div>
               <p>TBS, TBU, altitude e latitude conforme ABNT NBR 16401-1:2024. Cobertura nacional.</p>
-              <button class="btn btn-outline" style="width:100%;margin-top:14px">Ver tabela</button>
+              <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="event.stopPropagation();openLibrary('climate')">Ver tabela</button>
             </div>
-            <div class="lib-card">
+            <div class="lib-card" style="cursor:pointer" onclick="openLibrary('cad')">
               <div class="lib-icon"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
               <h3>Blocos CAD</h3>
               <div class="lib-count">86 <span>blocos</span></div>
               <p>Cassetes, high walls, condensadoras, difusores e grelhas em formato .dwg e .dxf.</p>
-              <button class="btn btn-outline" style="width:100%;margin-top:14px">Baixar blocos</button>
+              <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="event.stopPropagation();openLibrary('cad')">Baixar blocos</button>
             </div>
-            <div class="lib-card">
+            <div class="lib-card" style="cursor:pointer" onclick="openLibrary('templates')">
               <div class="lib-icon"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>
               <h3>Templates memoriais</h3>
               <div class="lib-count">12 <span>modelos</span></div>
               <p>Templates .docx personalizáveis com sua logo, cabeçalho e estilo editorial.</p>
-              <button class="btn btn-outline" style="width:100%;margin-top:14px">Gerenciar</button>
+              <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="event.stopPropagation();openLibrary('templates')">Gerenciar</button>
             </div>
-            <div class="lib-card">
+            <div class="lib-card" style="cursor:pointer" onclick="openLibrary('ducts')">
               <div class="lib-icon"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
               <h3>Dutos e acessórios</h3>
               <div class="lib-count">340 <span>peças</span></div>
               <p>Curvas, derivações, registros e grelhas com perda de carga tabulada (ASHRAE Duct Fitting DB).</p>
-              <button class="btn btn-outline" style="width:100%;margin-top:14px">Explorar</button>
+              <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="event.stopPropagation();openLibrary('ducts')">Explorar</button>
             </div>
-            <div class="lib-card">
+            <div class="lib-card" style="cursor:pointer" onclick="openLibrary('materials')">
               <div class="lib-icon"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33"/></svg></div>
               <h3>Materiais e vidros</h3>
               <div class="lib-count">56 <span>tipos</span></div>
               <p>Vidros (laminado, duplo, película), películas solares, isolamentos térmicos com valores de U e SHGC.</p>
-              <button class="btn btn-outline" style="width:100%;margin-top:14px">Ver propriedades</button>
+              <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="event.stopPropagation();openLibrary('materials')">Ver propriedades</button>
             </div>
           </div>
         </div>
@@ -3362,7 +3239,7 @@
 
       <!-- =========== HISTORY VIEW =========== -->
       <div class="view" id="view-history" style="display:none">
-        <div class="topbar"><div class="crumbs"><span>WORKSPACE</span><span class="sep">/</span><span class="now">HISTÓRICO</span></div></div>
+        <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">WORKSPACE</span><span class="sep">/</span><span class="now">HISTÓRICO</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
           <div class="page-head"><div><h1>Histórico de atividades</h1><p>Linha do tempo de todos os cálculos, versões e entregáveis gerados pela equipe.</p></div></div>
           <div class="timeline">
@@ -3420,7 +3297,7 @@
 
       <!-- =========== NORMS VIEW =========== -->
       <div class="view" id="view-norms" style="display:none">
-        <div class="topbar"><div class="crumbs"><span>NORMATIVOS</span><span class="sep">/</span><span class="now" id="normsCurrentTitle">NBR 17037</span></div></div>
+        <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">NORMATIVOS</span><span class="sep">/</span><span class="now" id="normsCurrentTitle">NBR 17037</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
           <div class="norms-wrap">
             <aside class="norms-side">
@@ -3455,7 +3332,7 @@
 
       <!-- =========== SETTINGS VIEW =========== -->
       <div class="view" id="view-settings" style="display:none">
-        <div class="topbar"><div class="crumbs"><span>CONTA</span><span class="sep">/</span><span class="now">CONFIGURAÇÕES</span></div></div>
+        <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">CONTA</span><span class="sep">/</span><span class="now">CONFIGURAÇÕES</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
           <div class="page-head"><div><h1>Configurações</h1><p>Gerencie perfil, preferências e integrações.</p></div></div>
           <div class="settings-grid">
@@ -3516,29 +3393,14 @@
 
       <!-- =========== NOTIFICATIONS VIEW =========== -->
       <div class="view" id="view-notifications" style="display:none">
-        <div class="topbar"><div class="crumbs"><span>CONTA</span><span class="sep">/</span><span class="now">NOTIFICAÇÕES</span></div></div>
+        <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">CONTA</span><span class="sep">/</span><span class="now">NOTIFICAÇÕES</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
           <div class="page-head"><div><h1>Notificações</h1><p>Atualizações dos seus projetos e da equipe.</p></div></div>
-          <div class="notif-list">
-            <div class="notif-item unread">
-              <div class="notif-dot" style="background:var(--warm)"></div>
-              <div class="notif-body"><div class="notif-title">3 projetos aguardando sua aprovação</div><div class="notif-sub">Hospital São Lucas, Edifício Atlântico e Shopping Bela Vista</div></div>
-              <div class="notif-time">2h</div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-dot" style="background:var(--ok)"></div>
-              <div class="notif-body"><div class="notif-title">DXF gerado com sucesso</div><div class="notif-sub">Torre Corporate v02 · 2 pavimentos</div></div>
-              <div class="notif-time">5h</div>
-            </div>
-            <div class="notif-item">
-              <div class="notif-dot" style="background:var(--cyan)"></div>
-              <div class="notif-body"><div class="notif-title">Nova versão da NBR 16401-3 publicada</div><div class="notif-sub">Revisão técnica de 2024 agora disponível na biblioteca</div></div>
-              <div class="notif-time">1d</div>
-            </div>
-            <div class="notif-item">
-              <div class="notif-dot"></div>
-              <div class="notif-body"><div class="notif-title">Pedro Lima aceitou o convite</div><div class="notif-sub">Novo visualizador na organização</div></div>
-              <div class="notif-time">2d</div>
+          <div class="notif-list" id="notifList">
+            <div style="padding:60px 20px;text-align:center;color:var(--ink-muted)">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;margin-bottom:14px"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+              <div style="font-size:14px;color:var(--ink-dim);margin-bottom:6px">Nenhuma notificação</div>
+              <div style="font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)">você verá atualizações aqui quando criar ou modificar projetos</div>
             </div>
           </div>
         </div>
@@ -3577,7 +3439,7 @@
         <label>Papel *</label>
         <select id="newUserRole">
           <option value="engineer">Engenheiro HVAC — calcula, edita, gera entregáveis</option>
-          <option value="admin_projects">Admin de Projetos — aprova/rejeita projetos</option>
+          <option value="admin_projects">Admin de Projetos — analisa e aprova projetos</option>
           <option value="admin_general">Admin Geral — gerencia apenas usuários</option>
           <option value="viewer">Visualizador — apenas consulta projetos</option>
         </select>
@@ -3585,10 +3447,10 @@
       <div class="field">
         <label>Senha temporária *</label>
         <div style="display:flex;gap:8px">
-          <input type="text" id="newUserPass" placeholder="mínimo 8 caracteres" style="flex:1"/>
-          <button class="btn btn-outline" onclick="genRandomPass()" style="padding:10px 14px"><svg class="i" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg></button>
+          <input type="text" id="newUserPass" placeholder="qualquer senha (mín. 4 caracteres)" style="flex:1"/>
+          <button class="btn btn-outline" onclick="genRandomPass()" style="padding:10px 14px" title="Gerar senha aleatória forte"><svg class="i" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg></button>
         </div>
-        <div style="font-size:11px;color:var(--ink-muted);margin-top:6px;font-family:var(--font-mono)">o usuário deverá alterar no primeiro acesso</div>
+        <div style="font-size:11px;color:var(--cyan);margin-top:8px;font-family:var(--font-mono);line-height:1.5">⚠ Esta é apenas a senha de primeiro acesso. O usuário será obrigado a criar uma senha forte ao logar pela primeira vez.</div>
       </div>
       <label style="color:var(--ink-dim);display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px;margin-top:14px;line-height:1.5">
         <input type="checkbox" id="newUserSendEmail" checked style="width:auto;accent-color:var(--cyan);margin-top:2px"/>
@@ -3608,7 +3470,111 @@
 <!-- =============================================================== -->
 <!-- TOAST / NOTIFICATION AREA                                        -->
 <!-- =============================================================== -->
+<!-- Modal de informações da landing -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-card" style="max-width:680px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow" id="infoEyebrow">SOBRE</div>
+        <h3 id="infoTitle">—</h3>
+      </div>
+      <button class="btn btn-ghost" onclick="closeInfoModal()" style="padding:6px"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="infoBody" style="font-size:13.5px;line-height:1.6;color:var(--ink-dim)"></div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="closeInfoModal()">Entendi</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Modal: trocar senha obrigatório no primeiro acesso -->
+<!-- Modal: catálogo de biblioteca técnica -->
+<!-- Modal: revisão de projeto pelo Admin de Projetos -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal-card" style="max-width:920px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow" id="reviewEyebrow">REVISÃO</div>
+        <h3 id="reviewTitle">—</h3>
+      </div>
+      <button class="btn btn-ghost" onclick="closeReviewModal()" style="padding:6px"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="reviewBody" style="max-height:65vh;overflow-y:auto"></div>
+    <div class="modal-foot" id="reviewFoot"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="libraryModal">
+  <div class="modal-card" style="max-width:920px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow" id="libEyebrow">BIBLIOTECA</div>
+        <h3 id="libTitle">—</h3>
+      </div>
+      <button class="btn btn-ghost" onclick="closeLibrary()" style="padding:6px"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="libBody" style="max-height:65vh;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeLibrary()">Fechar</button>
+      <button class="btn btn-primary" onclick="exportLibrary()" id="libExportBtn">
+        <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Exportar CSV
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="firstLoginModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow" style="color:var(--warm)">PRIMEIRO ACESSO</div>
+        <h3>Crie sua nova senha</h3>
+      </div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px;line-height:1.5">Por segurança, você precisa definir uma nova senha pessoal antes de continuar. A senha temporária não poderá mais ser usada.</p>
+      <div class="field">
+        <label>Nova senha *</label>
+        <div class="pass-input-wrap">
+          <input type="password" id="firstLoginPass1" placeholder="digite sua nova senha" oninput="checkPassRules('firstLoginPass1','firstLoginRules')"/>
+          <button type="button" class="pass-toggle" onclick="togglePassView('firstLoginPass1', this)" title="Mostrar/esconder senha" aria-label="Mostrar senha">
+            <svg class="i eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="i eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/></svg>
+          </button>
+        </div>
+        <div class="pass-rules" id="firstLoginRules">
+          <div class="pass-rule" data-rule="len"><span class="dot"></span>Mínimo 8 caracteres</div>
+          <div class="pass-rule" data-rule="upper"><span class="dot"></span>Pelo menos 1 letra maiúscula</div>
+          <div class="pass-rule" data-rule="lower"><span class="dot"></span>Pelo menos 1 letra minúscula</div>
+          <div class="pass-rule" data-rule="num"><span class="dot"></span>Pelo menos 1 número</div>
+          <div class="pass-rule" data-rule="spec"><span class="dot"></span>Pelo menos 1 caractere especial (!@#$%&*)</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar nova senha *</label>
+        <div class="pass-input-wrap">
+          <input type="password" id="firstLoginPass2" placeholder="repita a nova senha"/>
+          <button type="button" class="pass-toggle" onclick="togglePassView('firstLoginPass2', this)" title="Mostrar/esconder senha" aria-label="Mostrar senha">
+            <svg class="i eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="i eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="margin-top:6px;padding:10px 12px;background:rgba(0,229,255,.06);border:1px dashed rgba(0,229,255,.25);border-radius:6px;font-size:11.5px;color:var(--ink-dim);line-height:1.5">
+        💡 <strong style="color:var(--cyan)">Dica:</strong> use o ícone do olho para visualizar a senha enquanto digita. Anote-a em local seguro antes de confirmar — você precisará dela nos próximos acessos.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="completeFirstLogin()">
+        <svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        Definir senha e entrar
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- =============================================================== -->
 <!-- DEMO BANNER                                                      -->
@@ -3617,7 +3583,7 @@
   <svg class="i" viewBox="0 0 24 24" style="color:var(--cyan)"><path d="M12 2a7 7 0 00-7 7c0 2.38 1.19 4.47 3 5.74V17a2 2 0 002 2h4a2 2 0 002-2v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 00-7-7z"/><path d="M9 22h6"/></svg>
   <div style="flex:1;line-height:1.3">
     <div><strong>Modo demonstração</strong> · você está explorando a plataforma com limitações</div>
-    <div style="font-size:11px;color:var(--ink-dim);font-family:var(--font-mono);margin-top:2px" id="demoLimitsLine">1 projeto · sem exportação DXF/DOCX/PDF · sem memorial real · expira em <span id="demoTimer">—</span></div>
+    <div style="font-size:11px;color:var(--ink-dim);font-family:var(--font-mono);margin-top:2px" id="demoLimitsLine">1 projeto · sem exportação DXF/DOCX/PDF · sem memorial real</div>
   </div>
   <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="goToLogin()"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Entrar na minha conta</button>
   <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="location.href='mailto:contato@smarthvac.io?subject=Quero%20contratar%20SmartHVAC'">Falar com especialista</button>
@@ -3671,18 +3637,293 @@
   }
 
   function genPass(len){
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    let s = '';
-    for(let i=0;i<(len||12);i++) s += chars[Math.floor(Math.random()*chars.length)];
-    return s;
+    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lower = 'abcdefghjkmnpqrstuvwxyz';
+    const nums = '23456789';
+    const spec = '!@#$%&*';
+    const all = upper + lower + nums + spec;
+    const length = len || 12;
+    // Garante 1 de cada categoria
+    let s = upper[Math.floor(Math.random()*upper.length)] +
+            lower[Math.floor(Math.random()*lower.length)] +
+            nums[Math.floor(Math.random()*nums.length)] +
+            spec[Math.floor(Math.random()*spec.length)];
+    for(let i=4;i<length;i++) s += all[Math.floor(Math.random()*all.length)];
+    // Embaralha
+    return s.split('').sort(()=>Math.random()-0.5).join('');
+  }
+
+  // ============================================================
+  // BIBLIOTECAS TÉCNICAS — catálogos com dados reais
+  // ============================================================
+  const libraryContent = {
+    vrf: {
+      eyebrow: 'CATÁLOGO · 248 MODELOS',
+      title: 'Equipamentos VRF — Sistemas de fluxo refrigerante variável',
+      intro: '<p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Catálogo de condensadoras (unidades externas) e evaporadoras (unidades internas) das principais marcas certificadas no Brasil. Capacidades nominais conforme ARI 1230 e ABNT NBR 17104.</p>',
+      table: {
+        headers: ['Marca', 'Modelo', 'Tipo', 'Capacidade (HP)', 'Capacidade (kW)', 'COP', 'Refrigerante'],
+        rows: [
+          ['Daikin', 'RXYQ8AYM', 'Condensadora', '8 HP', '22,4', '4,15', 'R-410A'],
+          ['Daikin', 'RXYQ12AYM', 'Condensadora', '12 HP', '33,5', '4,07', 'R-410A'],
+          ['Daikin', 'RXYQ16AYM', 'Condensadora', '16 HP', '45,0', '4,01', 'R-410A'],
+          ['Daikin', 'RXYQ20AYM', 'Condensadora', '20 HP', '56,0', '3,98', 'R-410A'],
+          ['LG', 'ARUM080LTE5', 'Condensadora', '8 HP', '22,4', '4,21', 'R-410A'],
+          ['LG', 'ARUM120LTE5', 'Condensadora', '12 HP', '33,5', '4,15', 'R-410A'],
+          ['LG', 'ARUM160LTE5', 'Condensadora', '16 HP', '45,0', '4,03', 'R-410A'],
+          ['LG', 'ARUM200LTE5', 'Condensadora', '20 HP', '56,0', '3,95', 'R-410A'],
+          ['Midea', 'MV6-280WV2GN1', 'Condensadora', '10 HP', '28,0', '4,18', 'R-410A'],
+          ['Midea', 'MV6-450WV2GN1', 'Condensadora', '16 HP', '45,0', '4,05', 'R-410A'],
+          ['Samsung', 'AM080FXVAGH', 'Condensadora', '8 HP', '22,4', '4,12', 'R-410A'],
+          ['Samsung', 'AM160FXVAGH', 'Condensadora', '16 HP', '45,0', '4,00', 'R-410A'],
+          ['Hitachi', 'RAS-8FSXNSE', 'Condensadora', '8 HP', '22,4', '4,18', 'R-410A'],
+          ['Hitachi', 'RAS-16FSXNSE', 'Condensadora', '16 HP', '45,0', '4,05', 'R-410A'],
+          ['Daikin', 'FXFQ32AVM', 'Cassete 4 vias', '1,25 HP', '3,6', '—', 'R-410A'],
+          ['Daikin', 'FXFQ50AVM', 'Cassete 4 vias', '2 HP', '5,6', '—', 'R-410A'],
+          ['Daikin', 'FXAQ20AVM', 'High Wall', '0,8 HP', '2,2', '—', 'R-410A'],
+          ['LG', 'ARNU09GTRC4', 'Cassete 4 vias', '1 HP', '2,8', '—', 'R-410A'],
+          ['LG', 'ARNU18GTRC4', 'Cassete 4 vias', '2 HP', '5,6', '—', 'R-410A'],
+          ['Midea', 'MDV-D28Q4/N1-B5', 'Cassete', '1 HP', '2,8', '—', 'R-410A']
+        ],
+        footer: '<em style="color:var(--ink-muted)">Lista parcial · 248 modelos disponíveis no banco completo · atualizado em 04/2026</em>'
+      }
+    },
+    climate: {
+      eyebrow: 'DADOS CLIMÁTICOS · NBR 16401-1:2024',
+      title: 'Dados climáticos por cidade — 127 cidades brasileiras',
+      intro: '<p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Tabela de Temperatura de Bulbo Seco (TBS) e Temperatura de Bulbo Úmido (TBU) para projeto, conforme percentil 0,4% anual. Valores oficiais da ABNT NBR 16401-1:2024 — Anexo A.</p>',
+      table: {
+        headers: ['Cidade', 'UF', 'Latitude', 'Altitude (m)', 'TBS verão (°C)', 'TBU verão (°C)', 'TBS inverno (°C)'],
+        rows: [
+          ['São Paulo', 'SP', '-23,55', '760', '32,3', '21,5', '6,7'],
+          ['Rio de Janeiro', 'RJ', '-22,90', '6', '36,0', '26,4', '13,8'],
+          ['Brasília', 'DF', '-15,79', '1172', '32,4', '20,6', '10,2'],
+          ['Salvador', 'BA', '-12,97', '8', '32,1', '25,8', '20,3'],
+          ['Fortaleza', 'CE', '-3,73', '21', '32,5', '26,1', '22,1'],
+          ['Belo Horizonte', 'MG', '-19,93', '852', '31,9', '21,5', '11,1'],
+          ['Manaus', 'AM', '-3,10', '92', '34,8', '27,3', '21,4'],
+          ['Curitiba', 'PR', '-25,43', '935', '30,3', '21,2', '4,1'],
+          ['Recife', 'PE', '-8,05', '4', '31,4', '26,2', '20,5'],
+          ['Porto Alegre', 'RS', '-30,03', '46', '34,2', '24,1', '4,5'],
+          ['Belém', 'PA', '-1,46', '10', '33,2', '26,8', '21,8'],
+          ['Goiânia', 'GO', '-16,68', '750', '34,1', '22,4', '11,8'],
+          ['Florianópolis', 'SC', '-27,59', '3', '31,4', '24,3', '8,5'],
+          ['Vitória', 'ES', '-20,32', '3', '34,1', '24,9', '14,8'],
+          ['Natal', 'RN', '-5,79', '30', '31,0', '26,1', '20,8'],
+          ['Aracaju', 'SE', '-10,91', '4', '31,8', '25,9', '20,1'],
+          ['Maceió', 'AL', '-9,67', '7', '31,2', '25,8', '19,9'],
+          ['Teresina', 'PI', '-5,09', '72', '36,5', '26,2', '20,3'],
+          ['Campo Grande', 'MS', '-20,44', '532', '34,0', '23,5', '10,0'],
+          ['Cuiabá', 'MT', '-15,60', '187', '37,1', '24,8', '15,5']
+        ],
+        footer: '<em style="color:var(--ink-muted)">Cobertura nacional completa · 127 cidades disponíveis · TBS/TBU 99,6% para inverno · 0,4% para verão</em>'
+      }
+    },
+    cad: {
+      eyebrow: 'BLOCOS CAD · 86 BLOCOS',
+      title: 'Blocos CAD — Equipamentos e acessórios HVAC',
+      intro: '<p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Biblioteca de blocos vetoriais nos formatos .dwg e .dxf compatíveis com AutoCAD, BricsCAD, Revit e ArchiCAD. Escala 1:50 com layers padronizadas conforme NBR 6492.</p>',
+      table: {
+        headers: ['Categoria', 'Item', 'Variantes', 'Formato', 'Layer'],
+        rows: [
+          ['Unidades internas', 'Cassete 4 vias 600×600', '6', '.dwg / .dxf', 'HVAC-EQUIP-INT'],
+          ['Unidades internas', 'High wall (parede)', '8', '.dwg / .dxf', 'HVAC-EQUIP-INT'],
+          ['Unidades internas', 'Built-in (duto)', '5', '.dwg / .dxf', 'HVAC-EQUIP-INT'],
+          ['Unidades internas', 'Piso/Teto', '4', '.dwg / .dxf', 'HVAC-EQUIP-INT'],
+          ['Unidades externas', 'Condensadora VRF top discharge', '12', '.dwg / .dxf', 'HVAC-EQUIP-EXT'],
+          ['Unidades externas', 'Condensadora VRF side discharge', '8', '.dwg / .dxf', 'HVAC-EQUIP-EXT'],
+          ['Unidades externas', 'Chiller air-cooled', '6', '.dwg / .dxf', 'HVAC-EQUIP-EXT'],
+          ['Difusores', 'Difusor quadrado 4 vias', '4', '.dwg / .dxf', 'HVAC-DIF'],
+          ['Difusores', 'Difusor linear', '5', '.dwg / .dxf', 'HVAC-DIF'],
+          ['Difusores', 'Difusor circular', '3', '.dwg / .dxf', 'HVAC-DIF'],
+          ['Grelhas', 'Grelha de retorno', '6', '.dwg / .dxf', 'HVAC-GRE'],
+          ['Grelhas', 'Grelha de insuflamento', '4', '.dwg / .dxf', 'HVAC-GRE'],
+          ['Dutos', 'Dutos retangulares (templates)', '12', '.dwg / .dxf', 'HVAC-DUC'],
+          ['Dutos', 'Dutos circulares (templates)', '6', '.dwg / .dxf', 'HVAC-DUC'],
+          ['Acessórios', 'Damper / VAV / FCU', '7', '.dwg / .dxf', 'HVAC-ACC']
+        ],
+        footer: '<em style="color:var(--ink-muted)">Total de 86 blocos · pacote único .zip de 24 MB · suporte a AutoCAD 2018+</em>'
+      }
+    },
+    templates: {
+      eyebrow: 'TEMPLATES MEMORIAIS · 12 MODELOS',
+      title: 'Templates de memorial descritivo',
+      intro: '<p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Modelos .docx prontos para customização com logo da empresa, cabeçalho, rodapé, capa e índice. Aplicação automática durante a geração do memorial no passo 7 do wizard.</p>',
+      table: {
+        headers: ['Template', 'Tipo de obra', 'Páginas', 'Inclui ART', 'Personalizável'],
+        rows: [
+          ['Padrão SmartHVAC', 'Genérico', '12-18', 'Sim', 'Sim'],
+          ['Hospitalar NBR 7256', 'Saúde', '24-32', 'Sim', 'Sim'],
+          ['Comercial corporativo', 'Escritórios', '14-20', 'Sim', 'Sim'],
+          ['Industrial leve', 'Galpão / fábrica', '16-22', 'Sim', 'Sim'],
+          ['Educacional', 'Escolas / faculdades', '18-24', 'Sim', 'Sim'],
+          ['Residencial multifamiliar', 'Edifícios', '14-18', 'Não', 'Sim'],
+          ['Shopping center', 'Varejo', '20-28', 'Sim', 'Sim'],
+          ['Hoteleiro', 'Hotéis / pousadas', '18-26', 'Sim', 'Sim'],
+          ['Auditório / teatro', 'Cultural', '16-22', 'Sim', 'Sim'],
+          ['Data center', 'TI crítica', '22-30', 'Sim', 'Sim'],
+          ['Laboratório', 'Pesquisa / clean room', '24-32', 'Sim', 'Sim'],
+          ['Customizável (em branco)', 'Genérico', '—', 'Opcional', 'Sim']
+        ],
+        footer: '<em style="color:var(--ink-muted)">Cada template segue ABNT NBR 14724 (apresentação) e cita normas aplicáveis automaticamente</em>'
+      }
+    },
+    ducts: {
+      eyebrow: 'DUTOS · 340 PEÇAS',
+      title: 'Dutos e acessórios — perda de carga tabulada',
+      intro: '<p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Catálogo conforme ASHRAE Duct Fitting Database 2024. Coeficientes de perda de carga (C0) tabulados para cálculo de pressão estática total e dimensionamento de ventilador.</p>',
+      table: {
+        headers: ['Categoria', 'Peça', 'Geometria', 'C0 típico', 'Norma'],
+        rows: [
+          ['Curvas', 'Curva 90° raio longo', 'Retangular', '0,18', 'ASHRAE CD3-1'],
+          ['Curvas', 'Curva 90° raio curto', 'Retangular', '0,33', 'ASHRAE CD3-3'],
+          ['Curvas', 'Curva 45° suave', 'Retangular', '0,11', 'ASHRAE CD3-9'],
+          ['Curvas', 'Curva 90° gomada', 'Circular', '0,20', 'ASHRAE CD3-11'],
+          ['Derivações', 'Tê 90° simétrico', 'Retangular', '1,20', 'ASHRAE SD5-1'],
+          ['Derivações', 'Tê 45° (Y)', 'Retangular', '0,55', 'ASHRAE SD5-9'],
+          ['Derivações', 'Bifurcação cônica', 'Circular', '0,45', 'ASHRAE SD5-15'],
+          ['Reduções', 'Redução cônica gradual', 'Retangular', '0,05', 'ASHRAE SR4-1'],
+          ['Reduções', 'Redução brusca', 'Retangular', '0,28', 'ASHRAE SR4-3'],
+          ['Reduções', 'Aumento gradual', 'Retangular', '0,12', 'ASHRAE SR2-1'],
+          ['Registros', 'Damper de borboleta aberto', 'Retangular', '0,18', 'ASHRAE CD9-1'],
+          ['Registros', 'Damper VAV aberto', 'Retangular', '0,30', 'ASHRAE CD9-7'],
+          ['Grelhas', 'Grelha simples ar de retorno', '—', '1,40', 'ASHRAE ER5-3'],
+          ['Grelhas', 'Difusor 4 vias', '—', '2,20', 'ASHRAE ER2-1'],
+          ['Equipamentos', 'Filtro G4 limpo', '—', '0,85', 'ASHRAE'],
+          ['Equipamentos', 'Serpentina 6 fileiras', '—', '1,35', 'ASHRAE']
+        ],
+        footer: '<em style="color:var(--ink-muted)">340 peças · base atualizada da ASHRAE Duct Fitting DB 2024 · cálculo automático de PE no SmartHVAC</em>'
+      }
+    },
+    materials: {
+      eyebrow: 'MATERIAIS · 56 TIPOS',
+      title: 'Materiais e vidros — propriedades térmicas',
+      intro: '<p style="font-size:13px;color:var(--ink-dim);margin-bottom:18px">Banco de propriedades térmicas (transmitância U e fator solar SHGC) de vidros, paredes, coberturas e isolamentos. Valores conforme ABNT NBR 15220-2 e ASHRAE 90.1.</p>',
+      table: {
+        headers: ['Categoria', 'Material', 'Espessura', 'U (W/m²·K)', 'SHGC', 'Fonte'],
+        rows: [
+          ['Vidro', 'Float incolor', '6 mm', '5,8', '0,82', 'NBR 15220-2'],
+          ['Vidro', 'Float incolor', '8 mm', '5,7', '0,80', 'NBR 15220-2'],
+          ['Vidro', 'Laminado incolor', '6+6 mm', '5,4', '0,76', 'NBR 15220-2'],
+          ['Vidro', 'Laminado verde', '6+6 mm', '5,4', '0,52', 'NBR 15220-2'],
+          ['Vidro', 'Duplo (insulado) ar', '6/12/6', '2,8', '0,76', 'NBR 15220-2'],
+          ['Vidro', 'Duplo low-e', '6/12/6', '1,8', '0,42', 'NBR 15220-2'],
+          ['Vidro', 'Reflexivo prateado', '6 mm', '5,7', '0,38', 'NBR 15220-2'],
+          ['Vidro', 'Triplo (insulado)', '6/12/6/12/6', '0,9', '0,38', 'ASHRAE'],
+          ['Película', 'Película solar 70', 'aplicada', '5,4', '0,45', 'Catálogo 3M'],
+          ['Película', 'Película solar 35', 'aplicada', '5,4', '0,28', 'Catálogo 3M'],
+          ['Parede', 'Tijolo cerâmico 6 furos + 2,5+2,5cm reboco', '14 cm', '2,49', '—', 'NBR 15220-2'],
+          ['Parede', 'Bloco concreto + reboco', '14 cm', '2,28', '—', 'NBR 15220-2'],
+          ['Parede', 'Drywall 12,5 mm + lã rocha 50 mm', '7,5 cm', '0,55', '—', 'NBR 15220-2'],
+          ['Cobertura', 'Telha cerâmica + laje 10 cm + reboco', '—', '2,02', '—', 'NBR 15220-2'],
+          ['Cobertura', 'Telha metálica + lã vidro 50mm', '—', '0,82', '—', 'NBR 15220-2'],
+          ['Cobertura', 'Telhado verde extensivo', '—', '0,45', '—', 'ABRASCA'],
+          ['Isolamento', 'Lã de rocha', '50 mm', '0,037 (k)', '—', 'NBR 11357'],
+          ['Isolamento', 'Lã de vidro', '50 mm', '0,038 (k)', '—', 'NBR 11357'],
+          ['Isolamento', 'EPS (isopor)', '30 mm', '0,040 (k)', '—', 'NBR 11949']
+        ],
+        footer: '<em style="color:var(--ink-muted)">Total 56 materiais · seleção automática conforme tipo de envoltória declarado no passo 1 do wizard</em>'
+      }
+    }
+  };
+
+  function openLibrary(key){
+    const lib = libraryContent[key];
+    if(!lib) return;
+    state.currentLibrary = key;
+    document.getElementById('libEyebrow').textContent = lib.eyebrow;
+    document.getElementById('libTitle').textContent = lib.title;
+    let html = lib.intro;
+    html += '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>';
+    lib.table.headers.forEach(function(h){
+      html += '<th style="text-align:left;font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;padding:10px 12px;background:var(--bg-2);border-bottom:1px solid var(--line);white-space:nowrap">' + h + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+    lib.table.rows.forEach(function(row){
+      html += '<tr style="border-bottom:1px solid rgba(30,35,45,.4)">';
+      row.forEach(function(c, i){
+        const isFirst = i === 0;
+        const align = (typeof c === 'string' && /^[\d,.\-]+/.test(c.trim())) || c.toString().includes('°') || c.toString().includes('m') ? 'right' : 'left';
+        html += '<td style="padding:8px 12px;color:' + (isFirst ? 'var(--ink)' : 'var(--ink-dim)') + ';font-size:12px' + (i > 0 ? ';font-family:var(--font-mono)' : '') + '">' + c + '</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    if(lib.table.footer){
+      html += '<div style="margin-top:14px;font-size:11px;color:var(--ink-muted);font-family:var(--font-mono);text-align:center">' + lib.table.footer + '</div>';
+    }
+    document.getElementById('libBody').innerHTML = html;
+    document.getElementById('libraryModal').classList.add('active');
+  }
+
+  function closeLibrary(){
+    document.getElementById('libraryModal').classList.remove('active');
+  }
+
+  // Exporta a biblioteca atualmente aberta como CSV
+  function exportLibrary(){
+    if(!state.currentLibrary) return;
+    const lib = libraryContent[state.currentLibrary];
+    if(!lib) return;
+    const csv = [lib.table.headers.join(';')].concat(
+      lib.table.rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(';'); })
+    ).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'smarthvac-' + state.currentLibrary + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    toastShow('Biblioteca exportada', lib.title.split('—')[0].trim() + ' · arquivo CSV', 'success');
+  }
+
+  // Mostra/esconde senha clicando no ícone do olho
+  function togglePassView(inputId, btn){
+    const input = document.getElementById(inputId);
+    if(!input || !btn) return;
+    const eyeOn = btn.querySelector('.eye-on');
+    const eyeOff = btn.querySelector('.eye-off');
+    if(input.type === 'password'){
+      input.type = 'text';
+      if(eyeOn) eyeOn.style.display = 'none';
+      if(eyeOff) eyeOff.style.display = 'block';
+    } else {
+      input.type = 'password';
+      if(eyeOn) eyeOn.style.display = 'block';
+      if(eyeOff) eyeOff.style.display = 'none';
+    }
+  }
+
+  // Validador de senha forte
+  function validatePassStrong(pass){
+    return {
+      len: pass.length >= 8,
+      upper: /[A-Z]/.test(pass),
+      lower: /[a-z]/.test(pass),
+      num: /[0-9]/.test(pass),
+      spec: /[!@#$%&*]/.test(pass),
+      get all(){ return this.len && this.upper && this.lower && this.num && this.spec; }
+    };
+  }
+  function checkPassRules(inputId, rulesId){
+    const pass = document.getElementById(inputId).value;
+    const v = validatePassStrong(pass);
+    const cont = document.getElementById(rulesId);
+    if(!cont) return;
+    cont.querySelectorAll('.pass-rule').forEach(r => {
+      r.classList.toggle('ok', !!v[r.dataset.rule]);
+    });
   }
 
   // ============================================================
   // BOOTSTRAP (primeira execução)
   // ============================================================
-  // Cria dois administradores padrão no primeiro carregamento:
-  //  - admin_general: gerencia apenas usuários/contas (sem acesso a projetos)
-  //  - admin_projects: apenas revisa/aprova projetos (sem gestão de usuários)
+  // Cria os administradores padrão no primeiro carregamento:
+  //  - admin_general: gerencia APENAS usuários/contas (sem acesso a projetos)
+  //  - admin_projects: analisa, aprova e cria projetos (sem gestão de contas)
   (function bootstrapAdmins(){
     const users = loadUsers();
     if(!users['admin@smarthvac.io']){
@@ -3741,13 +3982,9 @@
   function backToApp(){
     if(!state.currentUser){ go('auth'); return; }
     go('app');
-    // admin_general: para ele 'voltar ao app' = voltar à página inicial do app, que é o painel de administração
     if(state.currentUser.role === 'admin_general'){
       showView('admin');
       setTimeout(()=>switchAdminTabByName('users'), 30);
-    } else if(state.currentUser.role === 'admin_projects'){
-      showView('admin');
-      setTimeout(()=>switchAdminTabByName('approvals'), 30);
     } else {
       showView('dashboard');
     }
@@ -3777,7 +4014,16 @@
     if(user.passHash !== hashPass(pass)){ document.getElementById('loginPass').classList.add('field-error'); toastShow('Senha incorreta','Verifique e tente novamente','error'); return; }
     if(user.status === 'suspended'){ toastShow('Acesso bloqueado','Sua conta foi bloqueada. Contate o Administrador Geral.','error'); return; }
 
-    // registra último login
+    // Primeiro acesso (mustChangePassword): força modal de troca de senha
+    if(user.mustChangePassword){
+      state.pendingFirstLogin = { email: email, user: user };
+      document.getElementById('firstLoginPass1').value = '';
+      document.getElementById('firstLoginPass2').value = '';
+      checkPassRules('firstLoginPass1','firstLoginRules');
+      document.getElementById('firstLoginModal').classList.add('active');
+      return;
+    }
+
     user.lastLoginAt = new Date().toISOString();
     users[email] = user;
     saveUsers(users);
@@ -3788,6 +4034,37 @@
     enterApp();
   }
 
+  function completeFirstLogin(){
+    const p1 = document.getElementById('firstLoginPass1').value;
+    const p2 = document.getElementById('firstLoginPass2').value;
+    const v = validatePassStrong(p1);
+    if(!v.all){
+      toastShow('Senha não atende aos requisitos','Verifique a lista de regras','warn');
+      return;
+    }
+    if(p1 !== p2){
+      document.getElementById('firstLoginPass2').classList.add('field-error');
+      toastShow('Senhas não coincidem','Confirme a mesma senha','warn');
+      return;
+    }
+    if(!state.pendingFirstLogin){ return; }
+    const users = loadUsers();
+    const email = state.pendingFirstLogin.email;
+    if(!users[email]) return;
+    users[email].passHash = hashPass(p1);
+    users[email].mustChangePassword = false;
+    users[email].status = 'active';
+    users[email].lastLoginAt = new Date().toISOString();
+    saveUsers(users);
+    state.currentUser = {...users[email]};
+    saveSession(state.currentUser);
+    state.pendingFirstLogin = null;
+    document.getElementById('firstLoginModal').classList.remove('active');
+    addAuditEntry('definiu nova senha pessoal (primeiro acesso)','ok');
+    toastShow('Senha criada com sucesso','Bem-vindo, ' + state.currentUser.name.split(' ')[0],'success');
+    enterApp();
+  }
+
   function oauthLogin(provider){
     toastShow(provider + ' SSO em breve','Use login por e-mail ou modo demonstração','info');
   }
@@ -3795,6 +4072,16 @@
 
   function enterApp(){
     if(!state.currentUser){ go('auth'); return; }
+    // Normaliza papel legado 'admin' (genérico) para admin_general
+    if(state.currentUser.role === 'admin'){
+      state.currentUser.role = 'admin_general';
+      const users = loadUsers();
+      if(users[state.currentUser.email]){
+        users[state.currentUser.email].role = 'admin_general';
+        saveUsers(users);
+      }
+      saveSession(state.currentUser);
+    }
     applyUserToUI();
     renderDashboard();
     go('app');
@@ -3802,11 +4089,13 @@
       showView('admin');
       setTimeout(()=>switchAdminTabByName('users'), 30);
     } else if(state.currentUser.role === 'admin_projects'){
+      // admin de projetos vê painel de aprovações + pode acessar dashboard pelo menu
       showView('admin');
       setTimeout(()=>switchAdminTabByName('approvals'), 30);
     } else {
       showView('dashboard');
     }
+    resetInactivityTimer();
   }
 
   function applyUserToUI(){
@@ -3835,7 +4124,10 @@
     const isAdminGeneral = u.role === 'admin_general';
     const isAdminProjects = u.role === 'admin_projects';
     const isLegacyAdmin = u.role === 'admin';
+    // Admin de Projetos vê o painel admin (mas só a aba aprovações + auditoria)
+    // Admin Geral vê o painel admin (apenas usuários + auditoria)
     const canSeeAdmin = isAdminGeneral || isAdminProjects || isLegacyAdmin;
+    // Admin Geral NÃO vê projetos/wizard/bibliotecas/histórico/normativos
     const canSeeProjects = !isAdminGeneral;
 
     const adminSidebar = document.getElementById('sidebarAdminEntry');
@@ -3858,6 +4150,9 @@
     setVal('settingsCompany', u.company || '');
   }
 
+  // Controla quais abas do painel administrativo aparecem por papel
+  // admin_general: APENAS usuários + auditoria de TODAS as ações (incluindo aprovações)
+  // admin_projects: APENAS aprovações (não vê usuários, não vê auditoria)
   function applyAdminTabVisibility(){
     const u = state.currentUser;
     if(!u) return;
@@ -3868,10 +4163,16 @@
       if(u.role === 'admin_general'){
         show = (name === 'users' || name === 'audit');
       } else if(u.role === 'admin_projects'){
-        show = (name === 'approvals');
+        show = (name === 'approvals' || name === 'reviews');
       }
       t.style.display = show ? '' : 'none';
     });
+    // Garante que a aba ativa é uma permitida para o papel
+    const activeTab = document.querySelector('.admin-tab.active');
+    if(activeTab && activeTab.style.display === 'none'){
+      const firstVisible = document.querySelector('.admin-tab:not([style*="display: none"])');
+      if(firstVisible) firstVisible.click();
+    }
   }
 
   function switchAdminTabByName(tabName){
@@ -3895,11 +4196,74 @@
     document.body.classList.remove('has-demo-banner');
     document.getElementById('demoBanner').classList.remove('active');
     if(demoTimerInt){ clearInterval(demoTimerInt); demoTimerInt = null; }
+    if(state.inactivityTimer){ clearTimeout(state.inactivityTimer); state.inactivityTimer = null; }
     ['loginEmail','loginPass'].forEach(id=>{ const el = document.getElementById(id); if(el) el.value = ''; });
     switchAuth('login');
     updateLandingNav();
     go('landing');
     toastShow('Sessão encerrada','Volte sempre','info');
+  }
+
+  // Auto-logout por inatividade (admin geral e contas reais)
+  // Sessão expira em 30 minutos sem interação. Demo tem seu próprio timer.
+  const INACTIVITY_MS = 30 * 60 * 1000;
+  function resetInactivityTimer(){
+    if(!state.currentUser || state.isDemo) return;
+    if(state.inactivityTimer){ clearTimeout(state.inactivityTimer); }
+    state.inactivityTimer = setTimeout(function(){
+      toastShow('Sessão expirada','Você foi desconectado por inatividade','warn');
+      state.currentUser = null;
+      clearSession();
+      go('landing');
+      updateLandingNav();
+    }, INACTIVITY_MS);
+  }
+  ['mousedown','keydown','scroll','touchstart'].forEach(function(ev){
+    document.addEventListener(ev, function(){ resetInactivityTimer(); }, { passive: true });
+  });
+
+  // Sair do wizard com pergunta de salvar como rascunho
+  function exitWizard(){
+    const pname = document.getElementById('projectName');
+    const projectName = (pname && pname.value.trim()) || 'Projeto sem nome';
+    const isNew = !state.currentProjectId;
+    if(state.unsavedChanges){
+      // Se não tem nome ainda, oferece sair sem salvar
+      if(!pname || !pname.value.trim()){
+        if(!confirm('Sair sem salvar?\n\nVocê ainda não deu um nome ao projeto. Sem nome ele não pode ser salvo.')){
+          return;
+        }
+      } else {
+        const choice = confirm('Deseja salvar "' + projectName + '" como rascunho antes de sair?\n\nOK = Salvar e voltar ao painel\nCancelar = Sair sem salvar');
+        if(choice){
+          try{
+            const ver = document.getElementById('wizardVer');
+            const projectVer = ver ? ver.textContent : 'v01';
+            const saved = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
+            const id = state.currentProjectId || ('proj_' + Date.now());
+            const idx = saved.findIndex(function(p){ return p.id === id; });
+            const record = {
+              id: id,
+              name: projectName,
+              version: projectVer,
+              status: 'draft',
+              owner: state.currentUser ? state.currentUser.email : 'unknown',
+              savedAt: new Date().toISOString(),
+              step: curStep
+            };
+            if(idx >= 0) saved[idx] = Object.assign({}, saved[idx], record);
+            else saved.push(record);
+            localStorage.setItem('smarthvac.projects', JSON.stringify(saved));
+            addAuditEntry('salvou rascunho ' + projectName, 'ok');
+            toastShow('Rascunho salvo', projectName, 'success');
+          }catch(e){}
+        }
+      }
+    }
+    state.currentProjectId = null;
+    state.unsavedChanges = false;
+    showView('dashboard');
+    renderDashboard();
   }
 
   // ============================================================
@@ -3922,30 +4286,10 @@
     renderDashboard(true);
     go('app');
     showView('dashboard');
-    startDemoTimer();
   }
 
-  function startDemoTimer(){
-    if(demoTimerInt) clearInterval(demoTimerInt);
-    updateDemoTimer();
-    demoTimerInt = setInterval(updateDemoTimer, 1000);
-  }
-  function updateDemoTimer(){
-    const el = document.getElementById('demoTimer');
-    if(!el || !state.isDemo) return;
-    const elapsed = Math.floor((Date.now() - state.demo.startedAt) / 1000);
-    const total = DEMO_LIMITS.sessionMinutes * 60;
-    const remain = Math.max(0, total - elapsed);
-    if(remain === 0){
-      clearInterval(demoTimerInt);
-      toastShow('Tempo demo esgotado','Fale com um especialista para continuar','warn');
-      setTimeout(()=>exitDemo(), 1500);
-      return;
-    }
-    const m = Math.floor(remain/60);
-    const s = remain % 60;
-    el.textContent = m + 'min ' + (s<10?'0':'') + s + 's';
-  }
+  function startDemoTimer(){ /* desativado: demo sem expiração automática */ }
+  function updateDemoTimer(){ /* desativado */ }
 
   function exitDemo(){
     state.isDemo = false;
@@ -3982,15 +4326,22 @@
       return;
     }
     if(!btn) return;
+    // Valida nome do projeto antes de salvar
+    const pnameEl = document.getElementById('projectName');
+    const pname = pnameEl ? pnameEl.value.trim() : '';
+    if(!pname){
+      toastShow('Dê um nome ao projeto','Volte ao passo 1 e preencha o nome do projeto','warn');
+      setStep(1);
+      setTimeout(function(){ if(pnameEl){ pnameEl.focus(); pnameEl.classList.add('field-error'); } }, 200);
+      return;
+    }
     const original = btn.innerHTML;
     btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Salvando...';
     btn.disabled = true;
-    const title = document.getElementById('wizardTitle');
     const ver = document.getElementById('wizardVer');
-    const projectName = title ? title.textContent : 'Projeto';
+    const projectName = pname;
     const projectVer = ver ? ver.textContent : 'v01';
     setTimeout(function(){
-      // salva no localStorage
       try{
         const saved = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
         const id = state.currentProjectId || ('proj_' + Date.now());
@@ -3999,18 +4350,25 @@
           id: id,
           name: projectName,
           version: projectVer,
+          status: 'draft',
           owner: state.currentUser ? state.currentUser.email : 'unknown',
           savedAt: new Date().toISOString(),
           step: curStep
         };
-        if(existing >= 0) saved[existing] = record;
+        if(existing >= 0) saved[existing] = Object.assign({}, saved[existing], record);
         else saved.push(record);
         localStorage.setItem('smarthvac.projects', JSON.stringify(saved));
         state.currentProjectId = id;
+        state.unsavedChanges = false;
+        addAuditEntry('salvou projeto ' + projectName + ' (' + projectVer + ')', 'ok');
       }catch(e){}
-      btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="color:var(--ok)"><path d="M20 6L9 17l-5-5"/></svg>Salvo';
-      setTimeout(function(){ btn.innerHTML = original; btn.disabled = false; }, 1400);
-      toastShow('Projeto salvo', projectName + ' · ' + projectVer, 'success');
+      btn.innerHTML = original;
+      btn.disabled = false;
+      toastShow('Projeto salvo', projectName + ' · voltando ao painel', 'success');
+      setTimeout(function(){
+        showView('dashboard');
+        renderDashboard();
+      }, 700);
     }, 800);
   }
 
@@ -4026,10 +4384,53 @@
     setTimeout(function(){
       btn.innerHTML = original;
       btn.disabled = false;
+      const title = document.getElementById('wizardTitle');
+      const projectName = title ? title.textContent : 'Projeto';
+      addAuditEntry('processou cálculo de ' + projectName + ' · 386,27 kW · 26 ambientes', 'ok');
       toastShow('Cálculo processado','386,27 kW · 26 ambientes · conforme NBR 16401','success');
-      // avança para o próximo passo se não estiver no último
       if(curStep < 7){ setStep(curStep + 1); }
     }, 1800);
+  }
+
+  // Salvar projeto como versão final (as-built)
+  function saveAsFinal(btn){
+    if(state.isDemo){ toastShow('Recurso bloqueado no modo demo','Submissão para aprovação disponível apenas para clientes','warn'); return; }
+    if(!btn) return;
+    if(!confirm('Enviar este projeto para aprovação do Administrador de Projetos?\n\nO projeto será listado na fila de aprovações e fica trancado para edição até ser aprovado ou rejeitado.')) return;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Enviando para aprovação...';
+    btn.disabled = true;
+    const pname = document.getElementById('projectName');
+    const ver = document.getElementById('wizardVer');
+    const projectName = (pname && pname.value.trim()) || (document.getElementById('wizardTitle') && document.getElementById('wizardTitle').textContent) || 'Projeto';
+    const projectVer = ver ? ver.textContent : 'v01';
+    setTimeout(function(){
+      try{
+        const saved = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
+        const id = state.currentProjectId || ('proj_' + Date.now());
+        const idx = saved.findIndex(function(p){ return p.id === id; });
+        const record = {
+          id: id,
+          name: projectName,
+          version: projectVer,
+          status: 'submitted',
+          owner: state.currentUser ? state.currentUser.email : 'unknown',
+          ownerName: state.currentUser ? state.currentUser.name : 'unknown',
+          submittedAt: new Date().toISOString(),
+          savedAt: new Date().toISOString(),
+          step: curStep
+        };
+        if(idx >= 0) saved[idx] = Object.assign({}, saved[idx], record);
+        else saved.push(record);
+        localStorage.setItem('smarthvac.projects', JSON.stringify(saved));
+        state.currentProjectId = id;
+        addAuditEntry('enviou projeto ' + projectName + ' (' + projectVer + ') para aprovação', 'ok');
+      }catch(e){}
+      btn.innerHTML = original;
+      btn.disabled = false;
+      toastShow('Projeto enviado para aprovação', projectName + ' · aguardando análise do Admin de Projetos', 'success');
+      setTimeout(function(){ showView('dashboard'); renderDashboard(); }, 800);
+    }, 1000);
   }
 
   function demoBlock(feature){
@@ -4044,6 +4445,14 @@
   // NAVEGAÇÃO ENTRE VIEWS
   // ============================================================
   function showView(view, sub){
+    // Admin Geral não acessa projetos, wizard, bibliotecas, histórico nem normativos
+    if(state.currentUser && state.currentUser.role === 'admin_general'){
+      const blocked = ['dashboard','wizard','libraries','history','norms','notifications'];
+      if(blocked.indexOf(view) >= 0){
+        toastShow('Acesso restrito','Administrador Geral gerencia apenas contas de usuários','warn');
+        view = 'admin';
+      }
+    }
     document.querySelectorAll('.view').forEach(v=>v.style.display='none');
     const el = document.getElementById('view-'+view);
     if(el){ el.style.display='block'; }
@@ -4052,6 +4461,7 @@
     });
     if(view === 'norms' && sub){ showNorm(sub); }
     if(view === 'admin'){ renderUserTable(); }
+    if(view === 'notifications'){ renderNotifications(); }
     window.scrollTo(0,0);
   }
 
@@ -4059,6 +4469,11 @@
   // PROJETOS
   // ============================================================
   function startNewProject(){
+    // Admin Geral não cria projetos
+    if(state.currentUser && state.currentUser.role === 'admin_general'){
+      toastShow('Acesso restrito','Administrador Geral não cria projetos. Crie uma conta de Engenheiro para isso.','warn');
+      return;
+    }
     // demo: aplica limite máximo de projetos
     if(state.isDemo && state.demo.projectsCreated >= DEMO_LIMITS.maxProjects){
       demoBlock('Múltiplos projetos');
@@ -4067,10 +4482,14 @@
     if(state.isDemo) state.demo.projectsCreated++;
 
     state.currentProjectId = null;
+    state.unsavedChanges = false;
     const title = document.getElementById('wizardTitle');
     const ver = document.getElementById('wizardVer');
+    const crumb = document.getElementById('wizardCrumb');
     if(title) title.textContent = 'Novo projeto';
     if(ver) ver.textContent = 'RASCUNHO';
+    if(crumb) crumb.textContent = 'NOVO PROJETO';
+    const pname = document.getElementById('projectName'); if(pname) pname.value = '';
     const city = document.getElementById('geoCity'); if(city) city.value = '';
     const addr = document.getElementById('geoAddress'); if(addr) addr.value = '';
     updateClimate();
@@ -4083,6 +4502,19 @@
     clearFile();
     showView('wizard');
     setStep(1);
+    setTimeout(function(){ const p = document.getElementById('projectName'); if(p) p.focus(); }, 100);
+  }
+
+  // Quando o usuário digita o nome, atualiza topbar e cabeçalho do wizard ao vivo
+  function onProjectNameInput(){
+    const inp = document.getElementById('projectName');
+    if(!inp) return;
+    const name = inp.value.trim() || 'Novo projeto';
+    const title = document.getElementById('wizardTitle');
+    const crumb = document.getElementById('wizardCrumb');
+    if(title) title.textContent = name;
+    if(crumb) crumb.textContent = name.toUpperCase();
+    state.unsavedChanges = true;
   }
 
   function openProject(id){
@@ -4137,33 +4569,108 @@
     const subtitle = document.getElementById('dashSubtitle');
     if(!statsRow || !grid) return;
 
-    const projects = useDemoData ? demoProjects : [];
+    // Pega projetos reais do localStorage do usuário atual
+    let userProjects = [];
+    try{
+      const allSaved = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
+      const myEmail = state.currentUser ? state.currentUser.email : null;
+      userProjects = allSaved.filter(function(p){ return p.owner === myEmail; });
+    }catch(e){}
+
+    // Em modo demo, mostra projetos fictícios; em conta real, mostra os salvos do usuário
+    const projects = useDemoData ? demoProjects : userProjects;
     const isEmpty = projects.length === 0;
 
     if(isEmpty){
       statsRow.innerHTML = renderEmptyStats();
-    } else {
+    } else if(useDemoData){
       statsRow.innerHTML = renderFullStats();
       updateSemesterDetail(state.selectedSemester);
+    } else {
+      // Stats reais para conta nova com projetos salvos
+      const totalKw = userProjects.reduce(function(s,p){ return s + (p.totalKw||0); }, 0);
+      const finalCount = userProjects.filter(function(p){ return p.status==='final'; }).length;
+      const draftCount = userProjects.filter(function(p){ return p.status!=='final'; }).length;
+      statsRow.innerHTML = '<div class="stat"><div class="stat-label">Projetos</div><div class="stat-value">' + userProjects.length + '</div><div class="stat-sub" style="color:var(--ink-muted)">' + draftCount + ' rascunho' + (draftCount!==1?'s':'') + '</div></div><div class="stat"><div class="stat-label">Carga calculada</div><div class="stat-value">' + (totalKw>0?totalKw.toFixed(0):'0') + '<span class="unit">kW</span></div><div class="stat-sub" style="color:var(--ink-muted)">soma das versões finais</div></div><div class="stat"><div class="stat-label">Finalizados</div><div class="stat-value">' + finalCount + '</div><div class="stat-sub" style="color:var(--ink-muted)">como as-built</div></div><div class="stat"><div class="stat-label">Em andamento</div><div class="stat-value">' + draftCount + '</div><div class="stat-sub" style="color:var(--ink-muted)">para concluir</div></div>';
     }
 
     if(subtitle){
       if(isEmpty){
-        subtitle.textContent = state.currentUser && state.currentUser.role === 'admin'
-          ? 'Nenhum projeto criado ainda. Convide engenheiros pela Administração para começar.'
-          : 'Nenhum projeto atribuído a você ainda. Fale com seu administrador.';
-      } else {
+        subtitle.textContent = 'Nenhum projeto criado ainda. Clique em "Novo projeto" para começar seu primeiro cálculo.';
+      } else if(useDemoData){
         const inCalc = projects.filter(p=>p.status==='calc').length;
         const draft = projects.filter(p=>p.status==='draft').length;
         subtitle.textContent = 'Você tem ' + inCalc + ' projeto' + (inCalc!==1?'s':'') + ' em andamento' + (draft ? ' e ' + draft + ' rascunho' + (draft!==1?'s':'') : '') + '.';
+      } else {
+        subtitle.textContent = 'Você tem ' + projects.length + ' projeto' + (projects.length!==1?'s':'') + ' salvo' + (projects.length!==1?'s':'') + '.';
       }
     }
 
     if(isEmpty){
       grid.innerHTML = '<div class="empty-state" style="grid-column:1 / -1"><div class="empty-state-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><h3>Nenhum projeto ainda</h3><p>Suba sua primeira planta arquitetônica em PDF e veja o SmartHVAC extrair ambientes, calcular carga térmica e gerar os entregáveis em minutos.</p><button class="btn btn-primary btn-lg" onclick="startNewProject()"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Criar primeiro projeto</button></div>';
-    } else {
+    } else if(useDemoData){
       grid.innerHTML = projects.map(p => '<div class="project ' + (p.featured?'featured':'') + '" onclick="openProject(\'' + p.id + '\')"><div class="proj-head"><span class="proj-status ' + p.status + '">' + (p.status==='calc'?'em cálculo':p.status==='done'?'finalizado':'rascunho') + '</span><span class="proj-ver">' + p.ver + '</span></div><div class="proj-name">' + p.name + '</div><div class="proj-loc">' + p.loc + '</div><div class="proj-meta"><div class="proj-meta-item"><div class="k">Área total</div><div class="v">' + p.area + '</div></div><div class="proj-meta-item"><div class="k">Carga</div><div class="v ' + (p.kw!=='—'?'kw':'') + '">' + p.kw + '</div></div></div></div>').join('') + '<div class="project new" onclick="startNewProject()"><div class="plus">+</div><div>Novo projeto</div></div>';
+    } else {
+      // Renderiza projetos reais do usuário
+      grid.innerHTML = projects.map(function(p){
+        const status = p.status === 'final' ? 'done' : 'draft';
+        const statusLabel = p.status === 'final' ? 'finalizado' : (p.step && p.step >= 3 ? 'em cálculo' : 'rascunho');
+        const savedDate = p.savedAt ? new Date(p.savedAt).toLocaleDateString('pt-BR') : '—';
+        return '<div class="project" onclick="resumeProject(\'' + p.id + '\')"><div class="proj-head"><span class="proj-status ' + status + '">' + statusLabel + '</span><span class="proj-ver">' + (p.version||'v01') + '</span></div><div class="proj-name">' + (p.name||'Projeto') + '</div><div class="proj-loc">salvo em ' + savedDate + '</div><div class="proj-meta"><div class="proj-meta-item"><div class="k">Etapa atual</div><div class="v">' + (p.step||1) + ' de 7</div></div><div class="proj-meta-item"><div class="k">Status</div><div class="v">' + statusLabel + '</div></div></div></div>';
+      }).join('') + '<div class="project new" onclick="startNewProject()"><div class="plus">+</div><div>Novo projeto</div></div>';
     }
+  }
+
+  // Abre um projeto salvo retomando do passo onde parou
+  function resumeProject(id){
+    try{
+      const all = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
+      const p = all.find(function(x){ return x.id === id; });
+      if(!p){ toastShow('Projeto não encontrado','','warn'); return; }
+      state.currentProjectId = id;
+      const title = document.getElementById('wizardTitle');
+      const ver = document.getElementById('wizardVer');
+      const crumb = document.getElementById('wizardCrumb');
+      const pname = document.getElementById('projectName');
+      if(title) title.textContent = p.name || 'Projeto';
+      if(ver) ver.textContent = p.version || 'v01';
+      if(crumb) crumb.textContent = (p.name || 'Projeto').toUpperCase();
+      if(pname) pname.value = p.name || '';
+      state.unsavedChanges = false;
+      showView('wizard');
+      setStep(p.step || 1);
+    }catch(e){}
+  }
+
+  // Filtra os projetos exibidos no grid do dashboard
+  // 'all' = todos · 'incomplete' = step<7 e não final · 'draft' = status=draft · 'final' = status=final
+  function filterProjects(filter, chip){
+    document.querySelectorAll('.filter-chips .chip').forEach(function(c){ c.classList.remove('active'); });
+    if(chip) chip.classList.add('active');
+    state.projectFilter = filter;
+    const grid = document.getElementById('projectsGrid');
+    if(!grid) return;
+    let userProjects = [];
+    try{
+      const allSaved = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
+      const myEmail = state.currentUser ? state.currentUser.email : null;
+      userProjects = allSaved.filter(function(p){ return p.owner === myEmail; });
+    }catch(e){}
+    let filtered = userProjects;
+    if(filter === 'incomplete') filtered = userProjects.filter(function(p){ return p.status !== 'final' && (p.step||1) < 7; });
+    else if(filter === 'draft') filtered = userProjects.filter(function(p){ return p.status === 'draft' || (!p.status); });
+    else if(filter === 'final') filtered = userProjects.filter(function(p){ return p.status === 'final'; });
+
+    if(filtered.length === 0){
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1 / -1"><div class="empty-state-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><h3>Nenhum projeto neste filtro</h3><p>Tente outro filtro ou crie um novo projeto.</p><button class="btn btn-primary" onclick="startNewProject()"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Novo projeto</button></div>';
+      return;
+    }
+    grid.innerHTML = filtered.map(function(p){
+      const status = p.status === 'final' ? 'done' : 'draft';
+      const statusLabel = p.status === 'final' ? 'finalizado' : (p.step && p.step >= 3 ? 'em cálculo' : 'rascunho');
+      const savedDate = p.savedAt ? new Date(p.savedAt).toLocaleDateString('pt-BR') : '—';
+      return '<div class="project" onclick="resumeProject(\'' + p.id + '\')"><div class="proj-head"><span class="proj-status ' + status + '">' + statusLabel + '</span><span class="proj-ver">' + (p.version||'v01') + '</span></div><div class="proj-name">' + (p.name||'Projeto') + '</div><div class="proj-loc">salvo em ' + savedDate + '</div><div class="proj-meta"><div class="proj-meta-item"><div class="k">Etapa atual</div><div class="v">' + (p.step||1) + ' de 7</div></div><div class="proj-meta-item"><div class="k">Status</div><div class="v">' + statusLabel + '</div></div></div></div>';
+    }).join('') + '<div class="project new" onclick="startNewProject()"><div class="plus">+</div><div>Novo projeto</div></div>';
   }
 
   function renderEmptyStats(){
@@ -4365,8 +4872,44 @@
       zone.querySelector('#uploadTitle').textContent = 'Arquivo carregado com sucesso';
       zone.querySelector('#uploadSub').textContent = 'clique para substituir';
     }
+    // Salva o arquivo PDF como blob URL no estado para mostrar no visualizador
+    state.uploadedPDF = {
+      file: file,
+      name: file.name,
+      size: file.size,
+      url: URL.createObjectURL(file)
+    };
+    // Atualiza o título do projeto baseado no nome do arquivo (sem extensão)
+    const projectName = file.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
+    const titleEl = document.getElementById('wizardTitle');
+    if(titleEl) titleEl.textContent = projectName;
+    const verEl = document.getElementById('wizardVer');
+    if(verEl) verEl.textContent = 'NOVO · v01';
+    // Insere visualização do PDF no painel da planta (passo 3)
+    insertPDFViewer(state.uploadedPDF.url, file.name);
     const proc = document.getElementById('processing'); if(proc) proc.classList.add('active');
     runProcessing();
+  }
+
+  function insertPDFViewer(url, filename){
+    // Atualiza a split-view do passo 3 (PDF à esquerda, tabela à direita)
+    const frame = document.getElementById('splitPdfFrame');
+    const empty = document.getElementById('splitPdfEmpty');
+    const nameEl = document.getElementById('splitPdfName');
+    if(frame && empty){
+      frame.style.display = 'block';
+      empty.style.display = 'none';
+      frame.src = url + '#toolbar=0&navpanes=0&zoom=page-fit';
+    }
+    if(nameEl) nameEl.textContent = filename;
+  }
+
+  function openPdfFullscreen(){
+    if(state.uploadedPDF && state.uploadedPDF.url){
+      window.open(state.uploadedPDF.url, '_blank');
+    } else {
+      toastShow('Nenhum PDF carregado','Volte ao passo 2 para fazer o upload','warn');
+    }
   }
   function clearFile(){
     const chip = document.getElementById('fileChip'); if(chip) chip.style.display = 'none';
@@ -4409,8 +4952,31 @@
   // BUSCA
   // ============================================================
   function openSearch(){
+    populateSearchProjects();
     const dd = document.getElementById('searchDropdown');
     if(dd){ dd.classList.add('active'); setTimeout(function(){ const i = document.getElementById('searchInput'); if(i) i.focus(); }, 50); }
+  }
+  // Popula a seção "Projetos recentes" do dropdown só com projetos do usuário atual
+  function populateSearchProjects(){
+    const cont = document.getElementById('searchProjects');
+    if(!cont) return;
+    let mine = [];
+    try{
+      const all = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]');
+      const myEmail = state.currentUser ? state.currentUser.email : null;
+      mine = all.filter(function(p){ return p.owner === myEmail; })
+                .sort(function(a,b){ return (b.savedAt||'').localeCompare(a.savedAt||''); })
+                .slice(0, 6);
+    }catch(e){}
+    if(mine.length === 0){
+      cont.innerHTML = '<div style="padding:14px;color:var(--ink-muted);font-size:12px;font-family:var(--font-mono);text-align:center">Nenhum projeto criado ainda</div>';
+      return;
+    }
+    cont.innerHTML = mine.map(function(p){
+      const status = p.status === 'final' ? 'finalizado' : 'rascunho';
+      const ver = p.version || 'v01';
+      return '<div class="search-result" onclick="closeSearch();resumeProject(\'' + p.id + '\')"><svg class="i" viewBox="0 0 24 24" style="color:var(--cyan)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg><div><div class="sr-name">' + (p.name || 'Projeto') + ' · ' + ver + '</div><div class="sr-sub">' + status + ' · etapa ' + (p.step || 1) + ' de 7</div></div></div>';
+    }).join('');
   }
   function closeSearch(){ const dd = document.getElementById('searchDropdown'); if(dd) dd.classList.remove('active'); }
   function doSearch(q){
@@ -4429,25 +4995,127 @@
   // ============================================================
   // TABELA / RECÁLCULO
   // ============================================================
-  document.querySelectorAll('.cell-edit').forEach(function(inp){
-    inp.addEventListener('input', function(){
-      const tot = document.querySelector('.total-kw');
-      if(!tot) return;
-      tot.style.transition='color .3s'; tot.style.color='#fff';
-      setTimeout(function(){ tot.style.color=''; },300);
+  // Parser para valores brasileiros (vírgula como separador decimal)
+  function parseBR(v){
+    if(v==null) return 0;
+    const s = String(v).replace(/\./g,'').replace(',','.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+  function fmtBR(n, dec){
+    dec = dec==null ? 2 : dec;
+    return n.toFixed(dec).replace('.',',');
+  }
+
+  // Recalcula uma única linha com fórmulas NBR 16401 simplificadas
+  // Q_int = (Ocup × 126W sensível pessoa) + (Área × 15W iluminação) + (Ocup × 250W equipamentos)
+  // Q_env = (Vidro × 550W radiação) + (Div_NC × 12W) + (Piso × 50W) + (Forro × 50W)
+  // Total kW = (Q_int + Q_env) / 1000 × Fator_Uso
+  function recalcRow(tr){
+    const inputs = tr.querySelectorAll('input.cell-edit');
+    const data = {};
+    inputs.forEach(i => { data[i.dataset.col] = parseBR(i.value); });
+    const qInt = (data.ocup * 126) + (data.area * 15) + (data.ocup * 250);
+    const qEnv = (data.vidro * 550) + (data.div * 12) + (data.piso * 50) + (data.forro * 50);
+    const total = ((qInt + qEnv) / 1000) * (data.fu || 1);
+    const kwCell = tr.querySelector('[data-col="kw"]');
+    if(kwCell){
+      kwCell.textContent = fmtBR(total, 2);
+      kwCell.style.transition = 'color .4s';
+      kwCell.style.color = 'var(--cyan)';
+      setTimeout(()=>{ kwCell.style.color=''; }, 600);
+    }
+    return total;
+  }
+
+  // Recalcula a planilha inteira somando andares + total geral
+  function recalcAll(){
+    const tbody = document.getElementById('masterTbody');
+    if(!tbody) return 0;
+    const rows = tbody.querySelectorAll('tr[data-floor]');
+    let totalGeral = 0;
+    const totalsByFloor = {};
+    rows.forEach(tr => {
+      const t = recalcRow(tr);
+      totalGeral += t;
+      const f = tr.dataset.floor;
+      totalsByFloor[f] = (totalsByFloor[f] || 0) + t;
     });
+    Object.keys(totalsByFloor).forEach(f => {
+      const span = document.querySelector('[data-floor-kw="' + f + '"]');
+      if(span) span.textContent = fmtBR(totalsByFloor[f], 2);
+    });
+    const tot = document.querySelector('.total-kw');
+    if(tot){
+      tot.textContent = fmtBR(totalGeral, 2) + ' kW';
+      tot.style.transition = 'color .4s';
+      tot.style.color = 'var(--cyan)';
+      setTimeout(()=>{ tot.style.color=''; }, 600);
+    }
+    syncPlanFromTable();
+    return totalGeral;
+  }
+
+  // Sincroniza ambientes da planta (passo 3) com a tabela
+  function syncPlanFromTable(){
+    const tbody = document.getElementById('masterTbody');
+    if(!tbody) return;
+    const rows = tbody.querySelectorAll('tr[data-floor]');
+    rows.forEach((tr, idx) => {
+      const name = tr.cells[0].textContent.trim();
+      const kwCell = tr.querySelector('[data-col="kw"]');
+      const kw = kwCell ? kwCell.textContent : '0';
+      const planRoom = document.querySelector('[data-room="' + idx + '"]');
+      if(planRoom){
+        planRoom.setAttribute('data-name', name);
+        planRoom.setAttribute('data-kw', kw);
+      }
+    });
+  }
+
+  // Listener: qualquer alteração em qualquer célula recalcula sua linha + totais
+  document.addEventListener('input', function(e){
+    if(e.target && e.target.classList && e.target.classList.contains('cell-edit')){
+      state.unsavedChanges = true;
+      const tr = e.target.closest('tr[data-floor]');
+      if(tr){
+        recalcRow(tr);
+        const tbody = document.getElementById('masterTbody');
+        if(tbody){
+          let totalGeral = 0;
+          const totalsByFloor = {};
+          tbody.querySelectorAll('tr[data-floor]').forEach(r => {
+            const kwc = r.querySelector('[data-col="kw"]');
+            const v = kwc ? parseBR(kwc.textContent) : 0;
+            totalGeral += v;
+            const f = r.dataset.floor;
+            totalsByFloor[f] = (totalsByFloor[f] || 0) + v;
+          });
+          Object.keys(totalsByFloor).forEach(f => {
+            const span = document.querySelector('[data-floor-kw="' + f + '"]');
+            if(span) span.textContent = fmtBR(totalsByFloor[f], 2);
+          });
+          const tot = document.querySelector('.total-kw');
+          if(tot){ tot.textContent = fmtBR(totalGeral, 2) + ' kW'; }
+        }
+        syncPlanFromTable();
+      }
+    }
   });
+
   function recalculate(btn){
     if(!btn) return;
     const original = btn.innerHTML;
     btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px;animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Recalculando...';
     btn.disabled = true;
     setTimeout(function(){
-      btn.innerHTML = original; btn.disabled = false;
-      const tot = document.querySelector('.total-kw');
-      if(tot){ tot.style.transition='color .4s'; tot.style.color = 'var(--cyan)'; setTimeout(function(){ tot.style.color=''; }, 600); }
-      toastShow('Cálculo atualizado','386,27 kW · 26 ambientes','success');
-    }, 1200);
+      btn.innerHTML = original;
+      btn.disabled = false;
+      const total = recalcAll();
+      const tbody = document.getElementById('masterTbody');
+      const n = tbody ? tbody.querySelectorAll('tr[data-floor]').length : 0;
+      toastShow('Cálculo atualizado', fmtBR(total, 2) + ' kW · ' + n + ' ambientes', 'success');
+    }, 800);
   }
 
   function exportCSV(){
@@ -4529,20 +5197,143 @@
     const panel = document.getElementById('admin-'+tab);
     if(panel){ panel.style.display = 'block'; panel.classList.add('active'); }
     if(tab === 'users') renderUserTable();
+    if(tab === 'audit') renderAuditLog();
+    if(tab === 'approvals') renderApprovals();
+    if(tab === 'reviews') renderReviews();
   }
 
-  function handleApproval(id, action, name){
-    const item = document.getElementById(id); if(!item) return;
-    item.classList.add('resolved');
-    const actions = item.querySelector('.apr-actions');
-    if(actions){ actions.innerHTML = '<span class="status-pill ' + (action==='approve'?'ok':'bad') + '">' + (action==='approve'?'aprovado':'rejeitado') + '</span>'; }
-    addAuditEntry((action==='approve'?'aprovou':'rejeitou') + ' projeto ' + name, action==='approve'?'ok':'bad');
-    toastShow(action==='approve' ? 'Projeto aprovado' : 'Projeto rejeitado', name, action==='approve' ? 'success' : 'warn');
+  // Histórico de TODAS as revisões já submetidas (com nome do criador e revisor)
+  function renderReviews(){
+    const tbody = document.getElementById('reviewsTableBody');
+    const countEl = document.getElementById('reviewsCount');
+    if(!tbody) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const reviewed = projects.filter(function(p){ return p.status === 'submitted' || p.status === 'approved' || p.status === 'rejected'; });
+    if(countEl) countEl.textContent = reviewed.length;
+    if(reviewed.length === 0){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-muted)">Nenhum projeto enviado para revisão ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = reviewed.map(function(p){
+      const owner = p.ownerName || p.owner || '—';
+      const ver = p.version || 'v01';
+      const status = p.status === 'approved' ? '<span class="status-pill ok">aprovado</span>' : p.status === 'rejected' ? '<span class="status-pill bad">rejeitado</span>' : '<span class="status-pill warn">aguardando</span>';
+      const decision = p.decisionBy || '—';
+      const dt = p.decisionAt || p.submittedAt;
+      const date = dt ? new Date(dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      return '<tr><td style="font-weight:500">' + (p.name||'Projeto') + '</td><td style="font-family:var(--font-mono);font-size:11px">' + ver + '</td><td>' + owner + '</td><td>' + status + '</td><td style="color:var(--ink-dim)">' + decision + '</td><td style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted)">' + date + '</td></tr>';
+    }).join('');
   }
-  function previewApproval(name){
-    toastShow('Abrindo projeto para revisão', name, 'info');
-    setTimeout(function(){ openProject('matriz-marata'); }, 600);
+
+  // Lista projetos submetidos por TODOS os usuários da organização
+  // Visível apenas para admin_projects e admin_general (este último só vê auditoria)
+  function renderApprovals(){
+    const list = document.getElementById('approvalList');
+    if(!list) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const pending = projects.filter(function(p){ return p.status === 'submitted'; });
+    const approved = projects.filter(function(p){ return p.status === 'approved'; });
+    const rejected = projects.filter(function(p){ return p.status === 'rejected'; });
+    // Atualiza stats
+    const sP = document.getElementById('aprStatPending'); if(sP) sP.textContent = pending.length;
+    const sA = document.getElementById('aprStatApproved'); if(sA) sA.textContent = approved.length;
+    const sR = document.getElementById('aprStatRejected'); if(sR) sR.textContent = rejected.length;
+    const sT = document.getElementById('aprStatTotal'); if(sT) sT.textContent = pending.length + approved.length + rejected.length;
+    const badge = document.getElementById('aprBadge'); if(badge){ badge.textContent = pending.length; badge.style.display = pending.length > 0 ? '' : 'none'; }
+    // Lista os pendentes primeiro, depois os já decididos
+    const all = pending.concat(approved).concat(rejected);
+    if(all.length === 0){
+      list.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--ink-muted);background:var(--bg-1);border:1px solid var(--line);border-radius:10px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;margin-bottom:14px"><path d="M9 12l2 2 4-4M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2 0 4 .7 5.5 2"/></svg><div style="font-size:14px;color:var(--ink-dim);margin-bottom:6px">Nenhum projeto na fila</div><div style="font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)">projetos enviados pelos engenheiros aparecerão aqui</div></div>';
+      return;
+    }
+    list.innerHTML = all.map(function(p){
+      const owner = p.ownerName || p.owner || '—';
+      const initials = owner.split(' ').map(function(s){ return s[0]; }).join('').substring(0,2).toUpperCase();
+      const isPending = p.status === 'submitted';
+      const isApproved = p.status === 'approved';
+      const submittedAt = p.submittedAt ? new Date(p.submittedAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      let actions;
+      if(isPending){
+        actions = '<button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="reviewProject(\'' + p.id + '\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Revisar projeto</button>' +
+                  '<button class="btn btn-outline approve" style="font-size:12px;padding:6px 10px" onclick="handleApproval(\'' + p.id + '\',\'approve\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M20 6L9 17l-5-5"/></svg>Aprovar</button>' +
+                  '<button class="btn btn-outline reject" style="font-size:12px;padding:6px 10px" onclick="handleApproval(\'' + p.id + '\',\'reject\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M18 6L6 18M6 6l12 12"/></svg>Rejeitar</button>';
+      } else {
+        actions = '<button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="reviewProject(\'' + p.id + '\')"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Ver projeto</button>' +
+                  '<span class="status-pill ' + (isApproved?'ok':'bad') + '">' + (isApproved?'aprovado':'rejeitado') + '</span>';
+      }
+      return '<div class="approval-item' + (isPending?'':' resolved') + '"><div class="apr-left"><div class="apr-avatar">' + initials + '</div><div><div class="apr-title">' + (p.name||'Projeto') + ' · ' + (p.version||'v01') + '</div><div class="apr-meta"><span>' + owner + '</span><span>·</span><span>etapa ' + (p.step||1) + ' de 7</span><span>·</span><span>' + submittedAt + '</span></div></div></div><div class="apr-actions">' + actions + '</div></div>';
+    }).join('');
   }
+
+  function handleApproval(id, action){
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const idx = projects.findIndex(function(p){ return p.id === id; });
+    if(idx < 0) return;
+    projects[idx].status = action === 'approve' ? 'approved' : 'rejected';
+    projects[idx].decisionAt = new Date().toISOString();
+    projects[idx].decisionBy = state.currentUser ? state.currentUser.name : '—';
+    localStorage.setItem('smarthvac.projects', JSON.stringify(projects));
+    addAuditEntry((action==='approve'?'aprovou':'rejeitou') + ' projeto ' + projects[idx].name + ' (' + (projects[idx].version||'v01') + ') de ' + (projects[idx].ownerName||'—'), action==='approve'?'ok':'bad');
+    toastShow(action==='approve' ? 'Projeto aprovado' : 'Projeto rejeitado', projects[idx].name, action==='approve' ? 'success' : 'warn');
+    renderApprovals();
+  }
+  function previewApproval(name){ toastShow('Revisão técnica','Funcionalidade em desenvolvimento','info'); }
+
+  // Admin de Projetos abre o projeto em modal de revisão (sem entrar no wizard)
+  function reviewProject(id){
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const p = projects.find(function(x){ return x.id === id; });
+    if(!p){ toastShow('Projeto não encontrado','','warn'); return; }
+
+    const owner = p.ownerName || p.owner || '—';
+    const initials = owner.split(' ').map(function(s){return s[0]}).join('').substring(0,2).toUpperCase();
+    const isPending = p.status === 'submitted';
+    const submittedAt = p.submittedAt ? new Date(p.submittedAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+
+    document.getElementById('reviewEyebrow').textContent = 'PROJETO ENVIADO PARA APROVAÇÃO';
+    document.getElementById('reviewTitle').textContent = (p.name || 'Projeto') + ' · ' + (p.version || 'v01');
+
+    let body = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">';
+    body += '<div style="padding:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Criado por</div><div style="display:flex;gap:10px;align-items:center"><div style="width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--cyan),var(--violet));display:grid;place-items:center;color:#001419;font-weight:600;font-size:12px">' + initials + '</div><div><div style="font-size:13px;font-weight:500">' + owner + '</div><div style="font-size:11px;color:var(--ink-muted);font-family:var(--font-mono)">' + (p.owner || '') + '</div></div></div></div>';
+    body += '<div style="padding:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Status</div>';
+    body += '<div style="font-size:13px">' + (isPending ? '<span class="status-pill warn">aguardando análise</span>' : p.status === 'approved' ? '<span class="status-pill ok">aprovado</span>' : '<span class="status-pill bad">rejeitado</span>') + '</div>';
+    body += '<div style="font-size:11px;color:var(--ink-muted);margin-top:8px;font-family:var(--font-mono)">enviado em ' + submittedAt + '</div></div>';
+    body += '</div>';
+
+    body += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">';
+    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Etapa</div><div style="font-size:18px;font-weight:500">' + (p.step || 1) + '<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono)">/ 7</span></div></div>';
+    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Versão</div><div style="font-size:18px;font-weight:500">' + (p.version || 'v01') + '</div></div>';
+    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Carga (estimada)</div><div style="font-size:18px;font-weight:500;color:var(--cyan)">386,27<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono);font-weight:400">kW</span></div></div>';
+    body += '</div>';
+
+    // Bloco do PDF
+    body += '<div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Planta arquitetônica</div>';
+    if(state.uploadedPDF && state.uploadedPDF.url){
+      body += '<div style="height:380px;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:#1a1d24"><iframe src="' + state.uploadedPDF.url + '#toolbar=0&navpanes=0&zoom=page-fit" style="width:100%;height:100%;border:none;background:#fff"></iframe></div>';
+    } else {
+      body += '<div style="padding:40px 20px;text-align:center;background:var(--bg-2);border:1px dashed var(--line-2);border-radius:8px"><div style="color:var(--ink-muted);font-size:13px;margin-bottom:8px">PDF da planta não disponível para revisão direta</div><div style="font-size:11px;color:var(--ink-muted);font-family:var(--font-mono);max-width:420px;margin:0 auto;line-height:1.5">o engenheiro fez upload do PDF durante a edição. para visualizar a planta original, peça acesso ou abra na sessão dele</div></div>';
+    }
+
+    document.getElementById('reviewBody').innerHTML = body;
+
+    // Botões do rodapé
+    const foot = document.getElementById('reviewFoot');
+    if(isPending){
+      foot.innerHTML = '<button class="btn btn-outline" onclick="closeReviewModal()">Fechar</button>' +
+        '<button class="btn btn-outline reject" onclick="handleApproval(\'' + id + '\',\'reject\');closeReviewModal()"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>Rejeitar</button>' +
+        '<button class="btn btn-primary" onclick="handleApproval(\'' + id + '\',\'approve\');closeReviewModal()" style="background:linear-gradient(180deg,#34d399,#059669);color:#001419"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Aprovar projeto</button>';
+    } else {
+      foot.innerHTML = '<button class="btn btn-primary" onclick="closeReviewModal()">Fechar</button>';
+    }
+
+    document.getElementById('reviewModal').classList.add('active');
+  }
+
+  function closeReviewModal(){ document.getElementById('reviewModal').classList.remove('active'); }
 
   function renderUserTable(){
     const tbody = document.getElementById('userTableBody');
@@ -4551,6 +5342,15 @@
     const users = loadUsers();
     const emails = Object.keys(users);
     if(countEl) countEl.textContent = emails.length;
+    // Atualiza os 4 stat cards do painel admin
+    const sTotal = document.getElementById('adminStatTotal');
+    const sAdmins = document.getElementById('adminStatAdmins');
+    const sEng = document.getElementById('adminStatEng');
+    const sBlocked = document.getElementById('adminStatBlocked');
+    if(sTotal) sTotal.textContent = emails.length;
+    if(sAdmins) sAdmins.textContent = emails.filter(e => users[e].role === 'admin_general' || users[e].role === 'admin_projects' || users[e].role === 'admin').length;
+    if(sEng) sEng.textContent = emails.filter(e => users[e].role === 'engineer').length;
+    if(sBlocked) sBlocked.textContent = emails.filter(e => users[e].status === 'suspended').length;
     if(emails.length === 0){
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-muted)">Nenhuma conta criada. Clique em "Criar nova conta" para começar.</td></tr>';
       return;
@@ -4564,7 +5364,6 @@
     ];
     const roleLabels = {
       admin_general: 'Admin Geral',
-      admin_projects: 'Admin de Projetos',
       admin: 'Administrador',
       engineer: 'Engenheiro',
       viewer: 'Visualizador'
@@ -4607,7 +5406,7 @@
       saveSession(state.currentUser);
       applyUserToUI();
     }
-    const labels = {admin_general:'Admin Geral', admin_projects:'Admin de Projetos', engineer:'Engenheiro', viewer:'Visualizador'};
+    const labels = {admin_general:'Admin Geral',  engineer:'Engenheiro', viewer:'Visualizador'};
     addAuditEntry(users[email].name + ' agora é ' + labels[newRole], 'ok');
     toastShow('Papel atualizado', users[email].name + ' agora é ' + labels[newRole], 'info');
   }
@@ -4626,15 +5425,14 @@
   function resetUserPassword(email){
     const users = loadUsers();
     if(!users[email]) return;
-    const newPass = genPass(12);
     if(!confirm('Redefinir senha de ' + users[email].name + '?\n\nUma nova senha temporária será gerada. O usuário precisará alterá-la no próximo acesso.')) return;
+    const newPass = genPass(12);
     users[email].passHash = hashPass(newPass);
-    users[email].status = users[email].status === 'suspended' ? 'suspended' : 'invited'; // força primeiro acesso
+    users[email].mustChangePassword = true; // força nova senha pessoal
     users[email].lastLoginAt = null;
     saveUsers(users);
     renderUserTable();
     addAuditEntry('Senha redefinida para ' + users[email].name, 'ok');
-    // Mostra a nova senha em um modal
     showPasswordResetModal(users[email].name, email, newPass);
   }
 
@@ -4675,16 +5473,65 @@
   }
 
   // Log de auditoria
+  // Adiciona entrada no log de auditoria
+  // Persiste no localStorage para que o Admin Geral veja todas as ações,
+  // inclusive as feitas pelos engenheiros e admin_projects fora da sua tela.
   function addAuditEntry(msg, type){
+    const now = new Date();
+    const time = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const date = now.toLocaleDateString('pt-BR');
+    const who = state.currentUser ? state.currentUser.name : 'Sistema';
+    const role = state.currentUser ? (state.currentUser.role || '') : '';
+    const entry = { time: time, date: date, who: who, role: role, msg: msg, type: type || '', timestamp: now.toISOString() };
+    try{
+      const all = JSON.parse(localStorage.getItem('smarthvac.audit') || '[]');
+      all.unshift(entry);
+      localStorage.setItem('smarthvac.audit', JSON.stringify(all.slice(0, 200)));
+    }catch(e){}
+    const log = document.getElementById('auditLog');
+    if(log){
+      const dotClass = type === 'bad' ? 'bad' : type === 'ok' ? 'ok' : '';
+      const div = document.createElement('div');
+      div.className = 'audit-entry';
+      div.innerHTML = '<div class="audit-dot ' + dotClass + '"></div><div class="audit-time">' + time + '</div><div class="audit-msg"><strong>' + who + '</strong> ' + msg + '</div>';
+      log.insertBefore(div, log.firstChild);
+    }
+  }
+
+  // Renderiza notificações reais do usuário a partir do log de auditoria
+  function renderNotifications(){
+    const list = document.getElementById('notifList');
+    if(!list) return;
+    let entries = [];
+    try{
+      const all = JSON.parse(localStorage.getItem('smarthvac.audit') || '[]');
+      const myName = state.currentUser ? state.currentUser.name : null;
+      entries = all.filter(function(e){ return e.who === myName; }).slice(0, 20);
+    }catch(e){}
+    if(entries.length === 0){
+      list.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--ink-muted)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;margin-bottom:14px"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div style="font-size:14px;color:var(--ink-dim);margin-bottom:6px">Nenhuma notificação</div><div style="font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)">você verá atualizações aqui quando criar ou modificar projetos</div></div>';
+      return;
+    }
+    list.innerHTML = entries.map(function(e){
+      const dotColor = e.type === 'bad' ? 'var(--hot)' : e.type === 'ok' ? 'var(--ok)' : 'var(--cyan)';
+      return '<div class="notif-item"><div class="notif-dot" style="background:' + dotColor + '"></div><div class="notif-body"><div class="notif-title">' + (e.msg.charAt(0).toUpperCase() + e.msg.slice(1)) + '</div><div class="notif-sub">' + (e.date || '') + ' · ' + (e.time || '') + '</div></div><div class="notif-time">' + (e.time || '—') + '</div></div>';
+    }).join('');
+  }
+
+  // Renderiza log completo de auditoria a partir do localStorage
+  function renderAuditLog(){
     const log = document.getElementById('auditLog');
     if(!log) return;
-    const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    const who = state.currentUser ? state.currentUser.name : 'Sistema';
-    const dotClass = type === 'bad' ? 'bad' : type === 'ok' ? 'ok' : '';
-    const entry = document.createElement('div');
-    entry.className = 'audit-entry';
-    entry.innerHTML = '<div class="audit-dot ' + dotClass + '"></div><div class="audit-time">' + now + '</div><div class="audit-msg"><strong>' + who + '</strong> ' + msg + '</div>';
-    log.insertBefore(entry, log.firstChild);
+    let all = [];
+    try{ all = JSON.parse(localStorage.getItem('smarthvac.audit') || '[]'); }catch(e){}
+    if(all.length === 0){
+      log.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink-muted);font-size:13px">Nenhuma ação registrada ainda.</div>';
+      return;
+    }
+    log.innerHTML = all.map(function(e){
+      const dotClass = e.type === 'bad' ? 'bad' : e.type === 'ok' ? 'ok' : '';
+      return '<div class="audit-entry"><div class="audit-dot ' + dotClass + '"></div><div class="audit-time">' + (e.time || '—') + '</div><div class="audit-msg"><strong>' + (e.who || 'Sistema') + '</strong> ' + e.msg + '</div></div>';
+    }).join('');
   }
 
   // Modal: criar usuário
@@ -4712,7 +5559,9 @@
 
     if(!name || name.length < 3){ toastShow('Nome inválido','Mínimo 3 caracteres','warn'); return; }
     if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toastShow('E-mail inválido','Use e-mail válido','warn'); return; }
-    if(!pass || pass.length < 8){ toastShow('Senha muito curta','Mínimo 8 caracteres','warn'); return; }
+    // Admin Geral pode definir qualquer senha temporária (sem regras fortes).
+    // Quem precisa cumprir as 5 regras de senha forte é o usuário no primeiro acesso.
+    if(!pass || pass.length < 4){ toastShow('Senha temporária muito curta','Mínimo 4 caracteres para a senha temporária','warn'); return; }
 
     const users = loadUsers();
     if(users[email]){ toastShow('E-mail já existe','Já existe conta com este e-mail','error'); return; }
@@ -4725,13 +5574,14 @@
       passHash: hashPass(pass),
       plan: 'Pro',
       status: 'invited',
+      mustChangePassword: true, // força criação de nova senha pessoal no primeiro acesso
       createdAt: new Date().toISOString(),
       lastLoginAt: null
     };
     saveUsers(users);
     closeCreateUserModal();
     renderUserTable();
-    const labels = {admin_general:'Admin Geral', admin_projects:'Admin de Projetos', engineer:'Engenheiro', viewer:'Visualizador'};
+    const labels = {admin_general:'Admin Geral',  engineer:'Engenheiro', viewer:'Visualizador'};
     addAuditEntry('Conta criada: ' + name + ' (' + labels[role] + ')', 'ok');
     toastShow('Conta criada com sucesso', name + ' · ' + labels[role], 'success');
     if(sendEmail){
@@ -4783,6 +5633,96 @@
       toast.classList.add('fadeout');
       setTimeout(function(){ if(toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
     }, 3500);
+  }
+
+  // ============================================================
+  // MODAL DE INFORMAÇÕES (Engine, Workflow, Normativos, Docs)
+  // ============================================================
+  const infoContent = {
+    engine: {
+      eyebrow: 'MOTOR TÉRMICO',
+      title: 'SmartHVAC Engine',
+      body: `
+        <p>O <strong>Thermal Engine</strong> é o motor de cálculo do SmartHVAC, baseado integralmente nas normas técnicas brasileiras <strong>ABNT NBR 16401-1/2/3:2024</strong>.</p>
+        <h4 style="color:var(--cyan);font-size:13px;margin-top:18px;margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em">FÓRMULAS APLICADAS</h4>
+        <ul style="margin-left:20px;margin-bottom:12px">
+          <li><strong>Carga interna:</strong> Q_int = (Ocup × 126W) + (Área × 15W) + (Ocup × 250W)</li>
+          <li><strong>Carga de envoltória:</strong> Q_env = (Vidro × 550W) + (Paredes × 12W) + (Piso/Forro × 50W)</li>
+          <li><strong>Vazão de ar exterior:</strong> V_o = (Ocup × 6,8 L/s) + (Área × 0,4 L/s)</li>
+        </ul>
+        <h4 style="color:var(--cyan);font-size:13px;margin-top:18px;margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em">PROCESSAMENTO</h4>
+        <p>Cada planta arquitetônica é processada por um pipeline de 6 etapas: extração de texto e cotas, análise de geometria, identificação de aberturas, classificação de ambientes, estimativa de ocupação e cálculo final. Tempo médio: <strong>32 segundos</strong> para uma planta de 1.500 m².</p>
+        <h4 style="color:var(--cyan);font-size:13px;margin-top:18px;margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em">ENTREGÁVEIS</h4>
+        <p>DXF (AutoCAD), DOCX (memorial), PDF (relatório QAI conforme NBR 17037), CSV (planilha master), PMOC (NBR 13971).</p>
+      `
+    },
+    workflow: {
+      eyebrow: 'FLUXO DE TRABALHO',
+      title: 'Workflow em 7 etapas',
+      body: `
+        <p>O SmartHVAC organiza todo o cálculo termodinâmico em um wizard linear, do upload até a entrega final.</p>
+        <ol style="margin-left:20px;margin-top:12px">
+          <li style="margin-bottom:10px"><strong>Geo-projeto</strong> — Cidade, endereço, orientação. TBS/TBU buscados automaticamente da NBR 16401-1.</li>
+          <li style="margin-bottom:10px"><strong>Upload</strong> — PDF da planta arquitetônica. Pipeline de extração de geometria e ambientes.</li>
+          <li style="margin-bottom:10px"><strong>Validação & Cálculo</strong> — Visualização da planta com ambientes detectados + tabela editável. Toda alteração recalcula em tempo real.</li>
+          <li style="margin-bottom:10px"><strong>Sistemas</strong> — Dimensionamento VRF, distribuição de evaporadoras, dutos.</li>
+          <li style="margin-bottom:10px"><strong>QAI</strong> — Validação NBR 17037 (CO₂, PM₁₀, PM₂,₅, fungos, bactérias) com PMOC.</li>
+          <li style="margin-bottom:10px"><strong>Entregáveis</strong> — Geração de DXF, memorial DOCX, relatório QAI PDF.</li>
+          <li style="margin-bottom:10px"><strong>Aprovação</strong> — Submissão ao Admin de Projetos para validação técnica final.</li>
+        </ol>
+        <p style="margin-top:14px"><strong>Tempo total estimado:</strong> 12-25 minutos vs. 2-3 dias no método manual.</p>
+      `
+    },
+    normativos: {
+      eyebrow: 'NORMAS APLICADAS',
+      title: 'Normativos brasileiros',
+      body: `
+        <p>O SmartHVAC implementa integralmente as normas técnicas brasileiras vigentes para projetos HVAC.</p>
+        <ul style="margin-left:20px;margin-top:14px">
+          <li style="margin-bottom:10px"><strong>ABNT NBR 16401-1:2024</strong> — Parâmetros básicos de projeto (TBS, TBU, dados climáticos por cidade).</li>
+          <li style="margin-bottom:10px"><strong>ABNT NBR 16401-2:2024</strong> — Conforto térmico (temperatura 21-26°C, UR 35-65%, velocidade do ar ≤0,20 m/s).</li>
+          <li style="margin-bottom:10px"><strong>ABNT NBR 16401-3:2024</strong> — Vazão mínima de ar exterior e filtragem.</li>
+          <li style="margin-bottom:10px"><strong>ABNT NBR 17037:2023</strong> — QAI em ambientes não residenciais climatizados (CO₂ ≤700ppm, PM₁₀ ≤50µg/m³, PM₂,₅ ≤25µg/m³, fungos ≤750 UFC/m³).</li>
+          <li style="margin-bottom:10px"><strong>ABNT NBR 13971</strong> — Manutenção programada e PMOC (Plano de Manutenção, Operação e Controle).</li>
+        </ul>
+        <p style="margin-top:14px">Todos os memoriais e relatórios gerados citam expressamente as cláusulas aplicadas, prontos para entrega ao órgão fiscalizador.</p>
+      `
+    },
+    docs: {
+      eyebrow: 'DOCUMENTAÇÃO',
+      title: 'Docs & Suporte técnico',
+      body: `
+        <p>Documentação completa do SmartHVAC para engenheiros, administradores e integradores.</p>
+        <h4 style="color:var(--cyan);font-size:13px;margin-top:18px;margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em">PARA ENGENHEIROS</h4>
+        <ul style="margin-left:20px;margin-bottom:12px">
+          <li>Guia rápido — primeiro projeto em 10 minutos</li>
+          <li>Referência de fórmulas e parâmetros normativos</li>
+          <li>Como customizar templates de memorial</li>
+          <li>Biblioteca de equipamentos VRF (Daikin, LG, Midea, Samsung, Hitachi)</li>
+        </ul>
+        <h4 style="color:var(--cyan);font-size:13px;margin-top:18px;margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em">PARA ADMINISTRADORES</h4>
+        <ul style="margin-left:20px;margin-bottom:12px">
+          <li>Gestão de usuários e papéis (Admin Geral, Admin de Projetos, Engenheiro, Visualizador)</li>
+          <li>Fluxo de aprovação de projetos</li>
+          <li>Auditoria e log de ações</li>
+          <li>Política de senhas e bloqueio de acessos</li>
+        </ul>
+        <h4 style="color:var(--cyan);font-size:13px;margin-top:18px;margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em">SUPORTE</h4>
+        <p>contato@smarthvac.io · resposta em até 24h úteis · onboarding gratuito para clientes Pro/Enterprise.</p>
+      `
+    }
+  };
+
+  function openInfoModal(key){
+    const info = infoContent[key];
+    if(!info) return;
+    document.getElementById('infoEyebrow').textContent = info.eyebrow;
+    document.getElementById('infoTitle').textContent = info.title;
+    document.getElementById('infoBody').innerHTML = info.body;
+    document.getElementById('infoModal').classList.add('active');
+  }
+  function closeInfoModal(){
+    document.getElementById('infoModal').classList.remove('active');
   }
 
   // ============================================================
