@@ -1636,25 +1636,33 @@
     .viz-body{grid-template-columns:1fr}
     .viz-detail{border-left:none;border-top:1px solid var(--line)}
   }
-  /* Split-view: PDF + cálculo lado a lado (etapa 3) */
-  .split-view{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:calc(100vh - 240px);min-height:560px}
+  /* Split-view: PDF (A4) à esquerda, tabela à direita (etapa 3) — sempre lado a lado */
+  .split-view{display:grid;grid-template-columns:minmax(320px, 0.85fr) 1.15fr;gap:14px;align-items:stretch;min-height:720px}
   .split-pdf,.split-calc{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
-  .split-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line)}
-  .split-pdf-canvas{flex:1;background:#1a1d24;position:relative;overflow:hidden}
+  .split-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);gap:10px}
+  .split-pdf-canvas{flex:1;background:#1a1d24;position:relative;overflow:auto;padding:14px;display:flex;align-items:flex-start;justify-content:center}
+  .split-pdf-canvas iframe{width:100%;max-width:560px;aspect-ratio:1/1.414;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
   .split-pdf-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink-muted)}
   .split-calc-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .split-calc .table-scroll{flex:1;overflow:auto}
   .split-table{width:100%;border-collapse:collapse;font-size:12px}
   .split-table thead th{position:sticky;top:0;z-index:1}
   .split-table tbody td{padding:6px 8px}
   .split-table tbody td:first-child{padding-left:14px;color:var(--ink);white-space:nowrap}
   .split-table input.cell-edit{width:100%;min-width:55px;background:transparent;border:1px solid transparent;border-radius:4px;padding:5px 7px;color:var(--ink);font-family:var(--font-mono);font-size:11px;text-align:right;transition:all .15s}
+  .split-table input.cell-edit.name{font-family:var(--font-sans);font-size:12px;text-align:left;color:var(--ink)}
+  .split-table select.cell-edit{width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:5px 7px;color:var(--ink);font-family:var(--font-sans);font-size:11px;transition:all .15s;cursor:pointer}
+  .split-table select.cell-edit:hover{border-color:var(--line-2);background:var(--bg-2)}
+  .split-table select.cell-edit:focus{outline:none;border-color:var(--cyan);background:var(--bg-3)}
+  .split-table .ar-ext{color:var(--ok);font-family:var(--font-mono);font-size:11px;text-align:right}
+  .split-table .equip-sug{color:var(--violet);font-family:var(--font-mono);font-size:10px;font-weight:500;white-space:nowrap}
   .split-table input.cell-edit:hover{border-color:var(--line-2);background:var(--bg-2)}
   .split-table input.cell-edit:focus{outline:none;border-color:var(--cyan);background:var(--bg-3)}
   .split-table .kw{color:var(--cyan);font-family:var(--font-mono);font-weight:500;text-align:right;padding-right:14px}
   .split-table .floor-header td{background:var(--bg-3);font-family:var(--font-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted);padding:8px 14px}
   .split-table tfoot td{background:var(--bg-3);font-weight:500;padding:12px 14px;border-top:1px solid var(--line-2)}
   .split-table .total-kw{font-size:18px;color:var(--cyan);font-family:var(--font-mono);text-align:right}
-  @media (max-width:1280px){.split-view{grid-template-columns:1fr;height:auto}.split-pdf{height:500px}}
+  /* Mantém sempre lado a lado mesmo em telas menores */
 
   /* Validador de senha forte */
   .pass-rules{display:grid;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)}
@@ -2481,7 +2489,7 @@
                     <div style="font-size:11px;color:var(--ink-muted);font-family:var(--font-mono);margin-bottom:14px">volte ao passo 2 para fazer o upload</div>
                     <button class="btn btn-outline" style="font-size:12px;padding:6px 14px" onclick="setStep(2)">Carregar PDF</button>
                   </div>
-                  <iframe id="splitPdfFrame" style="display:none;width:100%;height:100%;border:none;background:#fff" title="Planta do projeto"></iframe>
+                  <iframe id="splitPdfFrame" style="display:none;border:none" title="Planta do projeto"></iframe>
                 </div>
               </div>
 
@@ -2521,31 +2529,13 @@
                         </tr>
                       </thead>
                       <tbody id="masterTbody">
-                        <tr class="floor-header"><td colspan="10">TÉRREO · 9 ambientes · <span data-floor-kw="terreo">208,15</span> kW</td></tr>
-                        <tr data-floor="terreo"><td>Comercial</td><td><input class="cell-edit num" data-col="area" value="138,97"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="32"/></td><td><input class="cell-edit num" data-col="vidro" value="70,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">62,87</td></tr>
-                        <tr data-floor="terreo"><td>Recepção</td><td><input class="cell-edit num" data-col="area" value="61,03"/></td><td><input class="cell-edit num" data-col="pe" value="7,0"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="45,00"/></td><td><input class="cell-edit num" data-col="div" value="12,50"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">34,30</td></tr>
-                        <tr data-floor="terreo"><td>Suprimentos</td><td><input class="cell-edit num" data-col="area" value="62,90"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="14"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">10,73</td></tr>
-                        <tr data-floor="terreo"><td>Logística</td><td><input class="cell-edit num" data-col="area" value="54,31"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="12,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">18,20</td></tr>
-                        <tr data-floor="terreo"><td>Marketing</td><td><input class="cell-edit num" data-col="area" value="53,52"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="12,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">18,15</td></tr>
-                        <tr data-floor="terreo"><td>Jurídico</td><td><input class="cell-edit num" data-col="area" value="40,86"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="8"/></td><td><input class="cell-edit num" data-col="vidro" value="8,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">12,60</td></tr>
-                        <tr data-floor="terreo"><td>Diretor 01</td><td><input class="cell-edit num" data-col="area" value="36,71"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="15,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,36</td></tr>
-                        <tr data-floor="terreo"><td>Diretor 02</td><td><input class="cell-edit num" data-col="area" value="36,71"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="15,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,36</td></tr>
-                        <tr data-floor="terreo"><td>Reunião 02</td><td><input class="cell-edit num" data-col="area" value="21,87"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="10"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="15,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="0,40"/></td><td class="kw" data-col="kw">3,17</td></tr>
-                        <tr class="floor-header"><td colspan="10">1º ANDAR · 12 ambientes · <span data-floor-kw="andar1">178,12</span> kW</td></tr>
-                        <tr data-floor="andar1"><td>Reunião (20L)</td><td><input class="cell-edit num" data-col="area" value="49,33"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="20"/></td><td><input class="cell-edit num" data-col="vidro" value="18,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="49,33"/></td><td><input class="cell-edit num" data-col="forro" value="49,33"/></td><td><input class="cell-edit num" data-col="fu" value="0,50"/></td><td class="kw" data-col="kw">15,22</td></tr>
-                        <tr data-floor="andar1"><td>T.I (Infra)</td><td><input class="cell-edit num" data-col="area" value="40,54"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="10"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="40,54"/></td><td><input class="cell-edit num" data-col="forro" value="40,54"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">11,58</td></tr>
-                        <tr data-floor="andar1"><td>Assist. Dir.</td><td><input class="cell-edit num" data-col="area" value="60,06"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="12"/></td><td><input class="cell-edit num" data-col="vidro" value="22,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="60,06"/></td><td><input class="cell-edit num" data-col="forro" value="60,06"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">27,08</td></tr>
-                        <tr data-floor="andar1"><td>Faturamento</td><td><input class="cell-edit num" data-col="area" value="48,09"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="6"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="48,09"/></td><td><input class="cell-edit num" data-col="forro" value="48,09"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">10,04</td></tr>
-                        <tr data-floor="andar1"><td>Contábil</td><td><input class="cell-edit num" data-col="area" value="47,46"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="6"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="47,46"/></td><td><input class="cell-edit num" data-col="forro" value="47,46"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,95</td></tr>
-                        <tr data-floor="andar1"><td>Fiscal</td><td><input class="cell-edit num" data-col="area" value="40,54"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="6"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="40,54"/></td><td><input class="cell-edit num" data-col="forro" value="40,54"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">9,06</td></tr>
-                        <tr data-floor="andar1"><td>Diretor 03</td><td><input class="cell-edit num" data-col="area" value="53,05"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="12,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="53,05"/></td><td><input class="cell-edit num" data-col="forro" value="53,05"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">12,77</td></tr>
-                        <tr data-floor="andar1"><td>Recepção 1º</td><td><input class="cell-edit num" data-col="area" value="45,53"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="10"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="45,53"/></td><td><input class="cell-edit num" data-col="forro" value="45,53"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">12,23</td></tr>
-                        <tr data-floor="andar1"><td>Circulação</td><td><input class="cell-edit num" data-col="area" value="85,00"/></td><td><input class="cell-edit num" data-col="pe" value="3,5"/></td><td><input class="cell-edit num" data-col="ocup" value="4"/></td><td><input class="cell-edit num" data-col="vidro" value="10,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="85,00"/></td><td><input class="cell-edit num" data-col="forro" value="85,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">18,20</td></tr>
+                        <tr class="floor-header"><td colspan="10">PAVIMENTO TÉRREO · <span data-floor-kw="terreo">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow('terreo')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>
+                        <tr data-floor="terreo"><td><input class="cell-edit name" data-col="name" value="Sala 1" style="text-align:left"/></td><td><input class="cell-edit num" data-col="area" value="0,00"/></td><td><input class="cell-edit num" data-col="pe" value="3,0"/></td><td><input class="cell-edit num" data-col="ocup" value="0"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">0,00</td></tr>
                       </tbody>
                       <tfoot>
                         <tr>
                           <td colspan="9" style="text-align:right">Carga total do edifício</td>
-                          <td class="total-kw">386,27 kW</td>
+                          <td class="total-kw">0,00 kW</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -2585,79 +2575,89 @@
 
           <!-- ====== STEP 5: SYSTEMS ====== -->
           <div class="step-panel" id="panel-5">
-            <div class="dim-grid">
-              <div class="system-card">
-                <div class="sys-head">
-                  <h3>Sistema 1 · VRF Térreo</h3>
-                  <div class="sys-head-right"><span class="load">208<span class="unit">kW</span></span></div>
-                </div>
-                <div class="sys-machine">
-                  <div>
-                    <div class="name">Condensadora VRF 80HP</div>
-                    <div class="spec">Daikin · 224 kW nominal · R410A</div>
-                  </div>
-                  <div class="qty">× 1</div>
-                </div>
-                <div class="sys-machine">
-                  <div>
-                    <div class="name">Cassete 4 vias 3.6 kW</div>
-                    <div class="spec">evaporadora · 600×600 mm</div>
-                  </div>
-                  <div class="qty">× 14</div>
-                </div>
-                <div class="sys-machine">
-                  <div>
-                    <div class="name">High wall 5.6 kW</div>
-                    <div class="spec">parede · salas diretoria</div>
-                  </div>
-                  <div class="qty">× 2</div>
-                </div>
-                <div class="duct-bar">
-                  <div class="duct" style="height:40%"></div><div class="duct" style="height:55%"></div><div class="duct" style="height:72%"></div><div class="duct" style="height:88%"></div><div class="duct" style="height:95%"></div><div class="duct" style="height:78%"></div><div class="duct" style="height:60%"></div><div class="duct" style="height:48%"></div><div class="duct" style="height:65%"></div><div class="duct" style="height:80%"></div><div class="duct" style="height:70%"></div><div class="duct" style="height:52%"></div>
-                </div>
-                <div class="duct-legend"><span>Ø 200</span><span>Ø 350</span><span>Ø 500</span><span>Ø 450</span></div>
-              </div>
+            <div style="margin-bottom:24px">
+              <h3 style="font-size:18px;font-weight:500;letter-spacing:-.01em;margin-bottom:6px">Configuração do sistema</h3>
+              <p style="font-size:13px;color:var(--ink-dim)">Defina a topologia (condensadora única ou por evaporador) e o tipo de unidade interna a usar nos ambientes.</p>
+            </div>
 
-              <div class="system-card">
-                <div class="sys-head">
-                  <h3>Sistema 2 · VRF 1º Andar</h3>
-                  <div><span class="load">178<span class="unit">kW</span></span></div>
-                </div>
-                <div class="sys-machine">
+            <div class="card" style="padding:24px;margin-bottom:18px">
+              <h3 style="font-size:14px;margin-bottom:18px;color:var(--cyan);letter-spacing:.05em;text-transform:uppercase;font-family:var(--font-mono)">1 · TOPOLOGIA DO SISTEMA</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <label class="topo-option" style="cursor:pointer;padding:18px;background:var(--bg-2);border:2px solid var(--cyan);border-radius:8px;display:flex;gap:12px;align-items:flex-start">
+                  <input type="radio" name="topo" value="vrf" checked style="margin-top:3px;accent-color:var(--cyan)"/>
                   <div>
-                    <div class="name">Condensadora VRF 60HP</div>
-                    <div class="spec">Daikin · 190 kW nominal · R410A</div>
+                    <div style="font-weight:500;margin-bottom:4px">VRF — uma condensadora para várias evaporadoras</div>
+                    <div style="font-size:11.5px;color:var(--ink-dim);line-height:1.5">Sistema centralizado de fluxo refrigerante variável. Ideal para edifícios comerciais. Permite até 64 unidades internas por condensadora.</div>
                   </div>
-                  <div class="qty">× 1</div>
-                </div>
-                <div class="sys-machine">
+                </label>
+                <label class="topo-option" style="cursor:pointer;padding:18px;background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;display:flex;gap:12px;align-items:flex-start">
+                  <input type="radio" name="topo" value="split" style="margin-top:3px;accent-color:var(--cyan)"/>
                   <div>
-                    <div class="name">Cassete 4 vias 2.8 kW</div>
-                    <div class="spec">evaporadora · 600×600 mm</div>
+                    <div style="font-weight:500;margin-bottom:4px">Split — uma condensadora por evaporadora</div>
+                    <div style="font-size:11.5px;color:var(--ink-dim);line-height:1.5">Sistema individual ponto-a-ponto. Cada ambiente tem sua própria condensadora externa. Ideal para residencial e pequenos comércios.</div>
                   </div>
-                  <div class="qty">× 18</div>
-                </div>
-                <div class="sys-machine">
-                  <div>
-                    <div class="name">Duto de alta pressão</div>
-                    <div class="spec">T.I · Infra · redundância</div>
-                  </div>
-                  <div class="qty">× 1</div>
-                </div>
-                <div class="duct-bar">
-                  <div class="duct" style="height:35%"></div><div class="duct" style="height:50%"></div><div class="duct" style="height:68%"></div><div class="duct" style="height:82%"></div><div class="duct" style="height:90%"></div><div class="duct" style="height:72%"></div><div class="duct" style="height:55%"></div><div class="duct" style="height:42%"></div><div class="duct" style="height:60%"></div><div class="duct" style="height:75%"></div><div class="duct" style="height:65%"></div><div class="duct" style="height:48%"></div>
-                </div>
-                <div class="duct-legend"><span>Ø 180</span><span>Ø 320</span><span>Ø 450</span><span>Ø 400</span></div>
+                </label>
               </div>
             </div>
 
-            <div class="card" style="padding:24px">
-              <h3 style="margin-bottom:16px">Perda de carga · Darcy-Weisbach</h3>
-              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
-                <div><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Método</div><div style="font-size:14px">Igual perda de carga</div></div>
-                <div><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Perda unitária</div><div style="font-size:14px;font-family:var(--font-mono)">0.8 Pa/m</div></div>
-                <div><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Velocidade máx.</div><div style="font-size:14px;font-family:var(--font-mono)">6.5 m/s</div></div>
-                <div><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Vazão total</div><div style="font-size:14px;font-family:var(--font-mono)">3.420 L/s</div></div>
+            <div class="card" style="padding:24px;margin-bottom:18px">
+              <h3 style="font-size:14px;margin-bottom:18px;color:var(--cyan);letter-spacing:.05em;text-transform:uppercase;font-family:var(--font-mono)">2 · TIPO DE UNIDADE INTERNA (EVAPORADORA)</h3>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+                <label class="equip-option" style="cursor:pointer;padding:14px;background:var(--bg-2);border:2px solid var(--cyan);border-radius:8px;text-align:center">
+                  <input type="radio" name="equip" value="cassete4" checked style="display:none"/>
+                  <svg viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--cyan);margin-bottom:8px"><rect x="4" y="4" width="16" height="16" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 12h16M12 4v16" stroke="currentColor" stroke-width="1.5"/></svg>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:2px">Cassete 4 vias</div>
+                  <div style="font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">K7 / 600×600</div>
+                </label>
+                <label class="equip-option" style="cursor:pointer;padding:14px;background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;text-align:center">
+                  <input type="radio" name="equip" value="hw" style="display:none"/>
+                  <svg viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--ink-dim);margin-bottom:8px"><rect x="2" y="6" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 14v3M19 14v3M9 10h6" stroke="currentColor" stroke-width="1.5"/></svg>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:2px">High Wall</div>
+                  <div style="font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">HW / parede</div>
+                </label>
+                <label class="equip-option" style="cursor:pointer;padding:14px;background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;text-align:center">
+                  <input type="radio" name="equip" value="pisoteto" style="display:none"/>
+                  <svg viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--ink-dim);margin-bottom:8px"><rect x="4" y="4" width="16" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="14" width="16" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:2px">Piso/Teto</div>
+                  <div style="font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">FP / dual</div>
+                </label>
+                <label class="equip-option" style="cursor:pointer;padding:14px;background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;text-align:center">
+                  <input type="radio" name="equip" value="duto" style="display:none"/>
+                  <svg viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--ink-dim);margin-bottom:8px"><path d="M3 8h18M3 16h18M7 8v8M17 8v8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:2px">Built-in</div>
+                  <div style="font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">duto / oculto</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="card" style="padding:24px;margin-bottom:18px">
+              <h3 style="font-size:14px;margin-bottom:18px;color:var(--cyan);letter-spacing:.05em;text-transform:uppercase;font-family:var(--font-mono)">3 · MARCA E LINHA</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+                <div class="field" style="margin-bottom:0">
+                  <label>Marca preferida</label>
+                  <select id="sysBrand"><option>Daikin VRV-X</option><option>LG Multi V 5</option><option>Midea V8 Pro</option><option>Samsung DVM S2</option><option>Hitachi Set Free Sigma</option></select>
+                </div>
+                <div class="field" style="margin-bottom:0">
+                  <label>Refrigerante</label>
+                  <select id="sysGas"><option>R-410A</option><option>R-32 (recomendado 2026+)</option><option>R-454B</option></select>
+                </div>
+                <div class="field" style="margin-bottom:0">
+                  <label>Modulação</label>
+                  <select id="sysMod"><option>Inverter (DC)</option><option>Inverter (AC)</option><option>Fixo on/off</option></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="padding:24px;background:linear-gradient(135deg, rgba(0,229,255,.05), rgba(157,123,255,.03));border-color:rgba(0,229,255,.2)">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:14px">
+                <div>
+                  <div style="font-family:var(--font-mono);font-size:10px;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Sistema dimensionado</div>
+                  <div style="font-size:18px;font-weight:500" id="sysSummary">VRF · Cassete 4 vias · Daikin VRV-X · R-410A</div>
+                </div>
+                <button class="btn btn-primary" onclick="recalcSystem()" style="font-size:12px;padding:8px 14px">
+                  <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M23 4v6h-6M1 20v-6h6"/></svg>
+                  Dimensionar
+                </button>
               </div>
             </div>
           </div>
@@ -5076,32 +5076,39 @@
   // Listener: qualquer alteração em qualquer célula recalcula sua linha + totais
   document.addEventListener('input', function(e){
     if(e.target && e.target.classList && e.target.classList.contains('cell-edit')){
-      state.unsavedChanges = true;
-      const tr = e.target.closest('tr[data-floor]');
-      if(tr){
-        recalcRow(tr);
-        const tbody = document.getElementById('masterTbody');
-        if(tbody){
-          let totalGeral = 0;
-          const totalsByFloor = {};
-          tbody.querySelectorAll('tr[data-floor]').forEach(r => {
-            const kwc = r.querySelector('[data-col="kw"]');
-            const v = kwc ? parseBR(kwc.textContent) : 0;
-            totalGeral += v;
-            const f = r.dataset.floor;
-            totalsByFloor[f] = (totalsByFloor[f] || 0) + v;
-          });
-          Object.keys(totalsByFloor).forEach(f => {
-            const span = document.querySelector('[data-floor-kw="' + f + '"]');
-            if(span) span.textContent = fmtBR(totalsByFloor[f], 2);
-          });
-          const tot = document.querySelector('.total-kw');
-          if(tot){ tot.textContent = fmtBR(totalGeral, 2) + ' kW'; }
-        }
-        syncPlanFromTable();
-      }
+      handleCellChange(e.target);
     }
   });
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.classList && e.target.classList.contains('type-select')){
+      handleCellChange(e.target);
+    }
+  });
+  function handleCellChange(target){
+    state.unsavedChanges = true;
+    const tr = target.closest('tr[data-floor]');
+    if(!tr) return;
+    recalcRow(tr);
+    const tbody = document.getElementById('masterTbody');
+    if(tbody){
+      let totalGeral = 0;
+      const totalsByFloor = {};
+      tbody.querySelectorAll('tr[data-floor]').forEach(function(r){
+        const kwc = r.querySelector('[data-col="kw"]');
+        const v = kwc ? parseBR(kwc.textContent) : 0;
+        totalGeral += v;
+        const f = r.dataset.floor;
+        totalsByFloor[f] = (totalsByFloor[f] || 0) + v;
+      });
+      Object.keys(totalsByFloor).forEach(function(f){
+        const span = document.querySelector('[data-floor-kw="' + f + '"]');
+        if(span) span.textContent = fmtBR(totalsByFloor[f], 2);
+      });
+      const tot = document.querySelector('.total-kw');
+      if(tot){ tot.textContent = fmtBR(totalGeral, 2) + ' kW'; }
+    }
+    syncPlanFromTable();
+  }
 
   function recalculate(btn){
     if(!btn) return;
@@ -5473,7 +5480,56 @@
   }
 
   // Log de auditoria
-  // Adiciona entrada no log de auditoria
+  // Configuração de sistema (passo 5) — reage aos toggles de topologia/tipo
+  function recalcSystem(){
+    const topo = document.querySelector('input[name="topo"]:checked');
+    const equip = document.querySelector('input[name="equip"]:checked');
+    const brand = document.getElementById('sysBrand');
+    const gas = document.getElementById('sysGas');
+    if(!topo || !equip) return;
+    const equipNames = {cassete4:'Cassete 4 vias', hw:'High Wall', pisoteto:'Piso/Teto', duto:'Built-in (duto)'};
+    const topoNames = {vrf:'VRF', split:'Split individual'};
+    const summary = topoNames[topo.value] + ' · ' + equipNames[equip.value] + ' · ' + (brand?brand.value:'') + ' · ' + (gas?gas.value:'');
+    const el = document.getElementById('sysSummary');
+    if(el){ el.textContent = summary; }
+    toastShow('Sistema dimensionado', summary, 'success');
+  }
+  // Reage aos cliques nos cards de equipamento (visual)
+  document.addEventListener('click', function(e){
+    const opt = e.target.closest('.equip-option, .topo-option');
+    if(!opt) return;
+    const group = opt.querySelector('input').name;
+    document.querySelectorAll('.equip-option').forEach(function(c){
+      const inp = c.querySelector('input[name="equip"]');
+      if(inp){ c.style.borderColor = inp.checked ? 'var(--cyan)' : 'var(--line-2)'; const svg = c.querySelector('svg'); if(svg) svg.style.color = inp.checked ? 'var(--cyan)' : 'var(--ink-dim)'; }
+    });
+    document.querySelectorAll('.topo-option').forEach(function(c){
+      const inp = c.querySelector('input[name="topo"]');
+      if(inp){ c.style.borderColor = inp.checked ? 'var(--cyan)' : 'var(--line-2)'; }
+    });
+  });
+
+  // Adiciona uma nova linha de ambiente na tabela do andar especificado
+  function addRoomRow(floor){
+    const tbody = document.getElementById('masterTbody');
+    if(!tbody) return;
+    const headerRow = tbody.querySelector('tr.floor-header td span[data-floor-kw="' + floor + '"]');
+    if(!headerRow) return;
+    const headerTr = headerRow.closest('tr');
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-floor', floor);
+    const count = tbody.querySelectorAll('tr[data-floor="' + floor + '"]').length + 1;
+    tr.innerHTML = '<td><input class="cell-edit name" data-col="name" value="Sala ' + count + '" style="text-align:left"/></td><td><input class="cell-edit num" data-col="area" value="0,00"/></td><td><input class="cell-edit num" data-col="pe" value="3,0"/></td><td><input class="cell-edit num" data-col="ocup" value="0"/></td><td><input class="cell-edit num" data-col="vidro" value="0,00"/></td><td><input class="cell-edit num" data-col="div" value="0,00"/></td><td><input class="cell-edit num" data-col="piso" value="0,00"/></td><td><input class="cell-edit num" data-col="forro" value="0,00"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="kw" data-col="kw">0,00</td>';
+    // Insere logo após a última linha do mesmo andar (ou após o header se vazio)
+    const sameFloorRows = tbody.querySelectorAll('tr[data-floor="' + floor + '"]');
+    if(sameFloorRows.length > 0){
+      sameFloorRows[sameFloorRows.length - 1].parentNode.insertBefore(tr, sameFloorRows[sameFloorRows.length - 1].nextSibling);
+    } else {
+      headerTr.parentNode.insertBefore(tr, headerTr.nextSibling);
+    }
+    state.unsavedChanges = true;
+    toastShow('Ambiente adicionado','Sala ' + count,'success');
+  }
   // Persiste no localStorage para que o Admin Geral veja todas as ações,
   // inclusive as feitas pelos engenheiros e admin_projects fora da sua tela.
   function addAuditEntry(msg, type){
