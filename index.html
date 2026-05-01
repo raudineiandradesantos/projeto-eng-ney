@@ -1636,14 +1636,14 @@
     .viz-body{grid-template-columns:1fr}
     .viz-detail{border-left:none;border-top:1px solid var(--line)}
   }
-  /* Split-view: PDF + tabela LADO A LADO em qualquer tela */
-  .split-view{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;gap:14px;align-items:stretch;height:calc(100vh - 260px);min-height:560px;max-height:820px;width:100%;overflow:hidden}
-  .split-pdf{flex:1 1 0;min-width:0;max-width:none}
-  .split-calc{flex:1 1 0;min-width:0}
+  /* Split-view: PDF + tabela LADO A LADO (desktop) e empilhado (mobile) */
+  .split-view{display:flex;flex-direction:row;flex-wrap:nowrap;gap:14px;align-items:stretch;height:calc(100vh - 260px);min-height:560px;max-height:820px;width:100%;overflow:hidden}
+  .split-pdf{flex:0 0 52%;min-width:0;max-width:none}
+  .split-calc{flex:1 1 48%;min-width:0}
   .split-pdf,.split-calc{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
   .split-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);gap:10px;flex-shrink:0}
   .split-pdf-canvas{flex:1;background:#1a1d24;position:relative;overflow:auto;padding:14px;display:flex;align-items:flex-start;justify-content:center}
-  .split-pdf-canvas iframe{width:100%;height:100%;min-height:0;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
+  .split-pdf-canvas iframe{width:210mm;height:297mm;max-width:100%;max-height:100%;aspect-ratio:210 / 297;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
   .split-pdf-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink-muted)}
   .split-calc-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0}
   .split-calc .table-scroll{flex:1;overflow:auto}
@@ -1664,7 +1664,14 @@
   .split-table .floor-header td{background:var(--bg-3);font-family:var(--font-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted);padding:8px 14px}
   .split-table tfoot td{background:var(--bg-3);font-weight:500;padding:12px 14px;border-top:1px solid var(--line-2)}
   .split-table .total-kw{font-size:18px;color:var(--cyan);font-family:var(--font-mono);text-align:right}
-  /* Mantém sempre lado a lado mesmo em telas menores */
+  .extraction-choice{display:flex;gap:8px;flex-wrap:wrap}
+  .extract-note{margin-top:8px;font-size:11px;color:var(--ink-muted);font-family:var(--font-mono)}
+  @media (max-width: 1024px){
+    .split-view{flex-direction:column;height:auto;min-height:0;max-height:none}
+    .split-pdf,.split-calc{flex:1 1 auto}
+    .split-pdf-canvas{min-height:520px}
+  }
+  /* Mantém layout moderno com responsividade */
 
   /* Validador de senha forte */
   .pass-rules{display:grid;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)}
@@ -2457,7 +2464,7 @@
               </div>
               <div class="proc-steps">
                 <div class="proc-step" data-step="1"><div class="proc-dot"></div>Upload do arquivo<div class="proc-time">—</div></div>
-                <div class="proc-step" data-step="2"><div class="proc-dot"></div>Extração de texto e cotas (pdfplumber)<div class="proc-time">—</div></div>
+                <div class="proc-step" data-step="2"><div class="proc-dot"></div>Extração automática de texto/cotas (PyMuPDF + fallback PDF.js)<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="3"><div class="proc-dot"></div>Análise de geometria e paredes (OpenCV)<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="4"><div class="proc-dot"></div>Identificação de pelotas de vidro e divisórias<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="5"><div class="proc-dot"></div>Classificação de ambientes<div class="proc-time">—</div></div>
@@ -2487,6 +2494,8 @@
                     <button class="btn btn-icon btn-outline" onclick="setStep(2)" title="Substituir PDF"><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></button>
                     <button class="btn btn-icon btn-outline" onclick="downloadCurrentPdf()" title="Baixar PDF" id="splitPdfDownloadBtn" disabled><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
                     <button class="btn btn-icon btn-outline" onclick="openPdfFullscreen()" title="Tela cheia"><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="tryAutoExtractWithChoice()" title="Extrair dados">Auto extrair</button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="prepareDWGExport()" title="Exportar DWG">Exportar DWG</button>
                   </div>
                 </div>
                 <div class="split-pdf-canvas" id="splitPdfCanvas">
@@ -3001,6 +3010,22 @@
                 <button class="btn btn-primary" onclick="generateDXF(this)">
                   <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                   Gerar DXF
+                </button>
+              </div>
+
+              <div class="export-card">
+                <div class="export-card-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7h18M7 3h10v18H7z"/>
+                    <path d="M9 11h6M9 15h6"/>
+                  </svg>
+                </div>
+                <h3>Baixar DWG</h3>
+                <div class="fmt">CAD · DXF compatível</div>
+                <p>Exportação CAD disponível em DXF compatível com AutoCAD; conversão para DWG pode ser feita em software CAD.</p>
+                <button class="btn btn-primary" onclick="downloadDWGCompatible(this)">
+                  <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  Baixar DWG
                 </button>
               </div>
 
@@ -4736,6 +4761,33 @@
         return '<div class="project" onclick="resumeProject(\'' + p.id + '\')"><div class="proj-head"><span class="proj-status ' + status + '">' + statusLabel + '</span><span class="proj-ver">' + (p.version||'v01') + '</span></div><div class="proj-name">' + (p.name||'Projeto') + '</div><div class="proj-loc">salvo em ' + savedDate + '</div><div class="proj-meta"><div class="proj-meta-item"><div class="k">Etapa atual</div><div class="v">' + (p.step||1) + ' de 7</div></div><div class="proj-meta-item"><div class="k">Status</div><div class="v">' + statusLabel + '</div></div></div></div>';
       }).join('') + '<div class="project new" onclick="startNewProject()"><div class="plus">+</div><div>Novo projeto</div></div>';
     }
+    notifyOwnerApprovalStatus();
+  }
+
+  // Notifica o engenheiro quando um projeto submetido for aprovado/reprovado pelo Admin de Projetos
+  function notifyOwnerApprovalStatus(){
+    if(!state.currentUser || !state.currentUser.email) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const mineDecided = projects.filter(function(p){
+      return p.owner === state.currentUser.email && (p.status === 'approved' || p.status === 'rejected') && p.decisionAt;
+    });
+    if(!mineDecided.length) return;
+    const key = 'smarthvac.decisionSeen.' + state.currentUser.email;
+    const lastSeen = localStorage.getItem(key) || '';
+    const pendingNotice = mineDecided
+      .filter(function(p){ return p.decisionAt > lastSeen; })
+      .sort(function(a,b){ return a.decisionAt.localeCompare(b.decisionAt); });
+    if(!pendingNotice.length) return;
+    pendingNotice.forEach(function(p){
+      const approved = p.status === 'approved';
+      toastShow(
+        approved ? 'Projeto aprovado' : 'Projeto reprovado',
+        (p.name || 'Projeto') + ' · ' + (p.version || 'v01'),
+        approved ? 'success' : 'warn'
+      );
+    });
+    localStorage.setItem(key, pendingNotice[pendingNotice.length - 1].decisionAt);
   }
 
   // Abre um projeto salvo retomando do passo onde parou
@@ -5287,6 +5339,24 @@
     return '<tr data-floor="'+floor+'"><td><input class="cell-edit name" data-col="name" value="'+name.replace(/"/g,'&quot;')+'" style="text-align:left"/></td><td><select class="cell-edit type-select" data-col="type">'+opts+'</select></td><td><input class="cell-edit num" data-col="area" value="'+fmtBR(area,2)+'"/></td><td><input class="cell-edit num" data-col="pe" value="3,0"/></td><td><input class="cell-edit num" data-col="ocup" value="'+ocup+'"/></td><td><input class="cell-edit num" data-col="vidro" value="'+fmtBR(vidro,2)+'"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="ar-ext" data-col="arExt">0,0</td><td class="equip-sug" data-col="equip">—</td><td class="kw" data-col="kw">0,00</td></tr>';
   }
 
+  // Orquestra o take-off automático: tenta API PyMuPDF e cai para PDF.js local se necessário
+  async function applyRealTakeoff(){
+    if(!state.uploadedPDF || !state.uploadedPDF.dataUrl){
+      toastShow('Sem PDF','Faça upload primeiro','warn');
+      return;
+    }
+    try{
+      const py = await extractWithPyMuPDFApi(state.uploadedPDF);
+      if(py && py.ok && Array.isArray(py.rooms) && py.rooms.length){
+        applyExtractedRooms(py.rooms, 'PyMuPDF');
+        return;
+      }
+    }catch(e){
+      console.warn('Falha na API PyMuPDF, aplicando fallback PDF.js', e);
+    }
+    await runRealTakeoff();
+  }
+
   // Função principal: extrai texto de TODAS as páginas do PDF e identifica ambientes
   async function runRealTakeoff(){
     if(typeof pdfjsLib === 'undefined'){
@@ -5526,6 +5596,44 @@
       toastShow('Erro na extração', 'Não foi possível ler este PDF · use a opção manual', 'error');
       openTakeoffChoice(0, 0, 0, 0);
     }
+  }
+
+  function applyExtractedRooms(rooms, engineLabel){
+    const tbody = document.getElementById('masterTbody');
+    if(!tbody || !Array.isArray(rooms) || !rooms.length){
+      toastShow('Sem dados suficientes','Use preenchimento manual','warn');
+      openTakeoffChoice(0,0,0,0);
+      return;
+    }
+    tbody.innerHTML = '';
+    const byFloor = { terreo: [], andar1: [] };
+    rooms.forEach(function(r){ byFloor[r.floor === 'andar1' ? 'andar1' : 'terreo'].push(r); });
+    if(byFloor.terreo.length){
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">PAVIMENTO TÉRREO · <span data-floor-kw="terreo">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow(\'terreo\')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      byFloor.terreo.forEach(function(r){ tbody.innerHTML += buildAutoRow('terreo', r.name, r.type, r.area, r.ocup, r.vidro); });
+    }
+    if(byFloor.andar1.length){
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">1º ANDAR · <span data-floor-kw="andar1">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow(\'andar1\')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      byFloor.andar1.forEach(function(r){ tbody.innerHTML += buildAutoRow('andar1', r.name, r.type, r.area, r.ocup, r.vidro); });
+    }
+    tbody.querySelectorAll('tr[data-floor]').forEach(function(tr){ recalcRow(tr); });
+    recalcAll();
+    toastShow('Extração concluída', rooms.length + ' ambientes via ' + engineLabel, 'success');
+    setStep(3);
+  }
+
+  async function extractWithPyMuPDFApi(uploadedPDF){
+    try{
+      const rsp = await fetch('/api/extract-pdf', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename: uploadedPDF.name, dataUrl: uploadedPDF.dataUrl}) });
+      if(!rsp.ok) return null;
+      return await rsp.json();
+    }catch(e){ return null; }
+  }
+
+  function tryAutoExtractWithChoice(){ applyRealTakeoff(); }
+
+  function prepareDWGExport(){
+    downloadDWGCompatible();
   }
 
   // Helper: dorme N ms (para visualização das etapas)
@@ -5774,6 +5882,10 @@
       else if(i.dataset.col === 'type') data.type = i.value;
       else data[i.dataset.col] = parseBR(i.value);
     });
+    data.area = Number.isFinite(data.area) ? data.area : 0;
+    data.ocup = Number.isFinite(data.ocup) ? data.ocup : 0;
+    data.vidro = Number.isFinite(data.vidro) ? data.vidro : 0;
+    data.fu = Number.isFinite(data.fu) ? data.fu : 1;
     const t = ROOM_TYPES[data.type] || ROOM_TYPES.escritorio;
     // Q_int = (Ocup × 376W) + (Área × 25W ilum) + (Área × 80W equip)
     // 376W/pessoa = 126W sensível + 250W latente conforme ASHRAE 62.1 / NBR 16401-2
@@ -5788,7 +5900,7 @@
     // Q_plenum (1º andar e superiores): área × 50W (piso quente + forro quente)
     const isUpperFloor = tr.dataset.floor && tr.dataset.floor !== 'terreo';
     const qPlenum = isUpperFloor ? (data.area * 50) : 0;
-    const total = ((qInt + qEnv + qPlenum) / 1000) * (data.fu || 1);
+    const total = Math.max(0, ((qInt + qEnv + qPlenum) / 1000) * (data.fu || 1));
     // Vazão ar exterior NBR 16401-3
     const arExt = (t.Pp * data.ocup) + (t.Pa * data.area);
     const equip = suggestEquip(total, data.type);
@@ -6115,6 +6227,72 @@
   // -------- DXF REAL (válido AutoCAD R2007+) --------
   // Cria arquivo .dxf com retângulos representando cada ambiente,
   // bloco TEXT identificando, e uma POINT no centro indicando evaporadora
+  function buildProjectDxfContent(data){
+    let dxf = '999\nSmartHVAC ' + data.name + ' (' + data.date + ')\n';
+    dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
+    dxf += '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n';
+    dxf += '0\nLAYER\n2\nAMBIENTES\n70\n0\n62\n7\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nVRF-EQUIP\n70\n0\n62\n4\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nTEXTOS\n70\n0\n62\n3\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nDUTOS\n70\n0\n62\n5\n6\nCONTINUOUS\n';
+    dxf += '0\nENDTAB\n0\nENDSEC\n';
+    dxf += '0\nSECTION\n2\nENTITIES\n';
+    let x = 0, y = 0, maxRowH = 0, col = 0;
+    const COLS = 5, GAP = 2;
+    data.rows.forEach(function(r){
+      const side = Math.max(3, Math.sqrt(r.area || 9));
+      if(col >= COLS){ col = 0; x = 0; y -= maxRowH + GAP; maxRowH = 0; }
+      const x1 = x, y1 = y, x2 = x + side, y2 = y - side;
+      dxf += '0\nLWPOLYLINE\n8\nAMBIENTES\n90\n4\n70\n1\n';
+      dxf += '10\n'+x1+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y2+'\n10\n'+x1+'\n20\n'+y2+'\n';
+      dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-0.6)+'\n40\n0.4\n1\n'+r.name.replace(/[^\x20-\x7E]/g,'')+'\n';
+      dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-1.2)+'\n40\n0.3\n1\n'+r.kw.toFixed(2)+' kW\n';
+      const cx = x1 + side/2, cy = y1 - side/2;
+      dxf += '0\nCIRCLE\n8\nVRF-EQUIP\n10\n'+cx+'\n20\n'+cy+'\n40\n0.6\n';
+      dxf += '0\nTEXT\n8\nVRF-EQUIP\n10\n'+(cx-0.5)+'\n20\n'+(cy-0.15)+'\n40\n0.25\n1\nVRF\n';
+      x += side + GAP;
+      if(side > maxRowH) maxRowH = side;
+      col++;
+    });
+    dxf += '0\nENDSEC\n0\nEOF\n';
+    return dxf;
+  }
+
+  function downloadDWGCompatible(btn){
+    if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação CAD (DXF compatível com DWG)'); return; }
+    const data = collectProjectData();
+    if(data.rows.length === 0){
+      toastShow('Tabela vazia','Adicione ambientes antes de baixar CAD','warn');
+      return;
+    }
+    const original = btn ? btn.innerHTML : '';
+    if(btn){
+      btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando CAD...';
+      btn.disabled = true;
+    }
+    setTimeout(async function(){
+      const safeName = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-');
+      try{
+        const rsp = await fetch('/api/export-dwg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if(rsp.ok){
+          const dwgBlob = await rsp.blob();
+          downloadBlob(dwgBlob, safeName + '.dwg');
+          addAuditEntry('baixou DWG real de ' + data.name, 'ok');
+          toastShow('DWG gerado', safeName + '.dwg', 'success');
+          if(btn){ btn.innerHTML = original; btn.disabled = false; }
+          return;
+        }
+      }catch(e){}
+
+      if(btn){ btn.innerHTML = original; btn.disabled = false; }
+      toastShow('DWG indisponível no momento','Não há conversor DWG real ativo no backend. Use o botão "Gerar DXF" por enquanto.','warn');
+    }, 900);
+  }
+
   function generateDXF(btn){
     if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação DXF'); return; }
     if(!btn) return;
@@ -6127,37 +6305,7 @@
     btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando DXF...';
     btn.disabled = true;
     setTimeout(function(){
-      let dxf = '999\nSmartHVAC ' + data.name + ' (' + data.date + ')\n';
-      dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
-      dxf += '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n';
-      dxf += '0\nLAYER\n2\nAMBIENTES\n70\n0\n62\n7\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nVRF-EQUIP\n70\n0\n62\n4\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nTEXTOS\n70\n0\n62\n3\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nDUTOS\n70\n0\n62\n5\n6\nCONTINUOUS\n';
-      dxf += '0\nENDTAB\n0\nENDSEC\n';
-      dxf += '0\nSECTION\n2\nENTITIES\n';
-      // Layout: cada ambiente = retângulo proporcional à área (lado = sqrt(area))
-      let x = 0, y = 0, maxRowH = 0, col = 0;
-      const COLS = 5, GAP = 2;
-      data.rows.forEach(function(r, i){
-        const side = Math.max(3, Math.sqrt(r.area || 9));
-        if(col >= COLS){ col = 0; x = 0; y -= maxRowH + GAP; maxRowH = 0; }
-        const x1 = x, y1 = y, x2 = x + side, y2 = y - side;
-        // Retângulo do ambiente (POLYLINE fechada)
-        dxf += '0\nLWPOLYLINE\n8\nAMBIENTES\n90\n4\n70\n1\n';
-        dxf += '10\n'+x1+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y2+'\n10\n'+x1+'\n20\n'+y2+'\n';
-        // TEXT com nome + carga
-        dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-0.6)+'\n40\n0.4\n1\n'+r.name.replace(/[^\x20-\x7E]/g,'')+'\n';
-        dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-1.2)+'\n40\n0.3\n1\n'+r.kw.toFixed(2)+' kW\n';
-        // CIRCLE no centro = evaporadora
-        const cx = x1 + side/2, cy = y1 - side/2;
-        dxf += '0\nCIRCLE\n8\nVRF-EQUIP\n10\n'+cx+'\n20\n'+cy+'\n40\n0.6\n';
-        dxf += '0\nTEXT\n8\nVRF-EQUIP\n10\n'+(cx-0.5)+'\n20\n'+(cy-0.15)+'\n40\n0.25\n1\nVRF\n';
-        x += side + GAP;
-        if(side > maxRowH) maxRowH = side;
-        col++;
-      });
-      dxf += '0\nENDSEC\n0\nEOF\n';
+      const dxf = buildProjectDxfContent(data);
       const blob = new Blob([dxf], { type: 'application/dxf' });
       const filename = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-') + '.dxf';
       downloadBlob(blob, filename);
