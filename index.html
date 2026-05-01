@@ -6270,14 +6270,26 @@
       btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando CAD...';
       btn.disabled = true;
     }
-    setTimeout(function(){
-      const dxf = buildProjectDxfContent(data);
-      const blob = new Blob([dxf], { type: 'application/dxf' });
-      const filename = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-') + '_compat_autoCAD.dxf';
-      downloadBlob(blob, filename);
+    setTimeout(async function(){
+      const safeName = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-');
+      try{
+        const rsp = await fetch('/api/export-dwg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if(rsp.ok){
+          const dwgBlob = await rsp.blob();
+          downloadBlob(dwgBlob, safeName + '.dwg');
+          addAuditEntry('baixou DWG real de ' + data.name, 'ok');
+          toastShow('DWG gerado', safeName + '.dwg', 'success');
+          if(btn){ btn.innerHTML = original; btn.disabled = false; }
+          return;
+        }
+      }catch(e){}
+
       if(btn){ btn.innerHTML = original; btn.disabled = false; }
-      addAuditEntry('baixou CAD compatível (DXF) para conversão DWG · ' + data.name, 'ok');
-      toastShow('CAD compatível baixado','Arquivo DXF pronto · converta para DWG no AutoCAD/BricsCAD', 'success');
+      toastShow('DWG indisponível no momento','Não há conversor DWG real ativo no backend. Use o botão "Gerar DXF" por enquanto.','warn');
     }, 900);
   }
 
