@@ -5855,6 +5855,10 @@
       else if(i.dataset.col === 'type') data.type = i.value;
       else data[i.dataset.col] = parseBR(i.value);
     });
+    data.area = Number.isFinite(data.area) ? data.area : 0;
+    data.ocup = Number.isFinite(data.ocup) ? data.ocup : 0;
+    data.vidro = Number.isFinite(data.vidro) ? data.vidro : 0;
+    data.fu = Number.isFinite(data.fu) ? data.fu : 1;
     const t = ROOM_TYPES[data.type] || ROOM_TYPES.escritorio;
     // Q_int = (Ocup × 376W) + (Área × 25W ilum) + (Área × 80W equip)
     // 376W/pessoa = 126W sensível + 250W latente conforme ASHRAE 62.1 / NBR 16401-2
@@ -5869,7 +5873,7 @@
     // Q_plenum (1º andar e superiores): área × 50W (piso quente + forro quente)
     const isUpperFloor = tr.dataset.floor && tr.dataset.floor !== 'terreo';
     const qPlenum = isUpperFloor ? (data.area * 50) : 0;
-    const total = ((qInt + qEnv + qPlenum) / 1000) * (data.fu || 1);
+    const total = Math.max(0, ((qInt + qEnv + qPlenum) / 1000) * (data.fu || 1));
     // Vazão ar exterior NBR 16401-3
     const arExt = (t.Pp * data.ocup) + (t.Pa * data.area);
     const equip = suggestEquip(total, data.type);
