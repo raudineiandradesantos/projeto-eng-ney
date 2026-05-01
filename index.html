@@ -1636,14 +1636,14 @@
     .viz-body{grid-template-columns:1fr}
     .viz-detail{border-left:none;border-top:1px solid var(--line)}
   }
-  /* Split-view: PDF + tabela LADO A LADO em qualquer tela */
-  .split-view{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;gap:14px;align-items:stretch;height:calc(100vh - 260px);min-height:560px;max-height:820px;width:100%;overflow:hidden}
-  .split-pdf{flex:1 1 0;min-width:0;max-width:none}
-  .split-calc{flex:1 1 0;min-width:0}
+  /* Split-view: PDF + tabela LADO A LADO (desktop) e empilhado (mobile) */
+  .split-view{display:flex;flex-direction:row;flex-wrap:nowrap;gap:14px;align-items:stretch;height:calc(100vh - 260px);min-height:560px;max-height:820px;width:100%;overflow:hidden}
+  .split-pdf{flex:0 0 52%;min-width:0;max-width:none}
+  .split-calc{flex:1 1 48%;min-width:0}
   .split-pdf,.split-calc{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
   .split-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);gap:10px;flex-shrink:0}
   .split-pdf-canvas{flex:1;background:#1a1d24;position:relative;overflow:auto;padding:14px;display:flex;align-items:flex-start;justify-content:center}
-  .split-pdf-canvas iframe{width:100%;height:100%;min-height:0;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
+  .split-pdf-canvas iframe{width:210mm;height:297mm;max-width:100%;max-height:100%;aspect-ratio:210 / 297;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
   .split-pdf-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink-muted)}
   .split-calc-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0}
   .split-calc .table-scroll{flex:1;overflow:auto}
@@ -1664,7 +1664,14 @@
   .split-table .floor-header td{background:var(--bg-3);font-family:var(--font-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted);padding:8px 14px}
   .split-table tfoot td{background:var(--bg-3);font-weight:500;padding:12px 14px;border-top:1px solid var(--line-2)}
   .split-table .total-kw{font-size:18px;color:var(--cyan);font-family:var(--font-mono);text-align:right}
-  /* Mantém sempre lado a lado mesmo em telas menores */
+  .extraction-choice{display:flex;gap:8px;flex-wrap:wrap}
+  .extract-note{margin-top:8px;font-size:11px;color:var(--ink-muted);font-family:var(--font-mono)}
+  @media (max-width: 1024px){
+    .split-view{flex-direction:column;height:auto;min-height:0;max-height:none}
+    .split-pdf,.split-calc{flex:1 1 auto}
+    .split-pdf-canvas{min-height:520px}
+  }
+  /* Mantém layout moderno com responsividade */
 
   /* Validador de senha forte */
   .pass-rules{display:grid;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)}
@@ -2457,7 +2464,7 @@
               </div>
               <div class="proc-steps">
                 <div class="proc-step" data-step="1"><div class="proc-dot"></div>Upload do arquivo<div class="proc-time">—</div></div>
-                <div class="proc-step" data-step="2"><div class="proc-dot"></div>Extração de texto e cotas (pdfplumber)<div class="proc-time">—</div></div>
+                <div class="proc-step" data-step="2"><div class="proc-dot"></div>Extração automática de texto/cotas (PyMuPDF + fallback PDF.js)<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="3"><div class="proc-dot"></div>Análise de geometria e paredes (OpenCV)<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="4"><div class="proc-dot"></div>Identificação de pelotas de vidro e divisórias<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="5"><div class="proc-dot"></div>Classificação de ambientes<div class="proc-time">—</div></div>
@@ -2487,6 +2494,8 @@
                     <button class="btn btn-icon btn-outline" onclick="setStep(2)" title="Substituir PDF"><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></button>
                     <button class="btn btn-icon btn-outline" onclick="downloadCurrentPdf()" title="Baixar PDF" id="splitPdfDownloadBtn" disabled><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
                     <button class="btn btn-icon btn-outline" onclick="openPdfFullscreen()" title="Tela cheia"><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="tryAutoExtractWithChoice()" title="Extrair dados">Auto extrair</button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="prepareDWGExport()" title="Exportar DWG">Exportar DWG</button>
                   </div>
                 </div>
                 <div class="split-pdf-canvas" id="splitPdfCanvas">
@@ -5526,6 +5535,44 @@
       toastShow('Erro na extração', 'Não foi possível ler este PDF · use a opção manual', 'error');
       openTakeoffChoice(0, 0, 0, 0);
     }
+  }
+
+  function applyExtractedRooms(rooms, engineLabel){
+    const tbody = document.getElementById('masterTbody');
+    if(!tbody || !Array.isArray(rooms) || !rooms.length){
+      toastShow('Sem dados suficientes','Use preenchimento manual','warn');
+      openTakeoffChoice(0,0,0,0);
+      return;
+    }
+    tbody.innerHTML = '';
+    const byFloor = { terreo: [], andar1: [] };
+    rooms.forEach(function(r){ byFloor[r.floor === 'andar1' ? 'andar1' : 'terreo'].push(r); });
+    if(byFloor.terreo.length){
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">PAVIMENTO TÉRREO · <span data-floor-kw="terreo">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow('terreo')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      byFloor.terreo.forEach(function(r){ tbody.innerHTML += buildAutoRow('terreo', r.name, r.type, r.area, r.ocup, r.vidro); });
+    }
+    if(byFloor.andar1.length){
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">1º ANDAR · <span data-floor-kw="andar1">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow('andar1')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      byFloor.andar1.forEach(function(r){ tbody.innerHTML += buildAutoRow('andar1', r.name, r.type, r.area, r.ocup, r.vidro); });
+    }
+    tbody.querySelectorAll('tr[data-floor]').forEach(function(tr){ recalcRow(tr); });
+    recalcAll();
+    toastShow('Extração concluída', rooms.length + ' ambientes via ' + engineLabel, 'success');
+    setStep(3);
+  }
+
+  async function extractWithPyMuPDFApi(uploadedPDF){
+    try{
+      const rsp = await fetch('/api/extract-pdf', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename: uploadedPDF.name, dataUrl: uploadedPDF.dataUrl}) });
+      if(!rsp.ok) return null;
+      return await rsp.json();
+    }catch(e){ return null; }
+  }
+
+  function tryAutoExtractWithChoice(){ openTakeoffChoice(0,0,0,0); }
+
+  function prepareDWGExport(){
+    toastShow('Exportação DWG preparada','Recurso depende de processamento CAD no backend. Estrutura pronta no front-end.','info');
   }
 
   // Helper: dorme N ms (para visualização das etapas)
