@@ -4761,6 +4761,33 @@
         return '<div class="project" onclick="resumeProject(\'' + p.id + '\')"><div class="proj-head"><span class="proj-status ' + status + '">' + statusLabel + '</span><span class="proj-ver">' + (p.version||'v01') + '</span></div><div class="proj-name">' + (p.name||'Projeto') + '</div><div class="proj-loc">salvo em ' + savedDate + '</div><div class="proj-meta"><div class="proj-meta-item"><div class="k">Etapa atual</div><div class="v">' + (p.step||1) + ' de 7</div></div><div class="proj-meta-item"><div class="k">Status</div><div class="v">' + statusLabel + '</div></div></div></div>';
       }).join('') + '<div class="project new" onclick="startNewProject()"><div class="plus">+</div><div>Novo projeto</div></div>';
     }
+    notifyOwnerApprovalStatus();
+  }
+
+  // Notifica o engenheiro quando um projeto submetido for aprovado/reprovado pelo Admin de Projetos
+  function notifyOwnerApprovalStatus(){
+    if(!state.currentUser || !state.currentUser.email) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const mineDecided = projects.filter(function(p){
+      return p.owner === state.currentUser.email && (p.status === 'approved' || p.status === 'rejected') && p.decisionAt;
+    });
+    if(!mineDecided.length) return;
+    const key = 'smarthvac.decisionSeen.' + state.currentUser.email;
+    const lastSeen = localStorage.getItem(key) || '';
+    const pendingNotice = mineDecided
+      .filter(function(p){ return p.decisionAt > lastSeen; })
+      .sort(function(a,b){ return a.decisionAt.localeCompare(b.decisionAt); });
+    if(!pendingNotice.length) return;
+    pendingNotice.forEach(function(p){
+      const approved = p.status === 'approved';
+      toastShow(
+        approved ? 'Projeto aprovado' : 'Projeto reprovado',
+        (p.name || 'Projeto') + ' · ' + (p.version || 'v01'),
+        approved ? 'success' : 'warn'
+      );
+    });
+    localStorage.setItem(key, pendingNotice[pendingNotice.length - 1].decisionAt);
   }
 
   // Abre um projeto salvo retomando do passo onde parou
