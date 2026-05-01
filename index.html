@@ -3016,6 +3016,22 @@
               <div class="export-card">
                 <div class="export-card-icon">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7h18M7 3h10v18H7z"/>
+                    <path d="M9 11h6M9 15h6"/>
+                  </svg>
+                </div>
+                <h3>Baixar DWG</h3>
+                <div class="fmt">CAD · DXF compatível</div>
+                <p>Exportação CAD disponível em DXF compatível com AutoCAD; conversão para DWG pode ser feita em software CAD.</p>
+                <button class="btn btn-primary" onclick="downloadDWGCompatible(this)">
+                  <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  Baixar DWG
+                </button>
+              </div>
+
+              <div class="export-card">
+                <div class="export-card-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                     <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
                   </svg>
@@ -5572,7 +5588,7 @@
   function tryAutoExtractWithChoice(){ openTakeoffChoice(0,0,0,0); }
 
   function prepareDWGExport(){
-    toastShow('Exportação DWG preparada','Recurso depende de processamento CAD no backend. Estrutura pronta no front-end.','info');
+    downloadDWGCompatible();
   }
 
   // Helper: dorme N ms (para visualização das etapas)
@@ -6162,6 +6178,60 @@
   // -------- DXF REAL (válido AutoCAD R2007+) --------
   // Cria arquivo .dxf com retângulos representando cada ambiente,
   // bloco TEXT identificando, e uma POINT no centro indicando evaporadora
+  function buildProjectDxfContent(data){
+    let dxf = '999\nSmartHVAC ' + data.name + ' (' + data.date + ')\n';
+    dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
+    dxf += '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n';
+    dxf += '0\nLAYER\n2\nAMBIENTES\n70\n0\n62\n7\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nVRF-EQUIP\n70\n0\n62\n4\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nTEXTOS\n70\n0\n62\n3\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nDUTOS\n70\n0\n62\n5\n6\nCONTINUOUS\n';
+    dxf += '0\nENDTAB\n0\nENDSEC\n';
+    dxf += '0\nSECTION\n2\nENTITIES\n';
+    let x = 0, y = 0, maxRowH = 0, col = 0;
+    const COLS = 5, GAP = 2;
+    data.rows.forEach(function(r){
+      const side = Math.max(3, Math.sqrt(r.area || 9));
+      if(col >= COLS){ col = 0; x = 0; y -= maxRowH + GAP; maxRowH = 0; }
+      const x1 = x, y1 = y, x2 = x + side, y2 = y - side;
+      dxf += '0\nLWPOLYLINE\n8\nAMBIENTES\n90\n4\n70\n1\n';
+      dxf += '10\n'+x1+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y2+'\n10\n'+x1+'\n20\n'+y2+'\n';
+      dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-0.6)+'\n40\n0.4\n1\n'+r.name.replace(/[^\x20-\x7E]/g,'')+'\n';
+      dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-1.2)+'\n40\n0.3\n1\n'+r.kw.toFixed(2)+' kW\n';
+      const cx = x1 + side/2, cy = y1 - side/2;
+      dxf += '0\nCIRCLE\n8\nVRF-EQUIP\n10\n'+cx+'\n20\n'+cy+'\n40\n0.6\n';
+      dxf += '0\nTEXT\n8\nVRF-EQUIP\n10\n'+(cx-0.5)+'\n20\n'+(cy-0.15)+'\n40\n0.25\n1\nVRF\n';
+      x += side + GAP;
+      if(side > maxRowH) maxRowH = side;
+      col++;
+    });
+    dxf += '0\nENDSEC\n0\nEOF\n';
+    return dxf;
+  }
+
+  function downloadDWGCompatible(btn){
+    if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação CAD (DXF compatível com DWG)'); return; }
+    const data = collectProjectData();
+    if(data.rows.length === 0){
+      toastShow('Tabela vazia','Adicione ambientes antes de baixar CAD','warn');
+      return;
+    }
+    const original = btn ? btn.innerHTML : '';
+    if(btn){
+      btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando CAD...';
+      btn.disabled = true;
+    }
+    setTimeout(function(){
+      const dxf = buildProjectDxfContent(data);
+      const blob = new Blob([dxf], { type: 'application/dxf' });
+      const filename = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-') + '_compat_autoCAD.dxf';
+      downloadBlob(blob, filename);
+      if(btn){ btn.innerHTML = original; btn.disabled = false; }
+      addAuditEntry('baixou CAD compatível (DXF) para conversão DWG · ' + data.name, 'ok');
+      toastShow('CAD compatível baixado','Arquivo DXF pronto · converta para DWG no AutoCAD/BricsCAD', 'success');
+    }, 900);
+  }
+
   function generateDXF(btn){
     if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação DXF'); return; }
     if(!btn) return;
@@ -6174,37 +6244,7 @@
     btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando DXF...';
     btn.disabled = true;
     setTimeout(function(){
-      let dxf = '999\nSmartHVAC ' + data.name + ' (' + data.date + ')\n';
-      dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
-      dxf += '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n';
-      dxf += '0\nLAYER\n2\nAMBIENTES\n70\n0\n62\n7\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nVRF-EQUIP\n70\n0\n62\n4\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nTEXTOS\n70\n0\n62\n3\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nDUTOS\n70\n0\n62\n5\n6\nCONTINUOUS\n';
-      dxf += '0\nENDTAB\n0\nENDSEC\n';
-      dxf += '0\nSECTION\n2\nENTITIES\n';
-      // Layout: cada ambiente = retângulo proporcional à área (lado = sqrt(area))
-      let x = 0, y = 0, maxRowH = 0, col = 0;
-      const COLS = 5, GAP = 2;
-      data.rows.forEach(function(r, i){
-        const side = Math.max(3, Math.sqrt(r.area || 9));
-        if(col >= COLS){ col = 0; x = 0; y -= maxRowH + GAP; maxRowH = 0; }
-        const x1 = x, y1 = y, x2 = x + side, y2 = y - side;
-        // Retângulo do ambiente (POLYLINE fechada)
-        dxf += '0\nLWPOLYLINE\n8\nAMBIENTES\n90\n4\n70\n1\n';
-        dxf += '10\n'+x1+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y2+'\n10\n'+x1+'\n20\n'+y2+'\n';
-        // TEXT com nome + carga
-        dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-0.6)+'\n40\n0.4\n1\n'+r.name.replace(/[^\x20-\x7E]/g,'')+'\n';
-        dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-1.2)+'\n40\n0.3\n1\n'+r.kw.toFixed(2)+' kW\n';
-        // CIRCLE no centro = evaporadora
-        const cx = x1 + side/2, cy = y1 - side/2;
-        dxf += '0\nCIRCLE\n8\nVRF-EQUIP\n10\n'+cx+'\n20\n'+cy+'\n40\n0.6\n';
-        dxf += '0\nTEXT\n8\nVRF-EQUIP\n10\n'+(cx-0.5)+'\n20\n'+(cy-0.15)+'\n40\n0.25\n1\nVRF\n';
-        x += side + GAP;
-        if(side > maxRowH) maxRowH = side;
-        col++;
-      });
-      dxf += '0\nENDSEC\n0\nEOF\n';
+      const dxf = buildProjectDxfContent(data);
       const blob = new Blob([dxf], { type: 'application/dxf' });
       const filename = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-') + '.dxf';
       downloadBlob(blob, filename);
