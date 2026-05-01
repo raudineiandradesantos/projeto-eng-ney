@@ -5564,11 +5564,11 @@
     const byFloor = { terreo: [], andar1: [] };
     rooms.forEach(function(r){ byFloor[r.floor === 'andar1' ? 'andar1' : 'terreo'].push(r); });
     if(byFloor.terreo.length){
-      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">PAVIMENTO TÉRREO · <span data-floor-kw="terreo">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow('terreo')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">PAVIMENTO TÉRREO · <span data-floor-kw="terreo">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow(\\'terreo\\')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
       byFloor.terreo.forEach(function(r){ tbody.innerHTML += buildAutoRow('terreo', r.name, r.type, r.area, r.ocup, r.vidro); });
     }
     if(byFloor.andar1.length){
-      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">1º ANDAR · <span data-floor-kw="andar1">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow('andar1')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">1º ANDAR · <span data-floor-kw="andar1">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow(\\'andar1\\')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
       byFloor.andar1.forEach(function(r){ tbody.innerHTML += buildAutoRow('andar1', r.name, r.type, r.area, r.ocup, r.vidro); });
     }
     tbody.querySelectorAll('tr[data-floor]').forEach(function(tr){ recalcRow(tr); });
