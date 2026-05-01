@@ -5312,6 +5312,24 @@
     return '<tr data-floor="'+floor+'"><td><input class="cell-edit name" data-col="name" value="'+name.replace(/"/g,'&quot;')+'" style="text-align:left"/></td><td><select class="cell-edit type-select" data-col="type">'+opts+'</select></td><td><input class="cell-edit num" data-col="area" value="'+fmtBR(area,2)+'"/></td><td><input class="cell-edit num" data-col="pe" value="3,0"/></td><td><input class="cell-edit num" data-col="ocup" value="'+ocup+'"/></td><td><input class="cell-edit num" data-col="vidro" value="'+fmtBR(vidro,2)+'"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="ar-ext" data-col="arExt">0,0</td><td class="equip-sug" data-col="equip">—</td><td class="kw" data-col="kw">0,00</td></tr>';
   }
 
+  // Orquestra o take-off automático: tenta API PyMuPDF e cai para PDF.js local se necessário
+  async function applyRealTakeoff(){
+    if(!state.uploadedPDF || !state.uploadedPDF.dataUrl){
+      toastShow('Sem PDF','Faça upload primeiro','warn');
+      return;
+    }
+    try{
+      const py = await extractWithPyMuPDFApi(state.uploadedPDF);
+      if(py && py.ok && Array.isArray(py.rooms) && py.rooms.length){
+        applyExtractedRooms(py.rooms, 'PyMuPDF');
+        return;
+      }
+    }catch(e){
+      console.warn('Falha na API PyMuPDF, aplicando fallback PDF.js', e);
+    }
+    await runRealTakeoff();
+  }
+
   // Função principal: extrai texto de TODAS as páginas do PDF e identifica ambientes
   async function runRealTakeoff(){
     if(typeof pdfjsLib === 'undefined'){
