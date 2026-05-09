@@ -6122,21 +6122,26 @@
 
   function exportCSV(){
     if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação de CSV'); return; }
-    const rows = [
-      ['Pavimento','Ambiente','Area_m2','Pe_Direito_m','Ocupacao','Vidro_m2','Divisoria_NC_m2','Piso_Quente_m2','Forro_Quente_m2','Fator_Uso','Carga_kW'],
-      ['Terreo','Comercial','138.97','3.5','32','70.00','0.00','0.00','0.00','1.00','62.87'],
-      ['Terreo','Recepcao','61.03','7.0','12','45.00','12.50','0.00','0.00','1.00','34.30'],
-      ['Terreo','Suprimentos','62.90','3.5','14','0.00','0.00','0.00','0.00','1.00','10.73'],
-      ['Terreo','Logistica','54.31','3.5','12','12.00','0.00','0.00','0.00','1.00','18.20'],
-      ['Terreo','Marketing','53.52','3.5','12','12.00','0.00','0.00','0.00','1.00','18.15'],
-      ['Terreo','Juridico','40.86','3.5','8','8.00','0.00','0.00','0.00','1.00','12.60'],
-      ['Terreo','Diretor_01','36.71','3.5','4','15.00','0.00','0.00','0.00','1.00','9.36'],
-      ['Terreo','Diretor_02','36.71','3.5','4','15.00','0.00','0.00','0.00','1.00','9.36'],
-      ['Terreo','Reuniao_02','21.87','3.5','10','0.00','15.00','0.00','0.00','0.40','3.17'],
-      ['1_Andar','Reuniao_20L','49.33','3.5','20','18.00','0.00','49.33','49.33','0.50','15.22'],
-      ['1_Andar','TI_Infra','40.54','3.5','10','0.00','0.00','40.54','40.54','1.00','11.58'],
-      ['1_Andar','Assist_Dir','60.06','3.5','12','22.00','0.00','60.06','60.06','1.00','27.08']
-    ];
+    const rows = [['Pavimento','Ambiente','Tipo','Area_m2','Pe_Direito_m','Ocupacao','Vidro_m2','Fator_Uso','Ar_Externo_Ls','Carga_kW']];
+    const tbody = document.getElementById('masterTbody');
+    if(tbody){
+      tbody.querySelectorAll('tr[data-floor]').forEach(function(tr){
+        const floor = tr.dataset.floor || 'terreo';
+        const getVal = function(sel){ const el = tr.querySelector(sel); return el ? (el.value || el.textContent || '').trim() : ''; };
+        rows.push([
+          floor,
+          getVal('input[data-col=\"name\"]'),
+          getVal('select[data-col=\"type\"]'),
+          getVal('input[data-col=\"area\"]').replace(',','.'),
+          getVal('input[data-col=\"pe\"]').replace(',','.'),
+          getVal('input[data-col=\"ocup\"]').replace(',','.'),
+          getVal('input[data-col=\"vidro\"]').replace(',','.'),
+          getVal('input[data-col=\"fu\"]').replace(',','.'),
+          getVal('[data-col=\"arExt\"]').replace(',','.'),
+          getVal('[data-col=\"kw\"]').replace(',','.')
+        ]);
+      });
+    }
     const csv = rows.map(function(r){ return r.join(','); }).join('\n');
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
@@ -6783,7 +6788,20 @@
     body += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">';
     body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Etapa</div><div style="font-size:18px;font-weight:500">' + (p.step || 1) + '<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono)">/ 7</span></div></div>';
     body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Versão</div><div style="font-size:18px;font-weight:500">' + (p.version || 'v01') + '</div></div>';
-    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Carga (estimada)</div><div style="font-size:18px;font-weight:500;color:var(--cyan)">386,27<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono);font-weight:400">kW</span></div></div>';
+    let estKw = '0,00';
+    if(p.tableHtml){
+      try{
+        const parser = new DOMParser();
+        const doc = parser.parseFromString('<table><tbody>' + p.tableHtml + '</tbody></table>', 'text/html');
+        let sum = 0;
+        doc.querySelectorAll('tr[data-floor]').forEach(function(tr){
+          const kwCell = tr.querySelector('[data-col=\"kw\"]');
+          if(kwCell) sum += parseBR((kwCell.textContent || '0').trim());
+        });
+        estKw = fmtBR(sum, 2);
+      }catch(e){}
+    }
+    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Carga (estimada)</div><div style="font-size:18px;font-weight:500;color:var(--cyan)">' + estKw + '<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono);font-weight:400">kW</span></div></div>';
     body += '</div>';
 
     // Bloco do PDF — busca PRIMEIRO no projeto salvo (admin de projetos vê PDF do engenheiro)
