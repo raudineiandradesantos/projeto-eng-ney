@@ -3310,57 +3310,8 @@
       <div class="view" id="view-history" style="display:none">
         <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">WORKSPACE</span><span class="sep">/</span><span class="now">HISTÓRICO</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
-          <div class="page-head"><div><h1>Histórico de atividades</h1><p>Linha do tempo de todos os cálculos, versões e entregáveis gerados pela equipe.</p></div></div>
-          <div class="timeline">
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--cyan)"></div>
-              <div class="tl-body">
-                <div class="tl-time">hoje · 13:42</div>
-                <div class="tl-title">Memorial descritivo gerado · <span class="tl-proj">Matriz Maratá v02</span></div>
-                <div class="tl-sub">Lucas Pereira · memorial_matriz_marata_v02.docx · 2.4 MB</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--ok)"></div>
-              <div class="tl-body">
-                <div class="tl-time">hoje · 12:18</div>
-                <div class="tl-title">DXF gerado · <span class="tl-proj">Hospital São Lucas v04</span></div>
-                <div class="tl-sub">Maria Silva · 2 pavimentos · 48 evaporadoras locadas</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--warm)"></div>
-              <div class="tl-body">
-                <div class="tl-time">hoje · 10:30</div>
-                <div class="tl-title">Nova versão criada · <span class="tl-proj">Edifício Atlântico v01</span></div>
-                <div class="tl-sub">João Almeida · 820 m² · aguardando aprovação</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot"></div>
-              <div class="tl-body">
-                <div class="tl-time">ontem · 16:05</div>
-                <div class="tl-title">Cálculo recalculado · <span class="tl-proj">Torre Corporate v02</span></div>
-                <div class="tl-sub">Carlos Alves · alteração em fator de uso · delta +3,2 kW</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--violet)"></div>
-              <div class="tl-body">
-                <div class="tl-time">ontem · 14:22</div>
-                <div class="tl-title">QAI validado · <span class="tl-proj">Shopping Bela Vista v03</span></div>
-                <div class="tl-sub">Maria Silva · NBR 17037 · 98,4% conformidade</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot"></div>
-              <div class="tl-body">
-                <div class="tl-time">2d · 11:15</div>
-                <div class="tl-title">Projeto criado · <span class="tl-proj">Matriz Maratá v01</span></div>
-                <div class="tl-sub">Lucas Pereira · Salvador/BA · PDF 8.2 MB importado</div>
-              </div>
-            </div>
-          </div>
+          <div class="page-head"><div><h1>Histórico de aprovações</h1><p>Linha do tempo com decisões reais do Admin de Projetos (aprovado/reprovado).</p></div></div>
+          <div class="timeline" id="historyTimeline"></div>
         </div>
       </div>
 
@@ -4602,7 +4553,32 @@
     if(view === 'norms' && sub){ showNorm(sub); }
     if(view === 'admin'){ renderUserTable(); }
     if(view === 'notifications'){ renderNotifications(); }
+    if(view === 'history'){ renderApprovalHistoryTimeline(); }
     window.scrollTo(0,0);
+  }
+
+  function renderApprovalHistoryTimeline(){
+    const tl = document.getElementById('historyTimeline');
+    if(!tl) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const myEmail = state.currentUser ? state.currentUser.email : null;
+    const isAdmin = state.currentUser && (state.currentUser.role === 'admin_projects' || state.currentUser.role === 'admin_general');
+    let items = projects.filter(function(p){
+      return (p.status === 'approved' || p.status === 'rejected') && p.decisionAt && (isAdmin || p.owner === myEmail);
+    }).sort(function(a,b){ return (b.decisionAt||'').localeCompare(a.decisionAt||''); });
+    if(!items.length){
+      tl.innerHTML = '<div class="tl-item"><div class="tl-dot"></div><div class="tl-body"><div class="tl-time">agora</div><div class="tl-title">Sem aprovações/reprovações ainda</div><div class="tl-sub">Quando o Admin de Projetos decidir, os eventos aparecerão aqui automaticamente.</div></div></div>';
+      return;
+    }
+    tl.innerHTML = items.map(function(p){
+      const approved = p.status === 'approved';
+      const dot = approved ? 'var(--ok)' : 'var(--hot)';
+      const when = new Date(p.decisionAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const by = p.decisionBy || 'Admin de Projetos';
+      const owner = p.ownerName || p.owner || '—';
+      return '<div class="tl-item"><div class="tl-dot" style="background:'+dot+'"></div><div class="tl-body"><div class="tl-time">'+when+'</div><div class="tl-title">'+(approved?'Projeto aprovado':'Projeto reprovado')+' · <span class="tl-proj">'+(p.name||'Projeto')+' '+(p.version||'v01')+'</span></div><div class="tl-sub">Solicitante: '+owner+' · Decisão por: '+by+'</div></div></div>';
+    }).join('');
   }
 
   // ============================================================
