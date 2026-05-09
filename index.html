@@ -6288,8 +6288,12 @@
         }
       }catch(e){}
 
+      // Fallback fácil: baixa CAD em DXF compatível automaticamente
+      const dxf = buildProjectDxfContent(data);
+      const dxfBlob = new Blob([dxf], { type: 'application/dxf' });
+      downloadBlob(dxfBlob, safeName + '_compat_autoCAD.dxf');
       if(btn){ btn.innerHTML = original; btn.disabled = false; }
-      toastShow('DWG indisponível no momento','Não há conversor DWG real ativo no backend. Use o botão "Gerar DXF" por enquanto.','warn');
+      toastShow('DWG indisponível no momento','Baixamos automaticamente DXF compatível com AutoCAD para você continuar o fluxo.','warn');
     }, 900);
   }
 
