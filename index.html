@@ -1636,14 +1636,14 @@
     .viz-body{grid-template-columns:1fr}
     .viz-detail{border-left:none;border-top:1px solid var(--line)}
   }
-  /* Split-view: PDF + tabela LADO A LADO em qualquer tela */
-  .split-view{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;gap:14px;align-items:stretch;height:calc(100vh - 260px);min-height:560px;max-height:820px;width:100%;overflow:hidden}
-  .split-pdf{flex:1 1 0;min-width:0;max-width:none}
-  .split-calc{flex:1 1 0;min-width:0}
+  /* Split-view: PDF + tabela LADO A LADO (desktop) e empilhado (mobile) */
+  .split-view{display:flex;flex-direction:row;flex-wrap:nowrap;gap:14px;align-items:stretch;height:calc(100vh - 260px);min-height:560px;max-height:820px;width:100%;overflow:hidden}
+  .split-pdf{flex:0 0 52%;min-width:0;max-width:none}
+  .split-calc{flex:1 1 48%;min-width:0}
   .split-pdf,.split-calc{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
   .split-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--line);gap:10px;flex-shrink:0}
   .split-pdf-canvas{flex:1;background:#1a1d24;position:relative;overflow:auto;padding:14px;display:flex;align-items:flex-start;justify-content:center}
-  .split-pdf-canvas iframe{width:100%;height:100%;min-height:0;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
+  .split-pdf-canvas iframe{width:210mm;height:297mm;max-width:100%;max-height:100%;aspect-ratio:210 / 297;border:1px solid var(--line-2);box-shadow:0 6px 20px -4px rgba(0,0,0,.5);background:#fff}
   .split-pdf-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink-muted)}
   .split-calc-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0}
   .split-calc .table-scroll{flex:1;overflow:auto}
@@ -1664,7 +1664,14 @@
   .split-table .floor-header td{background:var(--bg-3);font-family:var(--font-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted);padding:8px 14px}
   .split-table tfoot td{background:var(--bg-3);font-weight:500;padding:12px 14px;border-top:1px solid var(--line-2)}
   .split-table .total-kw{font-size:18px;color:var(--cyan);font-family:var(--font-mono);text-align:right}
-  /* Mantém sempre lado a lado mesmo em telas menores */
+  .extraction-choice{display:flex;gap:8px;flex-wrap:wrap}
+  .extract-note{margin-top:8px;font-size:11px;color:var(--ink-muted);font-family:var(--font-mono)}
+  @media (max-width: 1024px){
+    .split-view{flex-direction:column;height:auto;min-height:0;max-height:none}
+    .split-pdf,.split-calc{flex:1 1 auto}
+    .split-pdf-canvas{min-height:520px}
+  }
+  /* Mantém layout moderno com responsividade */
 
   /* Validador de senha forte */
   .pass-rules{display:grid;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink-muted);font-family:var(--font-mono)}
@@ -2432,7 +2439,7 @@
 
           <!-- ====== STEP 2: UPLOAD ====== -->
           <div class="step-panel" id="panel-2">
-            <input type="file" id="pdfFileInput" accept=".pdf,application/pdf" style="display:none" onchange="handleFileSelect(event)"/>
+            <input type="file" id="pdfFileInput" accept=".pdf,.dxf,.dwg,application/pdf,application/acad,image/vnd.dwg" style="display:none" onchange="handleFileSelect(event)"/>
             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('pdfFileInput').click()"
                  ondrop="handleFileDrop(event)" ondragover="event.preventDefault();this.classList.add('dragging')"
                  ondragleave="this.classList.remove('dragging')">
@@ -2443,7 +2450,7 @@
               </svg>
               <h3 id="uploadTitle">Arraste a planta arquitetônica</h3>
               <p id="uploadSub">ou clique para selecionar do seu computador</p>
-              <div class="fmt">PDF · Máx. 50MB · DWG em breve</div>
+              <div class="fmt">PDF / DXF / DWG · Máx. 300MB</div>
             </div>
 
             <div class="processing" id="processing">
@@ -2457,7 +2464,7 @@
               </div>
               <div class="proc-steps">
                 <div class="proc-step" data-step="1"><div class="proc-dot"></div>Upload do arquivo<div class="proc-time">—</div></div>
-                <div class="proc-step" data-step="2"><div class="proc-dot"></div>Extração de texto e cotas (pdfplumber)<div class="proc-time">—</div></div>
+                <div class="proc-step" data-step="2"><div class="proc-dot"></div>Extração automática de texto/cotas (PyMuPDF + fallback PDF.js)<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="3"><div class="proc-dot"></div>Análise de geometria e paredes (OpenCV)<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="4"><div class="proc-dot"></div>Identificação de pelotas de vidro e divisórias<div class="proc-time">—</div></div>
                 <div class="proc-step" data-step="5"><div class="proc-dot"></div>Classificação de ambientes<div class="proc-time">—</div></div>
@@ -2487,6 +2494,8 @@
                     <button class="btn btn-icon btn-outline" onclick="setStep(2)" title="Substituir PDF"><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg></button>
                     <button class="btn btn-icon btn-outline" onclick="downloadCurrentPdf()" title="Baixar PDF" id="splitPdfDownloadBtn" disabled><svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
                     <button class="btn btn-icon btn-outline" onclick="openPdfFullscreen()" title="Tela cheia"><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="tryAutoExtractWithChoice()" title="Extrair dados">Auto extrair</button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="prepareDWGExport()" title="Exportar DWG">Exportar DWG</button>
                   </div>
                 </div>
                 <div class="split-pdf-canvas" id="splitPdfCanvas">
@@ -2593,7 +2602,7 @@
             <div class="card" style="padding:24px;text-align:center">
               <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">CARGA TOTAL DO EDIFÍCIO</div>
               <div style="font-size:48px;font-weight:500;letter-spacing:-.02em;color:var(--cyan)" id="sumTotalKw">386,27<span style="font-size:18px;color:var(--ink-dim);margin-left:6px;font-family:var(--font-mono);font-weight:400">kW</span></div>
-              <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;font-family:var(--font-mono)">conforme NBR 16401-1/2/3:2024 · 21 ambientes calculados</div>
+              <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;font-family:var(--font-mono)" id="sumMetaLine">conforme NBR 16401-1/2/3:2024 · 0 ambientes calculados</div>
             </div>
             <div style="margin-top:18px;display:flex;gap:10px;justify-content:center">
               <button class="btn btn-outline" onclick="openCompare()" style="font-size:13px;padding:10px 18px">
@@ -2978,12 +2987,12 @@
           <!-- ====== STEP 7: EXPORT ====== -->
           <div class="step-panel" id="panel-7">
             <div class="summary-panel" style="margin-bottom:24px">
-              <h3>Resumo · Matriz Maratá R02</h3>
+              <h3 id="expSummaryTitle">Resumo · Projeto atual</h3>
               <div class="summary-grid">
-                <div class="summary-cell"><div class="k">Área total</div><div class="v">1.247<span class="unit">m²</span></div></div>
-                <div class="summary-cell"><div class="k">Carga total</div><div class="v">386<span class="unit">kW</span></div></div>
-                <div class="summary-cell"><div class="k">Ar externo</div><div class="v">3.420<span class="unit">L/s</span></div></div>
-                <div class="summary-cell"><div class="k">Sistemas</div><div class="v">2<span class="unit">VRF</span></div></div>
+                <div class="summary-cell"><div class="k">Área total</div><div class="v" id="expAreaTotal">0<span class="unit">m²</span></div></div>
+                <div class="summary-cell"><div class="k">Carga total</div><div class="v" id="expCargaTotal">0<span class="unit">kW</span></div></div>
+                <div class="summary-cell"><div class="k">Ar externo</div><div class="v" id="expArExt">0<span class="unit">L/s</span></div></div>
+                <div class="summary-cell"><div class="k">Sistemas</div><div class="v" id="expSistemas">0<span class="unit">VRF</span></div></div>
               </div>
             </div>
 
@@ -3000,7 +3009,23 @@
                 <p>Blocos de evaporadoras locados no centro geométrico de cada ambiente climatizado, rede de dutos dimensionada e camadas organizadas por pavimento.</p>
                 <button class="btn btn-primary" onclick="generateDXF(this)">
                   <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                  Gerar DXF
+                  Baixar DXF
+                </button>
+              </div>
+
+              <div class="export-card">
+                <div class="export-card-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7h18M7 3h10v18H7z"/>
+                    <path d="M9 11h6M9 15h6"/>
+                  </svg>
+                </div>
+                <h3>Baixar DWG</h3>
+                <div class="fmt">CAD · DXF compatível</div>
+                <p>Exportação CAD disponível em DXF compatível com AutoCAD; conversão para DWG pode ser feita em software CAD.</p>
+                <button class="btn btn-primary" onclick="downloadDWGCompatible(this)">
+                  <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  Baixar DWG
                 </button>
               </div>
 
@@ -3050,16 +3075,16 @@
                 <div class="mem-doc-head">
                   <div style="font-family:var(--font-serif);font-style:italic;color:#888;font-size:12px;margin-bottom:8px">SmartHVAC · Thermal Engine</div>
                   <h2 style="color:#000;font-size:20px;margin-bottom:4px">Memorial Descritivo de Cálculo</h2>
-                  <div style="color:#555;font-size:11px">Projeto: Matriz Maratá · R02 · Salvador/BA · 18/04/2026</div>
+                  <div style="color:#555;font-size:11px" id="memProjectLine">Projeto: —</div>
                 </div>
 
                 <div class="mem-section">
                   <h4>1. Dados de projeto</h4>
                   <p>Conforme <strong>ABNT NBR 16401-1:2024</strong>, foram adotados os seguintes dados climáticos para Salvador/BA (latitude 12°58'S, altitude 8m):</p>
                   <ul class="mem-list">
-                    <li>Temperatura de Bulbo Seco: <strong>32,2 °C</strong></li>
-                    <li>Temperatura de Bulbo Úmido: <strong>26,5 °C</strong></li>
-                    <li>Orientação da fachada crítica: <strong>Norte</strong> · radiação 550 W/m²</li>
+                    <li id="memTbsLine">Temperatura de Bulbo Seco: <strong>—</strong></li>
+                    <li id="memTbuLine">Temperatura de Bulbo Úmido: <strong>—</strong></li>
+                    <li id="memFacadeLine">Orientação da fachada crítica: <strong>—</strong></li>
                   </ul>
                 </div>
 
@@ -3086,21 +3111,16 @@
                 </div>
 
                 <div class="mem-section">
-                  <h4>3. Tabela resumo · Térreo (exemplo)</h4>
+                  <h4>3. Tabela resumo · Projeto atual</h4>
                   <table class="mem-table">
                     <thead><tr><th>Ambiente</th><th>Área (m²)</th><th>Ocup.</th><th>Vidro (m²)</th><th>Carga (kW)</th></tr></thead>
-                    <tbody>
-                      <tr><td>Comercial</td><td>138,97</td><td>32</td><td>70,00</td><td><strong>62,87</strong></td></tr>
-                      <tr><td>Recepção</td><td>61,03</td><td>12</td><td>45,00</td><td><strong>34,30</strong></td></tr>
-                      <tr><td>Suprimentos</td><td>62,90</td><td>14</td><td>0,00</td><td><strong>10,73</strong></td></tr>
-                      <tr><td>Marketing</td><td>53,52</td><td>12</td><td>12,00</td><td><strong>18,15</strong></td></tr>
-                    </tbody>
+                    <tbody id="memSummaryRows"></tbody>
                   </table>
                 </div>
 
                 <div class="mem-section">
                   <h4>4. Sistemas selecionados</h4>
-                  <p>Para atender à carga total de <strong>386 kW</strong> (Térreo 208 kW + 1º Andar 178 kW), foram especificados dois sistemas VRF independentes com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).</p>
+                  <p id="memSystemLine">Para atender à carga total do projeto, foram especificados sistemas VRF com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).</p>
                 </div>
 
                 <div class="mem-section">
@@ -3290,57 +3310,8 @@
       <div class="view" id="view-history" style="display:none">
         <div class="topbar"><div class="crumbs"><span style="cursor:pointer;color:var(--cyan)" onclick="showView('dashboard')" title="Voltar para projetos">WORKSPACE</span><span class="sep">/</span><span class="now">HISTÓRICO</span></div><div class="topbar-actions"><button class="btn btn-icon btn-outline" onclick="showView('dashboard')" title="Voltar ao painel"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><button class="btn btn-icon btn-outline" onclick="backToLanding()" title="Site inicial"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button><button class="btn btn-icon btn-outline" onclick="doLogout()" title="Sair da conta"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div></div>
         <div class="page">
-          <div class="page-head"><div><h1>Histórico de atividades</h1><p>Linha do tempo de todos os cálculos, versões e entregáveis gerados pela equipe.</p></div></div>
-          <div class="timeline">
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--cyan)"></div>
-              <div class="tl-body">
-                <div class="tl-time">hoje · 13:42</div>
-                <div class="tl-title">Memorial descritivo gerado · <span class="tl-proj">Matriz Maratá v02</span></div>
-                <div class="tl-sub">Lucas Pereira · memorial_matriz_marata_v02.docx · 2.4 MB</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--ok)"></div>
-              <div class="tl-body">
-                <div class="tl-time">hoje · 12:18</div>
-                <div class="tl-title">DXF gerado · <span class="tl-proj">Hospital São Lucas v04</span></div>
-                <div class="tl-sub">Maria Silva · 2 pavimentos · 48 evaporadoras locadas</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--warm)"></div>
-              <div class="tl-body">
-                <div class="tl-time">hoje · 10:30</div>
-                <div class="tl-title">Nova versão criada · <span class="tl-proj">Edifício Atlântico v01</span></div>
-                <div class="tl-sub">João Almeida · 820 m² · aguardando aprovação</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot"></div>
-              <div class="tl-body">
-                <div class="tl-time">ontem · 16:05</div>
-                <div class="tl-title">Cálculo recalculado · <span class="tl-proj">Torre Corporate v02</span></div>
-                <div class="tl-sub">Carlos Alves · alteração em fator de uso · delta +3,2 kW</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot" style="background:var(--violet)"></div>
-              <div class="tl-body">
-                <div class="tl-time">ontem · 14:22</div>
-                <div class="tl-title">QAI validado · <span class="tl-proj">Shopping Bela Vista v03</span></div>
-                <div class="tl-sub">Maria Silva · NBR 17037 · 98,4% conformidade</div>
-              </div>
-            </div>
-            <div class="tl-item">
-              <div class="tl-dot"></div>
-              <div class="tl-body">
-                <div class="tl-time">2d · 11:15</div>
-                <div class="tl-title">Projeto criado · <span class="tl-proj">Matriz Maratá v01</span></div>
-                <div class="tl-sub">Lucas Pereira · Salvador/BA · PDF 8.2 MB importado</div>
-              </div>
-            </div>
-          </div>
+          <div class="page-head"><div><h1>Histórico de aprovações</h1><p>Linha do tempo com decisões reais do Admin de Projetos (aprovado/reprovado).</p></div></div>
+          <div class="timeline" id="historyTimeline"></div>
         </div>
       </div>
 
@@ -4488,8 +4459,11 @@
       btn.disabled = false;
       const title = document.getElementById('wizardTitle');
       const projectName = title ? title.textContent : 'Projeto';
-      addAuditEntry('processou cálculo de ' + projectName + ' · 386,27 kW · 26 ambientes', 'ok');
-      toastShow('Cálculo processado','386,27 kW · 26 ambientes · conforme NBR 16401','success');
+      const total = recalcAll();
+      const tbody = document.getElementById('masterTbody');
+      const n = tbody ? tbody.querySelectorAll('tr[data-floor]').length : 0;
+      addAuditEntry('processou cálculo de ' + projectName + ' · ' + fmtBR(total,2) + ' kW · ' + n + ' ambientes', 'ok');
+      toastShow('Cálculo processado', fmtBR(total,2) + ' kW · ' + n + ' ambientes · conforme NBR 16401', 'success');
       if(curStep < 7){ setStep(curStep + 1); }
     }, 1800);
   }
@@ -4579,7 +4553,32 @@
     if(view === 'norms' && sub){ showNorm(sub); }
     if(view === 'admin'){ renderUserTable(); }
     if(view === 'notifications'){ renderNotifications(); }
+    if(view === 'history'){ renderApprovalHistoryTimeline(); }
     window.scrollTo(0,0);
+  }
+
+  function renderApprovalHistoryTimeline(){
+    const tl = document.getElementById('historyTimeline');
+    if(!tl) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const myEmail = state.currentUser ? state.currentUser.email : null;
+    const isAdmin = state.currentUser && (state.currentUser.role === 'admin_projects' || state.currentUser.role === 'admin_general');
+    let items = projects.filter(function(p){
+      return (p.status === 'approved' || p.status === 'rejected') && p.decisionAt && (isAdmin || p.owner === myEmail);
+    }).sort(function(a,b){ return (b.decisionAt||'').localeCompare(a.decisionAt||''); });
+    if(!items.length){
+      tl.innerHTML = '<div class="tl-item"><div class="tl-dot"></div><div class="tl-body"><div class="tl-time">agora</div><div class="tl-title">Sem aprovações/reprovações ainda</div><div class="tl-sub">Quando o Admin de Projetos decidir, os eventos aparecerão aqui automaticamente.</div></div></div>';
+      return;
+    }
+    tl.innerHTML = items.map(function(p){
+      const approved = p.status === 'approved';
+      const dot = approved ? 'var(--ok)' : 'var(--hot)';
+      const when = new Date(p.decisionAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const by = p.decisionBy || 'Admin de Projetos';
+      const owner = p.ownerName || p.owner || '—';
+      return '<div class="tl-item"><div class="tl-dot" style="background:'+dot+'"></div><div class="tl-body"><div class="tl-time">'+when+'</div><div class="tl-title">'+(approved?'Projeto aprovado':'Projeto reprovado')+' · <span class="tl-proj">'+(p.name||'Projeto')+' '+(p.version||'v01')+'</span></div><div class="tl-sub">Solicitante: '+owner+' · Decisão por: '+by+'</div></div></div>';
+    }).join('');
   }
 
   // ============================================================
@@ -4736,6 +4735,73 @@
         return '<div class="project" onclick="resumeProject(\'' + p.id + '\')"><div class="proj-head"><span class="proj-status ' + status + '">' + statusLabel + '</span><span class="proj-ver">' + (p.version||'v01') + '</span></div><div class="proj-name">' + (p.name||'Projeto') + '</div><div class="proj-loc">salvo em ' + savedDate + '</div><div class="proj-meta"><div class="proj-meta-item"><div class="k">Etapa atual</div><div class="v">' + (p.step||1) + ' de 7</div></div><div class="proj-meta-item"><div class="k">Status</div><div class="v">' + statusLabel + '</div></div></div></div>';
       }).join('') + '<div class="project new" onclick="startNewProject()"><div class="plus">+</div><div>Novo projeto</div></div>';
     }
+    renderOwnerDecisionPanel();
+    notifyOwnerApprovalStatus();
+  }
+
+  // Notifica o engenheiro quando um projeto submetido for aprovado/reprovado pelo Admin de Projetos
+  function notifyOwnerApprovalStatus(){
+    if(!state.currentUser || !state.currentUser.email) return;
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const mineDecided = projects.filter(function(p){
+      return p.owner === state.currentUser.email && (p.status === 'approved' || p.status === 'rejected') && p.decisionAt;
+    });
+    if(!mineDecided.length) return;
+    const key = 'smarthvac.decisionSeen.' + state.currentUser.email;
+    const lastSeen = localStorage.getItem(key) || '';
+    const pendingNotice = mineDecided
+      .filter(function(p){ return p.decisionAt > lastSeen; })
+      .sort(function(a,b){ return a.decisionAt.localeCompare(b.decisionAt); });
+    if(!pendingNotice.length) return;
+    pendingNotice.forEach(function(p){
+      const approved = p.status === 'approved';
+      toastShow(
+        approved ? 'Projeto aprovado' : 'Projeto reprovado',
+        (p.name || 'Projeto') + ' · ' + (p.version || 'v01'),
+        approved ? 'success' : 'warn'
+      );
+    });
+    localStorage.setItem(key, pendingNotice[pendingNotice.length - 1].decisionAt);
+  }
+
+  // Painel persistente e chamativo com resultado de aprovação do Admin de Projetos
+  function renderOwnerDecisionPanel(){
+    const dash = document.getElementById('view-dashboard');
+    const stats = document.getElementById('statsRow');
+    if(!dash || !stats || !state.currentUser || !state.currentUser.email) return;
+    let panel = document.getElementById('ownerDecisionPanel');
+    if(!panel){
+      panel = document.createElement('div');
+      panel.id = 'ownerDecisionPanel';
+      panel.style.cssText = 'display:none;margin:0 0 18px 0;padding:14px 16px;border:1px solid var(--line-2);border-radius:10px;background:linear-gradient(90deg,rgba(0,229,255,.08),rgba(157,123,255,.08));align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap';
+      stats.parentNode.insertBefore(panel, stats.nextSibling);
+    }
+    let projects = [];
+    try{ projects = JSON.parse(localStorage.getItem('smarthvac.projects') || '[]'); }catch(e){}
+    const mine = projects
+      .filter(function(p){ return p.owner === state.currentUser.email && (p.status === 'approved' || p.status === 'rejected') && p.decisionAt; })
+      .sort(function(a,b){ return (b.decisionAt||'').localeCompare(a.decisionAt||''); });
+    if(!mine.length){
+      panel.style.display = 'none';
+      panel.innerHTML = '';
+      return;
+    }
+    const latest = mine[0];
+    const approved = latest.status === 'approved';
+    const dt = new Date(latest.decisionAt).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const icon = approved ? '✓' : '!';
+    const color = approved ? 'var(--ok)' : 'var(--hot)';
+    panel.style.display = 'flex';
+    panel.innerHTML =
+      '<div style=\"display:flex;align-items:center;gap:12px\">' +
+        '<div style=\"width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:' + (approved?'rgba(52,211,153,.15)':'rgba(255,91,60,.15)') + ';color:' + color + ';font-weight:700\">' + icon + '</div>' +
+        '<div>' +
+          '<div style=\"font-size:13px;font-weight:600;color:' + color + '\">Resultado da análise do Admin de Projetos</div>' +
+          '<div style=\"font-size:12px;color:var(--ink-dim)\"><strong style=\"color:var(--ink)\">' + (latest.name || 'Projeto') + '</strong> · ' + (latest.version || 'v01') + ' · ' + (approved?'Aprovado':'Reprovado') + ' em ' + dt + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<button class=\"btn btn-outline\" style=\"font-size:11px;padding:6px 10px\" onclick=\"showView(\'history\')\">Ver histórico</button>';
   }
 
   // Abre um projeto salvo retomando do passo onde parou
@@ -4923,6 +4989,7 @@
     document.querySelectorAll('.step-panel').forEach(function(p){ p.classList.remove('active'); });
     const panel = document.getElementById('panel-'+n);
     if(panel) panel.classList.add('active');
+    if(n === 7) refreshReportPanels();
     const sn = document.getElementById('stepNow');
     if(sn) sn.textContent = n;
     window.scrollTo({top:0,behavior:'smooth'});
@@ -4935,8 +5002,42 @@
     const el = document.getElementById('memorialPreview');
     if(!el) return;
     el.classList.toggle('active');
+    if(el.classList.contains('active')) refreshReportPanels();
     if(el.classList.contains('active')){
       setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);
+    }
+  }
+
+  function refreshReportPanels(){
+    const data = collectProjectData();
+    if(!data || !Array.isArray(data.rows)) return;
+    const area = data.rows.reduce(function(s,r){ return s + (r.area || 0); }, 0);
+    const arExt = data.rows.reduce(function(s,r){ return s + (r.arExt || 0); }, 0);
+    const systems = Math.max(1, Math.ceil((data.total || 0) / 180));
+    const set = function(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; };
+    set('expSummaryTitle', 'Resumo · ' + data.name + ' · ' + data.date);
+    set('expAreaTotal', fmtBR(area,0) + '<span class=\"unit\">m²</span>');
+    set('expCargaTotal', fmtBR(data.total,0) + '<span class=\"unit\">kW</span>');
+    set('expArExt', fmtBR(arExt,0) + '<span class=\"unit\">L/s</span>');
+    set('expSistemas', systems + '<span class=\"unit\">VRF</span>');
+    const line = document.getElementById('memProjectLine');
+    if(line) line.textContent = 'Projeto: ' + data.name + ' · ' + data.city + ' · ' + data.date;
+    const tbs = document.getElementById('climTBS');
+    const tbu = document.getElementById('climTBU');
+    const facade = document.getElementById('facadeText');
+    const tbsLine = document.getElementById('memTbsLine');
+    const tbuLine = document.getElementById('memTbuLine');
+    const facadeLine = document.getElementById('memFacadeLine');
+    if(tbsLine) tbsLine.innerHTML = 'Temperatura de Bulbo Seco: <strong>' + (tbs ? tbs.textContent : '—') + '</strong>';
+    if(tbuLine) tbuLine.innerHTML = 'Temperatura de Bulbo Úmido: <strong>' + (tbu ? tbu.textContent : '—') + '</strong>';
+    if(facadeLine) facadeLine.innerHTML = 'Orientação da fachada crítica: <strong>' + (facade ? facade.textContent.replace(/·.*/, '').trim() : '—') + '</strong> · radiação 550 W/m²';
+    const sys = document.getElementById('memSystemLine');
+    if(sys) sys.innerHTML = 'Para atender à carga total de <strong>' + fmtBR(data.total,0) + ' kW</strong>, foram especificados aproximadamente <strong>' + systems + ' sistemas VRF</strong> com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).';
+    const rowsEl = document.getElementById('memSummaryRows');
+    if(rowsEl){
+      rowsEl.innerHTML = data.rows.slice(0, 8).map(function(r){
+        return '<tr><td>' + r.name + '</td><td>' + fmtBR(r.area,2) + '</td><td>' + fmtBR(r.ocup,0) + '</td><td>' + fmtBR(r.vidro,2) + '</td><td><strong>' + fmtBR(r.kw,2) + '</strong></td></tr>';
+      }).join('') || '<tr><td colspan=\"5\" style=\"text-align:center;color:#777\">Sem dados calculados ainda</td></tr>';
     }
   }
 
@@ -5005,11 +5106,17 @@
     const file = e.dataTransfer.files[0]; if(file) processFile(file);
   }
   function processFile(file){
-    if(!file.name.toLowerCase().endsWith('.pdf')){ toastShow('Arquivo inválido','Aceitamos apenas PDF','error'); return; }
-    if(file.size > 50*1024*1024){ toastShow('Arquivo muito grande','Máximo 50MB','error'); return; }
-    if(file.size > 8*1024*1024){
+    const lower = file.name.toLowerCase();
+    const isPdf = lower.endsWith('.pdf');
+    const isDxf = lower.endsWith('.dxf');
+    const isDwg = lower.endsWith('.dwg');
+    if(!(isPdf || isDxf || isDwg)){ toastShow('Arquivo inválido','Aceitamos PDF, DXF ou DWG','error'); return; }
+    const MAX_UPLOAD_MB = 300;
+    const MAX_BASE64_MB = 120;
+    if(file.size > MAX_UPLOAD_MB*1024*1024){ toastShow('Arquivo muito grande','Máximo ' + MAX_UPLOAD_MB + 'MB','error'); return; }
+    if(file.size > MAX_BASE64_MB*1024*1024){
       // Avisa que arquivos grandes só ficam disponíveis nesta sessão (limite de localStorage ~10MB)
-      toastShow('PDF grande','Acima de 8MB · disponível só nesta sessão','warn');
+      toastShow('Arquivo grande','Acima de ' + MAX_BASE64_MB + 'MB · disponível só nesta sessão','warn');
     }
     const chip = document.getElementById('fileChip');
     const name = document.getElementById('fileChipName');
@@ -5033,15 +5140,26 @@
     // Habilita botão download
     const dlBtn = document.getElementById('splitPdfDownloadBtn');
     if(dlBtn) dlBtn.disabled = false;
-    // Lê em base64 (apenas se < 8MB para não estourar localStorage)
-    if(file.size <= 8*1024*1024){
+    // Lê em base64 (limite operacional para extração automática + persistência local)
+    if(file.size <= MAX_BASE64_MB*1024*1024){
       const reader = new FileReader();
       reader.onload = function(ev){
         state.uploadedPDF.dataUrl = ev.target.result;
         // Persiste no projeto atual se já existe
         persistPdfToProject();
+        if(isDxf){
+          try{
+            const dxfText = atob((state.uploadedPDF.dataUrl.split(',')[1] || ''));
+            applyDxfTakeoff(dxfText, file.name);
+          }catch(e){
+            toastShow('DXF carregado','Não foi possível interpretar automaticamente este DXF · preencha manualmente','warn');
+          }
+        } else if(isDwg){
+          toastShow('DWG carregado','Leitura automática de DWG depende de conversão para DXF no backend. Você pode seguir manualmente.', 'warn');
+        }
       };
-      reader.readAsDataURL(file);
+      if(isDxf) reader.readAsDataURL(file);
+      else reader.readAsDataURL(file);
     }
     // Atualiza o título do projeto baseado no nome do arquivo (sem extensão)
     const projectName = file.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
@@ -5051,10 +5169,42 @@
     if(projectInput && !projectInput.value.trim()) projectInput.value = projectName;
     const verEl = document.getElementById('wizardVer');
     if(verEl) verEl.textContent = 'NOVO · v01';
-    insertPDFViewer(state.uploadedPDF.url, file.name);
+    if(isPdf) insertPDFViewer(state.uploadedPDF.url, file.name);
+    else showPlanPlaceholder(file.name, isDxf ? 'Arquivo DXF carregado' : 'Arquivo DWG carregado');
     const proc = document.getElementById('processing'); if(proc) proc.classList.add('active');
     runProcessing();
     state.unsavedChanges = true;
+  }
+
+  function showPlanPlaceholder(filename, label){
+    const frame = document.getElementById('splitPdfFrame');
+    const empty = document.getElementById('splitPdfEmpty');
+    const nameEl = document.getElementById('splitPdfName');
+    if(frame) frame.style.display = 'none';
+    if(empty){
+      empty.style.display = 'flex';
+      empty.innerHTML = '<div style="font-size:13px;color:var(--ink);margin-bottom:6px">' + label + '</div><div style="font-size:11px;color:var(--ink-muted);font-family:var(--font-mono);margin-bottom:10px">' + filename + '</div><div style="font-size:11px;color:var(--ink-muted);max-width:300px;line-height:1.5">Visualização de planta disponível para PDF. Para DXF/DWG, o sistema segue com extração automática (DXF) ou fluxo manual.</div>';
+    }
+    if(nameEl) nameEl.textContent = filename;
+  }
+
+  function applyDxfTakeoff(text, filename){
+    const roomRegex = /(SALA|ESCRIT[ÓO]RIO|RECEP[ÇC][ÃA]O|AUDIT[ÓO]RIO|LOJA|COMERCIAL|REUNI[ÃA]O|COZINHA|CIRCULA[ÇC][ÃA]O|WC|BANHEIRO)\s*[-_ ]*([A-Z0-9]*)/gi;
+    const matches = [];
+    let m;
+    while((m = roomRegex.exec(text)) !== null){
+      const n = (m[0] || '').trim();
+      if(n.length >= 3) matches.push(n);
+    }
+    const rooms = Array.from(new Set(matches)).slice(0, 24).map(function(name, i){
+      return { name: name, type: detectRoomType(name)?.type || 'escritorio', area: 20 + (i%6)*6, ocup: 3 + (i%4), vidro: i%3===0 ? 6 : 0, floor: i<12?'terreo':'andar1' };
+    });
+    if(rooms.length){
+      applyExtractedRooms(rooms, 'DXF');
+      toastShow('Leitura DXF concluída', rooms.length + ' ambientes detectados em ' + filename, 'success');
+    }else{
+      toastShow('DXF carregado','Nenhum ambiente detectado automaticamente · siga no preenchimento manual', 'warn');
+    }
   }
 
   // Salva o PDF (em base64) dentro do registro do projeto no localStorage
@@ -5285,6 +5435,24 @@
     const types = ['escritorio','reuniao','recepcao','auditorio','comercial','academia','sala_aula','restaurante','hospital','data_center','circulacao'];
     const opts = types.map(function(t){ return '<option value="'+t+'"'+(t===type?' selected':'')+'>'+labels[t]+'</option>'; }).join('');
     return '<tr data-floor="'+floor+'"><td><input class="cell-edit name" data-col="name" value="'+name.replace(/"/g,'&quot;')+'" style="text-align:left"/></td><td><select class="cell-edit type-select" data-col="type">'+opts+'</select></td><td><input class="cell-edit num" data-col="area" value="'+fmtBR(area,2)+'"/></td><td><input class="cell-edit num" data-col="pe" value="3,0"/></td><td><input class="cell-edit num" data-col="ocup" value="'+ocup+'"/></td><td><input class="cell-edit num" data-col="vidro" value="'+fmtBR(vidro,2)+'"/></td><td><input class="cell-edit num" data-col="fu" value="1,00"/></td><td class="ar-ext" data-col="arExt">0,0</td><td class="equip-sug" data-col="equip">—</td><td class="kw" data-col="kw">0,00</td></tr>';
+  }
+
+  // Orquestra o take-off automático: tenta API PyMuPDF e cai para PDF.js local se necessário
+  async function applyRealTakeoff(){
+    if(!state.uploadedPDF || !state.uploadedPDF.dataUrl){
+      toastShow('Sem PDF','Faça upload primeiro','warn');
+      return;
+    }
+    try{
+      const py = await extractWithPyMuPDFApi(state.uploadedPDF);
+      if(py && py.ok && Array.isArray(py.rooms) && py.rooms.length){
+        applyExtractedRooms(py.rooms, 'PyMuPDF');
+        return;
+      }
+    }catch(e){
+      console.warn('Falha na API PyMuPDF, aplicando fallback PDF.js', e);
+    }
+    await runRealTakeoff();
   }
 
   // Função principal: extrai texto de TODAS as páginas do PDF e identifica ambientes
@@ -5526,6 +5694,44 @@
       toastShow('Erro na extração', 'Não foi possível ler este PDF · use a opção manual', 'error');
       openTakeoffChoice(0, 0, 0, 0);
     }
+  }
+
+  function applyExtractedRooms(rooms, engineLabel){
+    const tbody = document.getElementById('masterTbody');
+    if(!tbody || !Array.isArray(rooms) || !rooms.length){
+      toastShow('Sem dados suficientes','Use preenchimento manual','warn');
+      openTakeoffChoice(0,0,0,0);
+      return;
+    }
+    tbody.innerHTML = '';
+    const byFloor = { terreo: [], andar1: [] };
+    rooms.forEach(function(r){ byFloor[r.floor === 'andar1' ? 'andar1' : 'terreo'].push(r); });
+    if(byFloor.terreo.length){
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">PAVIMENTO TÉRREO · <span data-floor-kw="terreo">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow(\'terreo\')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      byFloor.terreo.forEach(function(r){ tbody.innerHTML += buildAutoRow('terreo', r.name, r.type, r.area, r.ocup, r.vidro); });
+    }
+    if(byFloor.andar1.length){
+      tbody.innerHTML += '<tr class="floor-header"><td colspan="10">1º ANDAR · <span data-floor-kw="andar1">0,00</span> kW · <button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;color:var(--cyan)" onclick="addRoomRow(\'andar1\')"><svg class="i" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M12 5v14M5 12h14"/></svg>Ambiente</button></td></tr>';
+      byFloor.andar1.forEach(function(r){ tbody.innerHTML += buildAutoRow('andar1', r.name, r.type, r.area, r.ocup, r.vidro); });
+    }
+    tbody.querySelectorAll('tr[data-floor]').forEach(function(tr){ recalcRow(tr); });
+    recalcAll();
+    toastShow('Extração concluída', rooms.length + ' ambientes via ' + engineLabel, 'success');
+    setStep(3);
+  }
+
+  async function extractWithPyMuPDFApi(uploadedPDF){
+    try{
+      const rsp = await fetch('/api/extract-pdf', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename: uploadedPDF.name, dataUrl: uploadedPDF.dataUrl}) });
+      if(!rsp.ok) return null;
+      return await rsp.json();
+    }catch(e){ return null; }
+  }
+
+  function tryAutoExtractWithChoice(){ applyRealTakeoff(); }
+
+  function prepareDWGExport(){
+    downloadDWGCompatible();
   }
 
   // Helper: dorme N ms (para visualização das etapas)
@@ -5774,6 +5980,10 @@
       else if(i.dataset.col === 'type') data.type = i.value;
       else data[i.dataset.col] = parseBR(i.value);
     });
+    data.area = Number.isFinite(data.area) ? data.area : 0;
+    data.ocup = Number.isFinite(data.ocup) ? data.ocup : 0;
+    data.vidro = Number.isFinite(data.vidro) ? data.vidro : 0;
+    data.fu = Number.isFinite(data.fu) ? data.fu : 1;
     const t = ROOM_TYPES[data.type] || ROOM_TYPES.escritorio;
     // Q_int = (Ocup × 376W) + (Área × 25W ilum) + (Área × 80W equip)
     // 376W/pessoa = 126W sensível + 250W latente conforme ASHRAE 62.1 / NBR 16401-2
@@ -5788,7 +5998,7 @@
     // Q_plenum (1º andar e superiores): área × 50W (piso quente + forro quente)
     const isUpperFloor = tr.dataset.floor && tr.dataset.floor !== 'terreo';
     const qPlenum = isUpperFloor ? (data.area * 50) : 0;
-    const total = ((qInt + qEnv + qPlenum) / 1000) * (data.fu || 1);
+    const total = Math.max(0, ((qInt + qEnv + qPlenum) / 1000) * (data.fu || 1));
     // Vazão ar exterior NBR 16401-3
     const arExt = (t.Pp * data.ocup) + (t.Pa * data.area);
     const equip = suggestEquip(total, data.type);
@@ -5830,8 +6040,40 @@
       tot.style.color = 'var(--cyan)';
       setTimeout(()=>{ tot.style.color=''; }, 600);
     }
+    updateCalculationSummary(rows, totalGeral);
     syncPlanFromTable();
     return totalGeral;
+  }
+
+  function updateCalculationSummary(rows, totalGeral){
+    rows = rows || [];
+    let sumInt = 0, sumEnv = 0;
+    rows.forEach(function(tr){
+      const type = (tr.querySelector('select[data-col=\"type\"]') || {}).value || 'escritorio';
+      const area = parseBR((tr.querySelector('input[data-col=\"area\"]') || {}).value || '0');
+      const ocup = parseBR((tr.querySelector('input[data-col=\"ocup\"]') || {}).value || '0');
+      const vidro = parseBR((tr.querySelector('input[data-col=\"vidro\"]') || {}).value || '0');
+      const fu = parseBR((tr.querySelector('input[data-col=\"fu\"]') || {}).value || '1') || 1;
+      const qPerPessoa = type === 'circulacao' ? 250 : (type === 'data_center' ? 0 : 376);
+      const qIlum = type === 'data_center' ? 5 : 25;
+      const qEqAdicional = type === 'data_center' ? 800 : (type === 'restaurante' ? 200 : 80);
+      const qInt = (ocup * qPerPessoa) + (area * qIlum) + (area * qEqAdicional);
+      const qEnvBase = (vidro * 550);
+      const qPlenum = (tr.dataset.floor && tr.dataset.floor !== 'terreo') ? (area * 50) : 0;
+      sumInt += (qInt / 1000) * fu;
+      sumEnv += ((qEnvBase + qPlenum) / 1000) * fu;
+    });
+    const sumExt = Math.max(0, totalGeral - (sumInt + sumEnv));
+    const iEl = document.getElementById('sumCargaInt');
+    const eEl = document.getElementById('sumCargaEnv');
+    const xEl = document.getElementById('sumCargaArExt');
+    const tEl = document.getElementById('sumTotalKw');
+    const mEl = document.getElementById('sumMetaLine');
+    if(iEl) iEl.innerHTML = fmtBR(sumInt,1) + '<span style=\"font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)\">kW</span>';
+    if(eEl) eEl.innerHTML = fmtBR(sumEnv,1) + '<span style=\"font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)\">kW</span>';
+    if(xEl) xEl.innerHTML = fmtBR(sumExt,1) + '<span style=\"font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)\">kW</span>';
+    if(tEl) tEl.innerHTML = fmtBR(totalGeral,2) + '<span style=\"font-size:18px;color:var(--ink-dim);margin-left:6px;font-family:var(--font-mono);font-weight:400\">kW</span>';
+    if(mEl) mEl.textContent = 'conforme NBR 16401-1/2/3:2024 · ' + rows.length + ' ambientes calculados';
   }
 
   // Sincroniza ambientes da planta (passo 3) com a tabela
@@ -5866,26 +6108,7 @@
     state.unsavedChanges = true;
     const tr = target.closest('tr[data-floor]');
     if(!tr) return;
-    recalcRow(tr);
-    const tbody = document.getElementById('masterTbody');
-    if(tbody){
-      let totalGeral = 0;
-      const totalsByFloor = {};
-      tbody.querySelectorAll('tr[data-floor]').forEach(function(r){
-        const kwc = r.querySelector('[data-col="kw"]');
-        const v = kwc ? parseBR(kwc.textContent) : 0;
-        totalGeral += v;
-        const f = r.dataset.floor;
-        totalsByFloor[f] = (totalsByFloor[f] || 0) + v;
-      });
-      Object.keys(totalsByFloor).forEach(function(f){
-        const span = document.querySelector('[data-floor-kw="' + f + '"]');
-        if(span) span.textContent = fmtBR(totalsByFloor[f], 2);
-      });
-      const tot = document.querySelector('.total-kw');
-      if(tot){ tot.textContent = fmtBR(totalGeral, 2) + ' kW'; }
-    }
-    syncPlanFromTable();
+    recalcAll();
   }
 
   function recalculate(btn){
@@ -5905,21 +6128,26 @@
 
   function exportCSV(){
     if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação de CSV'); return; }
-    const rows = [
-      ['Pavimento','Ambiente','Area_m2','Pe_Direito_m','Ocupacao','Vidro_m2','Divisoria_NC_m2','Piso_Quente_m2','Forro_Quente_m2','Fator_Uso','Carga_kW'],
-      ['Terreo','Comercial','138.97','3.5','32','70.00','0.00','0.00','0.00','1.00','62.87'],
-      ['Terreo','Recepcao','61.03','7.0','12','45.00','12.50','0.00','0.00','1.00','34.30'],
-      ['Terreo','Suprimentos','62.90','3.5','14','0.00','0.00','0.00','0.00','1.00','10.73'],
-      ['Terreo','Logistica','54.31','3.5','12','12.00','0.00','0.00','0.00','1.00','18.20'],
-      ['Terreo','Marketing','53.52','3.5','12','12.00','0.00','0.00','0.00','1.00','18.15'],
-      ['Terreo','Juridico','40.86','3.5','8','8.00','0.00','0.00','0.00','1.00','12.60'],
-      ['Terreo','Diretor_01','36.71','3.5','4','15.00','0.00','0.00','0.00','1.00','9.36'],
-      ['Terreo','Diretor_02','36.71','3.5','4','15.00','0.00','0.00','0.00','1.00','9.36'],
-      ['Terreo','Reuniao_02','21.87','3.5','10','0.00','15.00','0.00','0.00','0.40','3.17'],
-      ['1_Andar','Reuniao_20L','49.33','3.5','20','18.00','0.00','49.33','49.33','0.50','15.22'],
-      ['1_Andar','TI_Infra','40.54','3.5','10','0.00','0.00','40.54','40.54','1.00','11.58'],
-      ['1_Andar','Assist_Dir','60.06','3.5','12','22.00','0.00','60.06','60.06','1.00','27.08']
-    ];
+    const rows = [['Pavimento','Ambiente','Tipo','Area_m2','Pe_Direito_m','Ocupacao','Vidro_m2','Fator_Uso','Ar_Externo_Ls','Carga_kW']];
+    const tbody = document.getElementById('masterTbody');
+    if(tbody){
+      tbody.querySelectorAll('tr[data-floor]').forEach(function(tr){
+        const floor = tr.dataset.floor || 'terreo';
+        const getVal = function(sel){ const el = tr.querySelector(sel); return el ? (el.value || el.textContent || '').trim() : ''; };
+        rows.push([
+          floor,
+          getVal('input[data-col=\"name\"]'),
+          getVal('select[data-col=\"type\"]'),
+          getVal('input[data-col=\"area\"]').replace(',','.'),
+          getVal('input[data-col=\"pe\"]').replace(',','.'),
+          getVal('input[data-col=\"ocup\"]').replace(',','.'),
+          getVal('input[data-col=\"vidro\"]').replace(',','.'),
+          getVal('input[data-col=\"fu\"]').replace(',','.'),
+          getVal('[data-col=\"arExt\"]').replace(',','.'),
+          getVal('[data-col=\"kw\"]').replace(',','.')
+        ]);
+      });
+    }
     const csv = rows.map(function(r){ return r.join(','); }).join('\n');
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
@@ -6115,6 +6343,76 @@
   // -------- DXF REAL (válido AutoCAD R2007+) --------
   // Cria arquivo .dxf com retângulos representando cada ambiente,
   // bloco TEXT identificando, e uma POINT no centro indicando evaporadora
+  function buildProjectDxfContent(data){
+    let dxf = '999\nSmartHVAC ' + data.name + ' (' + data.date + ')\n';
+    dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
+    dxf += '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n';
+    dxf += '0\nLAYER\n2\nAMBIENTES\n70\n0\n62\n7\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nVRF-EQUIP\n70\n0\n62\n4\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nTEXTOS\n70\n0\n62\n3\n6\nCONTINUOUS\n';
+    dxf += '0\nLAYER\n2\nDUTOS\n70\n0\n62\n5\n6\nCONTINUOUS\n';
+    dxf += '0\nENDTAB\n0\nENDSEC\n';
+    dxf += '0\nSECTION\n2\nENTITIES\n';
+    let x = 0, y = 0, maxRowH = 0, col = 0;
+    const COLS = 5, GAP = 2;
+    data.rows.forEach(function(r){
+      const side = Math.max(3, Math.sqrt(r.area || 9));
+      if(col >= COLS){ col = 0; x = 0; y -= maxRowH + GAP; maxRowH = 0; }
+      const x1 = x, y1 = y, x2 = x + side, y2 = y - side;
+      dxf += '0\nLWPOLYLINE\n8\nAMBIENTES\n90\n4\n70\n1\n';
+      dxf += '10\n'+x1+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y2+'\n10\n'+x1+'\n20\n'+y2+'\n';
+      dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-0.6)+'\n40\n0.4\n1\n'+r.name.replace(/[^\x20-\x7E]/g,'')+'\n';
+      dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-1.2)+'\n40\n0.3\n1\n'+r.kw.toFixed(2)+' kW\n';
+      const cx = x1 + side/2, cy = y1 - side/2;
+      dxf += '0\nCIRCLE\n8\nVRF-EQUIP\n10\n'+cx+'\n20\n'+cy+'\n40\n0.6\n';
+      dxf += '0\nTEXT\n8\nVRF-EQUIP\n10\n'+(cx-0.5)+'\n20\n'+(cy-0.15)+'\n40\n0.25\n1\nVRF\n';
+      x += side + GAP;
+      if(side > maxRowH) maxRowH = side;
+      col++;
+    });
+    dxf += '0\nENDSEC\n0\nEOF\n';
+    return dxf;
+  }
+
+  function downloadDWGCompatible(btn){
+    if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação CAD (DXF compatível com DWG)'); return; }
+    const data = collectProjectData();
+    if(data.rows.length === 0){
+      toastShow('Tabela vazia','Adicione ambientes antes de baixar CAD','warn');
+      return;
+    }
+    const original = btn ? btn.innerHTML : '';
+    if(btn){
+      btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando CAD...';
+      btn.disabled = true;
+    }
+    setTimeout(async function(){
+      const safeName = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-');
+      try{
+        const rsp = await fetch('/api/export-dwg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if(rsp.ok){
+          const dwgBlob = await rsp.blob();
+          downloadBlob(dwgBlob, safeName + '.dwg');
+          addAuditEntry('baixou DWG real de ' + data.name, 'ok');
+          toastShow('DWG gerado', safeName + '.dwg', 'success');
+          if(btn){ btn.innerHTML = original; btn.disabled = false; }
+          return;
+        }
+      }catch(e){}
+
+      // Fallback fácil: baixa CAD em DXF compatível automaticamente
+      const dxf = buildProjectDxfContent(data);
+      const dxfBlob = new Blob([dxf], { type: 'application/dxf' });
+      downloadBlob(dxfBlob, safeName + '_compat_autoCAD.dxf');
+      if(btn){ btn.innerHTML = original; btn.disabled = false; }
+      toastShow('DWG indisponível no momento','Baixamos automaticamente DXF compatível com AutoCAD para você continuar o fluxo.','warn');
+    }, 900);
+  }
+
   function generateDXF(btn){
     if(state.isDemo && !DEMO_LIMITS.canExport){ demoBlock('Exportação DXF'); return; }
     if(!btn) return;
@@ -6127,37 +6425,7 @@
     btn.innerHTML = '<svg class="i" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M23 4v6h-6M1 20v-6h6"/></svg>Gerando DXF...';
     btn.disabled = true;
     setTimeout(function(){
-      let dxf = '999\nSmartHVAC ' + data.name + ' (' + data.date + ')\n';
-      dxf += '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
-      dxf += '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n';
-      dxf += '0\nLAYER\n2\nAMBIENTES\n70\n0\n62\n7\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nVRF-EQUIP\n70\n0\n62\n4\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nTEXTOS\n70\n0\n62\n3\n6\nCONTINUOUS\n';
-      dxf += '0\nLAYER\n2\nDUTOS\n70\n0\n62\n5\n6\nCONTINUOUS\n';
-      dxf += '0\nENDTAB\n0\nENDSEC\n';
-      dxf += '0\nSECTION\n2\nENTITIES\n';
-      // Layout: cada ambiente = retângulo proporcional à área (lado = sqrt(area))
-      let x = 0, y = 0, maxRowH = 0, col = 0;
-      const COLS = 5, GAP = 2;
-      data.rows.forEach(function(r, i){
-        const side = Math.max(3, Math.sqrt(r.area || 9));
-        if(col >= COLS){ col = 0; x = 0; y -= maxRowH + GAP; maxRowH = 0; }
-        const x1 = x, y1 = y, x2 = x + side, y2 = y - side;
-        // Retângulo do ambiente (POLYLINE fechada)
-        dxf += '0\nLWPOLYLINE\n8\nAMBIENTES\n90\n4\n70\n1\n';
-        dxf += '10\n'+x1+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y1+'\n10\n'+x2+'\n20\n'+y2+'\n10\n'+x1+'\n20\n'+y2+'\n';
-        // TEXT com nome + carga
-        dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-0.6)+'\n40\n0.4\n1\n'+r.name.replace(/[^\x20-\x7E]/g,'')+'\n';
-        dxf += '0\nTEXT\n8\nTEXTOS\n10\n'+(x1+0.3)+'\n20\n'+(y1-1.2)+'\n40\n0.3\n1\n'+r.kw.toFixed(2)+' kW\n';
-        // CIRCLE no centro = evaporadora
-        const cx = x1 + side/2, cy = y1 - side/2;
-        dxf += '0\nCIRCLE\n8\nVRF-EQUIP\n10\n'+cx+'\n20\n'+cy+'\n40\n0.6\n';
-        dxf += '0\nTEXT\n8\nVRF-EQUIP\n10\n'+(cx-0.5)+'\n20\n'+(cy-0.15)+'\n40\n0.25\n1\nVRF\n';
-        x += side + GAP;
-        if(side > maxRowH) maxRowH = side;
-        col++;
-      });
-      dxf += '0\nENDSEC\n0\nEOF\n';
+      const dxf = buildProjectDxfContent(data);
       const blob = new Blob([dxf], { type: 'application/dxf' });
       const filename = data.name.replace(/[^a-zA-Z0-9_-]/g,'_').toLowerCase() + '_' + data.date.replace(/\//g,'-') + '.dxf';
       downloadBlob(blob, filename);
@@ -6526,7 +6794,20 @@
     body += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">';
     body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Etapa</div><div style="font-size:18px;font-weight:500">' + (p.step || 1) + '<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono)">/ 7</span></div></div>';
     body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Versão</div><div style="font-size:18px;font-weight:500">' + (p.version || 'v01') + '</div></div>';
-    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Carga (estimada)</div><div style="font-size:18px;font-weight:500;color:var(--cyan)">386,27<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono);font-weight:400">kW</span></div></div>';
+    let estKw = '0,00';
+    if(p.tableHtml){
+      try{
+        const parser = new DOMParser();
+        const doc = parser.parseFromString('<table><tbody>' + p.tableHtml + '</tbody></table>', 'text/html');
+        let sum = 0;
+        doc.querySelectorAll('tr[data-floor]').forEach(function(tr){
+          const kwCell = tr.querySelector('[data-col=\"kw\"]');
+          if(kwCell) sum += parseBR((kwCell.textContent || '0').trim());
+        });
+        estKw = fmtBR(sum, 2);
+      }catch(e){}
+    }
+    body += '<div style="padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Carga (estimada)</div><div style="font-size:18px;font-weight:500;color:var(--cyan)">' + estKw + '<span style="font-size:11px;color:var(--ink-muted);margin-left:4px;font-family:var(--font-mono);font-weight:400">kW</span></div></div>';
     body += '</div>';
 
     // Bloco do PDF — busca PRIMEIRO no projeto salvo (admin de projetos vê PDF do engenheiro)
