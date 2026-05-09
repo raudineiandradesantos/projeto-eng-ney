@@ -2602,7 +2602,7 @@
             <div class="card" style="padding:24px;text-align:center">
               <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">CARGA TOTAL DO EDIFÍCIO</div>
               <div style="font-size:48px;font-weight:500;letter-spacing:-.02em;color:var(--cyan)" id="sumTotalKw">386,27<span style="font-size:18px;color:var(--ink-dim);margin-left:6px;font-family:var(--font-mono);font-weight:400">kW</span></div>
-              <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;font-family:var(--font-mono)">conforme NBR 16401-1/2/3:2024 · 21 ambientes calculados</div>
+              <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;font-family:var(--font-mono)" id="sumMetaLine">conforme NBR 16401-1/2/3:2024 · 0 ambientes calculados</div>
             </div>
             <div style="margin-top:18px;display:flex;gap:10px;justify-content:center">
               <button class="btn btn-outline" onclick="openCompare()" style="font-size:13px;padding:10px 18px">
@@ -4513,8 +4513,11 @@
       btn.disabled = false;
       const title = document.getElementById('wizardTitle');
       const projectName = title ? title.textContent : 'Projeto';
-      addAuditEntry('processou cálculo de ' + projectName + ' · 386,27 kW · 26 ambientes', 'ok');
-      toastShow('Cálculo processado','386,27 kW · 26 ambientes · conforme NBR 16401','success');
+      const total = recalcAll();
+      const tbody = document.getElementById('masterTbody');
+      const n = tbody ? tbody.querySelectorAll('tr[data-floor]').length : 0;
+      addAuditEntry('processou cálculo de ' + projectName + ' · ' + fmtBR(total,2) + ' kW · ' + n + ' ambientes', 'ok');
+      toastShow('Cálculo processado', fmtBR(total,2) + ' kW · ' + n + ' ambientes · conforme NBR 16401', 'success');
       if(curStep < 7){ setStep(curStep + 1); }
     }, 1800);
   }
@@ -6031,8 +6034,40 @@
       tot.style.color = 'var(--cyan)';
       setTimeout(()=>{ tot.style.color=''; }, 600);
     }
+    updateCalculationSummary(rows, totalGeral);
     syncPlanFromTable();
     return totalGeral;
+  }
+
+  function updateCalculationSummary(rows, totalGeral){
+    rows = rows || [];
+    let sumInt = 0, sumEnv = 0;
+    rows.forEach(function(tr){
+      const type = (tr.querySelector('select[data-col=\"type\"]') || {}).value || 'escritorio';
+      const area = parseBR((tr.querySelector('input[data-col=\"area\"]') || {}).value || '0');
+      const ocup = parseBR((tr.querySelector('input[data-col=\"ocup\"]') || {}).value || '0');
+      const vidro = parseBR((tr.querySelector('input[data-col=\"vidro\"]') || {}).value || '0');
+      const fu = parseBR((tr.querySelector('input[data-col=\"fu\"]') || {}).value || '1') || 1;
+      const qPerPessoa = type === 'circulacao' ? 250 : (type === 'data_center' ? 0 : 376);
+      const qIlum = type === 'data_center' ? 5 : 25;
+      const qEqAdicional = type === 'data_center' ? 800 : (type === 'restaurante' ? 200 : 80);
+      const qInt = (ocup * qPerPessoa) + (area * qIlum) + (area * qEqAdicional);
+      const qEnvBase = (vidro * 550);
+      const qPlenum = (tr.dataset.floor && tr.dataset.floor !== 'terreo') ? (area * 50) : 0;
+      sumInt += (qInt / 1000) * fu;
+      sumEnv += ((qEnvBase + qPlenum) / 1000) * fu;
+    });
+    const sumExt = Math.max(0, totalGeral - (sumInt + sumEnv));
+    const iEl = document.getElementById('sumCargaInt');
+    const eEl = document.getElementById('sumCargaEnv');
+    const xEl = document.getElementById('sumCargaArExt');
+    const tEl = document.getElementById('sumTotalKw');
+    const mEl = document.getElementById('sumMetaLine');
+    if(iEl) iEl.innerHTML = fmtBR(sumInt,1) + '<span style=\"font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)\">kW</span>';
+    if(eEl) eEl.innerHTML = fmtBR(sumEnv,1) + '<span style=\"font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)\">kW</span>';
+    if(xEl) xEl.innerHTML = fmtBR(sumExt,1) + '<span style=\"font-size:12px;color:var(--ink-dim);margin-left:4px;font-family:var(--font-mono)\">kW</span>';
+    if(tEl) tEl.innerHTML = fmtBR(totalGeral,2) + '<span style=\"font-size:18px;color:var(--ink-dim);margin-left:6px;font-family:var(--font-mono);font-weight:400\">kW</span>';
+    if(mEl) mEl.textContent = 'conforme NBR 16401-1/2/3:2024 · ' + rows.length + ' ambientes calculados';
   }
 
   // Sincroniza ambientes da planta (passo 3) com a tabela
@@ -6067,26 +6102,7 @@
     state.unsavedChanges = true;
     const tr = target.closest('tr[data-floor]');
     if(!tr) return;
-    recalcRow(tr);
-    const tbody = document.getElementById('masterTbody');
-    if(tbody){
-      let totalGeral = 0;
-      const totalsByFloor = {};
-      tbody.querySelectorAll('tr[data-floor]').forEach(function(r){
-        const kwc = r.querySelector('[data-col="kw"]');
-        const v = kwc ? parseBR(kwc.textContent) : 0;
-        totalGeral += v;
-        const f = r.dataset.floor;
-        totalsByFloor[f] = (totalsByFloor[f] || 0) + v;
-      });
-      Object.keys(totalsByFloor).forEach(function(f){
-        const span = document.querySelector('[data-floor-kw="' + f + '"]');
-        if(span) span.textContent = fmtBR(totalsByFloor[f], 2);
-      });
-      const tot = document.querySelector('.total-kw');
-      if(tot){ tot.textContent = fmtBR(totalGeral, 2) + ' kW'; }
-    }
-    syncPlanFromTable();
+    recalcAll();
   }
 
   function recalculate(btn){
