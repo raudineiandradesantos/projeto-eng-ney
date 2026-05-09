@@ -2987,12 +2987,12 @@
           <!-- ====== STEP 7: EXPORT ====== -->
           <div class="step-panel" id="panel-7">
             <div class="summary-panel" style="margin-bottom:24px">
-              <h3>Resumo · Matriz Maratá R02</h3>
+              <h3 id="expSummaryTitle">Resumo · Projeto atual</h3>
               <div class="summary-grid">
-                <div class="summary-cell"><div class="k">Área total</div><div class="v">1.247<span class="unit">m²</span></div></div>
-                <div class="summary-cell"><div class="k">Carga total</div><div class="v">386<span class="unit">kW</span></div></div>
-                <div class="summary-cell"><div class="k">Ar externo</div><div class="v">3.420<span class="unit">L/s</span></div></div>
-                <div class="summary-cell"><div class="k">Sistemas</div><div class="v">2<span class="unit">VRF</span></div></div>
+                <div class="summary-cell"><div class="k">Área total</div><div class="v" id="expAreaTotal">0<span class="unit">m²</span></div></div>
+                <div class="summary-cell"><div class="k">Carga total</div><div class="v" id="expCargaTotal">0<span class="unit">kW</span></div></div>
+                <div class="summary-cell"><div class="k">Ar externo</div><div class="v" id="expArExt">0<span class="unit">L/s</span></div></div>
+                <div class="summary-cell"><div class="k">Sistemas</div><div class="v" id="expSistemas">0<span class="unit">VRF</span></div></div>
               </div>
             </div>
 
@@ -3075,7 +3075,7 @@
                 <div class="mem-doc-head">
                   <div style="font-family:var(--font-serif);font-style:italic;color:#888;font-size:12px;margin-bottom:8px">SmartHVAC · Thermal Engine</div>
                   <h2 style="color:#000;font-size:20px;margin-bottom:4px">Memorial Descritivo de Cálculo</h2>
-                  <div style="color:#555;font-size:11px">Projeto: Matriz Maratá · R02 · Salvador/BA · 18/04/2026</div>
+                  <div style="color:#555;font-size:11px" id="memProjectLine">Projeto: —</div>
                 </div>
 
                 <div class="mem-section">
@@ -3111,21 +3111,16 @@
                 </div>
 
                 <div class="mem-section">
-                  <h4>3. Tabela resumo · Térreo (exemplo)</h4>
+                  <h4>3. Tabela resumo · Projeto atual</h4>
                   <table class="mem-table">
                     <thead><tr><th>Ambiente</th><th>Área (m²)</th><th>Ocup.</th><th>Vidro (m²)</th><th>Carga (kW)</th></tr></thead>
-                    <tbody>
-                      <tr><td>Comercial</td><td>138,97</td><td>32</td><td>70,00</td><td><strong>62,87</strong></td></tr>
-                      <tr><td>Recepção</td><td>61,03</td><td>12</td><td>45,00</td><td><strong>34,30</strong></td></tr>
-                      <tr><td>Suprimentos</td><td>62,90</td><td>14</td><td>0,00</td><td><strong>10,73</strong></td></tr>
-                      <tr><td>Marketing</td><td>53,52</td><td>12</td><td>12,00</td><td><strong>18,15</strong></td></tr>
-                    </tbody>
+                    <tbody id="memSummaryRows"></tbody>
                   </table>
                 </div>
 
                 <div class="mem-section">
                   <h4>4. Sistemas selecionados</h4>
-                  <p>Para atender à carga total de <strong>386 kW</strong> (Térreo 208 kW + 1º Andar 178 kW), foram especificados dois sistemas VRF independentes com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).</p>
+                  <p id="memSystemLine">Para atender à carga total do projeto, foram especificados sistemas VRF com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).</p>
                 </div>
 
                 <div class="mem-section">
@@ -5018,6 +5013,7 @@
     document.querySelectorAll('.step-panel').forEach(function(p){ p.classList.remove('active'); });
     const panel = document.getElementById('panel-'+n);
     if(panel) panel.classList.add('active');
+    if(n === 7) refreshReportPanels();
     const sn = document.getElementById('stepNow');
     if(sn) sn.textContent = n;
     window.scrollTo({top:0,behavior:'smooth'});
@@ -5030,8 +5026,33 @@
     const el = document.getElementById('memorialPreview');
     if(!el) return;
     el.classList.toggle('active');
+    if(el.classList.contains('active')) refreshReportPanels();
     if(el.classList.contains('active')){
       setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);
+    }
+  }
+
+  function refreshReportPanels(){
+    const data = collectProjectData();
+    if(!data || !Array.isArray(data.rows)) return;
+    const area = data.rows.reduce(function(s,r){ return s + (r.area || 0); }, 0);
+    const arExt = data.rows.reduce(function(s,r){ return s + (r.arExt || 0); }, 0);
+    const systems = Math.max(1, Math.ceil((data.total || 0) / 180));
+    const set = function(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; };
+    set('expSummaryTitle', 'Resumo · ' + data.name + ' · ' + data.date);
+    set('expAreaTotal', fmtBR(area,0) + '<span class=\"unit\">m²</span>');
+    set('expCargaTotal', fmtBR(data.total,0) + '<span class=\"unit\">kW</span>');
+    set('expArExt', fmtBR(arExt,0) + '<span class=\"unit\">L/s</span>');
+    set('expSistemas', systems + '<span class=\"unit\">VRF</span>');
+    const line = document.getElementById('memProjectLine');
+    if(line) line.textContent = 'Projeto: ' + data.name + ' · ' + data.city + ' · ' + data.date;
+    const sys = document.getElementById('memSystemLine');
+    if(sys) sys.innerHTML = 'Para atender à carga total de <strong>' + fmtBR(data.total,0) + ' kW</strong>, foram especificados aproximadamente <strong>' + systems + ' sistemas VRF</strong> com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).';
+    const rowsEl = document.getElementById('memSummaryRows');
+    if(rowsEl){
+      rowsEl.innerHTML = data.rows.slice(0, 8).map(function(r){
+        return '<tr><td>' + r.name + '</td><td>' + fmtBR(r.area,2) + '</td><td>' + fmtBR(r.ocup,0) + '</td><td>' + fmtBR(r.vidro,2) + '</td><td><strong>' + fmtBR(r.kw,2) + '</strong></td></tr>';
+      }).join('') || '<tr><td colspan=\"5\" style=\"text-align:center;color:#777\">Sem dados calculados ainda</td></tr>';
     }
   }
 
