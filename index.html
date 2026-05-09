@@ -3082,9 +3082,9 @@
                   <h4>1. Dados de projeto</h4>
                   <p>Conforme <strong>ABNT NBR 16401-1:2024</strong>, foram adotados os seguintes dados climáticos para Salvador/BA (latitude 12°58'S, altitude 8m):</p>
                   <ul class="mem-list">
-                    <li>Temperatura de Bulbo Seco: <strong>32,2 °C</strong></li>
-                    <li>Temperatura de Bulbo Úmido: <strong>26,5 °C</strong></li>
-                    <li>Orientação da fachada crítica: <strong>Norte</strong> · radiação 550 W/m²</li>
+                    <li id="memTbsLine">Temperatura de Bulbo Seco: <strong>—</strong></li>
+                    <li id="memTbuLine">Temperatura de Bulbo Úmido: <strong>—</strong></li>
+                    <li id="memFacadeLine">Orientação da fachada crítica: <strong>—</strong></li>
                   </ul>
                 </div>
 
@@ -5046,6 +5046,15 @@
     set('expSistemas', systems + '<span class=\"unit\">VRF</span>');
     const line = document.getElementById('memProjectLine');
     if(line) line.textContent = 'Projeto: ' + data.name + ' · ' + data.city + ' · ' + data.date;
+    const tbs = document.getElementById('climTBS');
+    const tbu = document.getElementById('climTBU');
+    const facade = document.getElementById('facadeText');
+    const tbsLine = document.getElementById('memTbsLine');
+    const tbuLine = document.getElementById('memTbuLine');
+    const facadeLine = document.getElementById('memFacadeLine');
+    if(tbsLine) tbsLine.innerHTML = 'Temperatura de Bulbo Seco: <strong>' + (tbs ? tbs.textContent : '—') + '</strong>';
+    if(tbuLine) tbuLine.innerHTML = 'Temperatura de Bulbo Úmido: <strong>' + (tbu ? tbu.textContent : '—') + '</strong>';
+    if(facadeLine) facadeLine.innerHTML = 'Orientação da fachada crítica: <strong>' + (facade ? facade.textContent.replace(/·.*/, '').trim() : '—') + '</strong> · radiação 550 W/m²';
     const sys = document.getElementById('memSystemLine');
     if(sys) sys.innerHTML = 'Para atender à carga total de <strong>' + fmtBR(data.total,0) + ' kW</strong>, foram especificados aproximadamente <strong>' + systems + ' sistemas VRF</strong> com dimensionamento de dutos pelo método de igual perda de carga (Darcy-Weisbach · 0,8 Pa/m).';
     const rowsEl = document.getElementById('memSummaryRows');
