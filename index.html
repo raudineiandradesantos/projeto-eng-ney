@@ -2295,6 +2295,7 @@
             <div>
               <h1>Bem-vindo, <span id="dashUserName">—</span></h1>
               <p id="dashSubtitle">Você ainda não tem projetos. Crie o primeiro para começar.</p>
+              <p style="margin-top:8px;font:500 11px/1.4 var(--font-mono);color:var(--ink-muted)">Build: <span id="appBuildTag">—</span></p>
             </div>
           </div>
 
@@ -3678,6 +3679,7 @@
   const SESSION_KEY = 'smarthvac.session';
   const DEMO_KEY    = 'smarthvac.demo';
   const CLOUD_SETTINGS_KEY = 'smarthvac.cloud.settings';
+  const APP_BUILD = '2026-05-25-cloud-settings-r2';
 
   const state = {
     isDemo: false,
@@ -4783,6 +4785,8 @@
   };
 
   function renderDashboard(useDemoData){
+    const buildTag = document.getElementById('appBuildTag');
+    if(buildTag) buildTag.textContent = APP_BUILD;
     const statsRow = document.getElementById('statsRow');
     const grid = document.getElementById('projectsGrid');
     const subtitle = document.getElementById('dashSubtitle');
