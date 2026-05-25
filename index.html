@@ -3359,11 +3359,11 @@
             <div class="card">
               <h3>Perfil</h3>
               <p class="desc">Informações exibidas para sua equipe.</p>
-              <div class="field"><label>Nome completo</label><input type="text" value="Lucas Pereira"/></div>
-              <div class="field"><label>E-mail</label><input type="email" value="engenheiro@firma.com.br"/></div>
-              <div class="field"><label>Empresa · CREA</label><input type="text" value="HVAC Brasil Engenharia · CREA-BA 12345"/></div>
-              <div class="field"><label>Telefone</label><input type="text" value="+55 71 98765-4321"/></div>
-              <button class="btn btn-primary" style="margin-top:8px" onclick="toastShow('Perfil atualizado')">Salvar alterações</button>
+              <div class="field"><label>Nome completo</label><input type="text" id="settingsFullName" placeholder="Seu nome"/></div>
+              <div class="field"><label>E-mail</label><input type="email" id="settingsEmail" placeholder="seu@email.com"/></div>
+              <div class="field"><label>Empresa · CREA</label><input type="text" id="settingsCompany" placeholder="Empresa · CREA"/></div>
+              <div class="field"><label>Telefone</label><input type="text" id="settingsPhone" placeholder="+55 ..."/></div>
+              <button class="btn btn-primary" style="margin-top:8px" onclick="saveAccountSettings()">Salvar alterações</button>
             </div>
 
             <div class="card">
@@ -3399,6 +3399,30 @@
                 <div class="hv-progress"><span style="width:50%"></span></div>
               </div>
               <button class="btn btn-outline" style="width:100%">Gerenciar assinatura</button>
+            </div>
+
+
+            <div class="card">
+              <h3>Cloud corporativo</h3>
+              <p class="desc">Integração inicial para centralização de arquivos e trilha de auditoria.</p>
+              <div class="field"><label>E-mail da conta cloud</label><input type="email" id="cloudEmail" placeholder="conta@empresa.com"/></div>
+              <div class="field"><label>Provedor</label>
+                <select id="cloudProvider">
+                  <option>OneDrive Corporativo</option>
+                  <option>SharePoint</option>
+                  <option>S3 compatível</option>
+                </select>
+              </div>
+              <div class="field"><label>Pasta de destino</label><input type="text" id="oneDriveFolder" placeholder="/SmartHVAC/Projetos"/></div>
+              <div class="setting-row">
+                <div><div class="sr-label">Validação de integridade (hash)</div><div class="sr-sub">Exige hash dos arquivos salvos e importados</div></div>
+                <label class="switch"><input type="checkbox" id="cloudHashValidation" checked><span class="sw-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <div><div class="sr-label">Registro relacional de versões</div><div class="sr-sub">Estrutura para banco relacional de cálculos e templates</div></div>
+                <label class="switch"><input type="checkbox" id="cloudRelationalDb" checked><span class="sw-slider"></span></label>
+              </div>
+              <button class="btn btn-primary" style="margin-top:8px" onclick="saveCloudSettings()">Salvar configuração cloud</button>
             </div>
 
             <div class="card">
@@ -3653,6 +3677,7 @@
   const STORAGE_KEY = 'smarthvac.users';
   const SESSION_KEY = 'smarthvac.session';
   const DEMO_KEY    = 'smarthvac.demo';
+  const CLOUD_SETTINGS_KEY = 'smarthvac.cloud.settings';
 
   const state = {
     isDemo: false,
@@ -3676,6 +3701,30 @@
   function saveSession(u){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify(u)); }catch(e){} }
   function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
   function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch(e){ return null; } }
+
+  function defaultCloudSettings(){
+    return {
+      cloudEmail: 'malagutironey@gmail.com',
+      cloudProvider: 'OneDrive Corporativo',
+      oneDriveFolder: '/SmartHVAC/Projetos',
+      hashValidation: true,
+      relationalDb: true
+    };
+  }
+
+  function loadCloudSettings(){
+    try{
+      const raw = JSON.parse(localStorage.getItem(CLOUD_SETTINGS_KEY)||'null');
+      return Object.assign(defaultCloudSettings(), raw || {});
+    }catch(e){
+      return defaultCloudSettings();
+    }
+  }
+
+  function saveCloudSettingsToStorage(next){
+    try{ localStorage.setItem(CLOUD_SETTINGS_KEY, JSON.stringify(next)); }catch(e){}
+  }
+
 
   function hashPass(p){
     let h = 0;
@@ -4417,6 +4466,7 @@
           if(state.uploadedPDF.dataUrl) record.pdfDataUrl = state.uploadedPDF.dataUrl;
         }
         record.tableHtml = (document.getElementById('masterTbody')||{}).innerHTML || '';
+        record.cloud = loadCloudSettings();
         if(existing >= 0) saved[existing] = Object.assign({}, saved[existing], record);
         else saved.push(record);
         try{
@@ -4503,6 +4553,7 @@
           if(state.uploadedPDF.dataUrl) record.pdfDataUrl = state.uploadedPDF.dataUrl;
         }
         record.tableHtml = (document.getElementById('masterTbody')||{}).innerHTML || '';
+        record.cloud = loadCloudSettings();
         if(idx >= 0) saved[idx] = Object.assign({}, saved[idx], record);
         else saved.push(record);
         try{
@@ -4535,6 +4586,57 @@
   // ============================================================
   // NAVEGAÇÃO ENTRE VIEWS
   // ============================================================
+  function fillSettingsView(){
+    const user = state.currentUser || {};
+    const cloud = loadCloudSettings();
+    const fullName = document.getElementById('settingsFullName');
+    const email = document.getElementById('settingsEmail');
+    const company = document.getElementById('settingsCompany');
+    const phone = document.getElementById('settingsPhone');
+    if(fullName) fullName.value = user.name || '';
+    if(email) email.value = user.email || cloud.cloudEmail || '';
+    if(company) company.value = user.company || '';
+    if(phone) phone.value = user.phone || '';
+    const cloudEmail = document.getElementById('cloudEmail');
+    const cloudProvider = document.getElementById('cloudProvider');
+    const oneDriveFolder = document.getElementById('oneDriveFolder');
+    const hashValidation = document.getElementById('cloudHashValidation');
+    const relationalDb = document.getElementById('cloudRelationalDb');
+    if(cloudEmail) cloudEmail.value = cloud.cloudEmail || '';
+    if(cloudProvider) cloudProvider.value = cloud.cloudProvider || 'OneDrive Corporativo';
+    if(oneDriveFolder) oneDriveFolder.value = cloud.oneDriveFolder || '/SmartHVAC/Projetos';
+    if(hashValidation) hashValidation.checked = !!cloud.hashValidation;
+    if(relationalDb) relationalDb.checked = !!cloud.relationalDb;
+  }
+
+  function saveAccountSettings(){
+    if(!state.currentUser){ toastShow('Sessão não encontrada','Faça login novamente','warn'); return; }
+    const users = loadUsers();
+    const key = state.currentUser.email;
+    const user = users[key] || {};
+    user.name = (document.getElementById('settingsFullName')||{}).value || user.name;
+    user.company = (document.getElementById('settingsCompany')||{}).value || user.company;
+    user.phone = (document.getElementById('settingsPhone')||{}).value || user.phone;
+    users[key] = user;
+    saveUsers(users);
+    state.currentUser = Object.assign({}, state.currentUser, user);
+    saveSession(state.currentUser);
+    toastShow('Perfil atualizado','Configurações pessoais salvas com sucesso','success');
+  }
+
+  function saveCloudSettings(){
+    const payload = {
+      cloudEmail: ((document.getElementById('cloudEmail')||{}).value || '').trim() || 'malagutironey@gmail.com',
+      cloudProvider: ((document.getElementById('cloudProvider')||{}).value || 'OneDrive Corporativo').trim(),
+      oneDriveFolder: ((document.getElementById('oneDriveFolder')||{}).value || '/SmartHVAC/Projetos').trim(),
+      hashValidation: !!((document.getElementById('cloudHashValidation')||{}).checked),
+      relationalDb: !!((document.getElementById('cloudRelationalDb')||{}).checked)
+    };
+    saveCloudSettingsToStorage(payload);
+    toastShow('Cloud configurado', payload.cloudProvider + ' · ' + payload.oneDriveFolder, 'success');
+    addAuditEntry('atualizou configuração cloud (' + payload.cloudProvider + ')', 'ok');
+  }
+
   function showView(view, sub){
     // Admin Geral não acessa projetos, wizard, bibliotecas, histórico nem normativos
     if(state.currentUser && state.currentUser.role === 'admin_general'){
@@ -4554,6 +4656,7 @@
     if(view === 'admin'){ renderUserTable(); }
     if(view === 'notifications'){ renderNotifications(); }
     if(view === 'history'){ renderApprovalHistoryTimeline(); }
+    if(view === 'settings'){ fillSettingsView(); }
     window.scrollTo(0,0);
   }
 
