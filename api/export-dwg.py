@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 import tempfile
+import urllib.request
+import urllib.error
 from datetime import datetime
 
 
@@ -91,11 +93,12 @@ def handler(request, response):
         return response.json({'ok': False, 'message': 'Payload inválido'})
 
     oda_bin = _find_oda_binary()
-    if not oda_bin:
+    remote_converter = os.getenv('DWG_CONVERTER_URL', '').strip()
+    if not oda_bin and not remote_converter:
         response.status_code = 501
         return response.json({
             'ok': False,
-            'message': 'Conversor DWG não encontrado. Instale o ODA File Converter (gratuito) e configure ODA_FILE_CONVERTER no deploy.'
+            'message': 'Conversor DWG não encontrado. Configure ODA_FILE_CONVERTER no servidor ou DWG_CONVERTER_URL para um conversor remoto.'
         })
 
     try:
@@ -110,24 +113,48 @@ def handler(request, response):
             with open(dxf_path, 'w', encoding='utf-8') as f:
                 f.write(_build_dxf_content(payload))
 
-            # ODA CLI: <in_folder> <out_folder> <in_ver> <out_ver> <file_type> <recurse> <audit>
-            cmd = [oda_bin, in_dir, out_dir, 'ACAD2018', 'ACAD2018', 'DWG', '0', '1']
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
-            if proc.returncode != 0:
-                response.status_code = 500
-                return response.json({'ok': False, 'message': 'Falha na conversão DWG', 'detail': (proc.stderr or proc.stdout or '').strip()[:500]})
-
-            dwg_path = os.path.join(out_dir, f'{safe_name}.dwg')
-            if not os.path.exists(dwg_path):
-                files = [x for x in os.listdir(out_dir) if x.lower().endswith('.dwg')]
-                if files:
-                    dwg_path = os.path.join(out_dir, files[0])
-                else:
+            data = None
+            if oda_bin:
+                # ODA CLI: <in_folder> <out_folder> <in_ver> <out_ver> <file_type> <recurse> <audit>
+                cmd = [oda_bin, in_dir, out_dir, 'ACAD2018', 'ACAD2018', 'DWG', '0', '1']
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+                if proc.returncode == 0:
+                    dwg_path = os.path.join(out_dir, f'{safe_name}.dwg')
+                    if not os.path.exists(dwg_path):
+                        files = [x for x in os.listdir(out_dir) if x.lower().endswith('.dwg')]
+                        if files:
+                            dwg_path = os.path.join(out_dir, files[0])
+                    if os.path.exists(dwg_path):
+                        with open(dwg_path, 'rb') as f:
+                            data = f.read()
+                elif not remote_converter:
                     response.status_code = 500
-                    return response.json({'ok': False, 'message': 'Conversão executada, mas DWG não foi gerado'})
+                    return response.json({'ok': False, 'message': 'Falha na conversão DWG', 'detail': (proc.stderr or proc.stdout or '').strip()[:500]})
 
-            with open(dwg_path, 'rb') as f:
-                data = f.read()
+            if data is None and remote_converter:
+                req = urllib.request.Request(
+                    remote_converter,
+                    data=json.dumps(payload).encode('utf-8'),
+                    headers={'Content-Type': 'application/json'},
+                    method='POST'
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=60) as resp:
+                        if resp.status == 200:
+                            data = resp.read()
+                        else:
+                            response.status_code = 502
+                            return response.json({'ok': False, 'message': f'Conversor remoto retornou status {resp.status}'})
+                except urllib.error.HTTPError as e:
+                    response.status_code = 502
+                    return response.json({'ok': False, 'message': f'Conversor remoto HTTP {e.code}'})
+                except urllib.error.URLError as e:
+                    response.status_code = 502
+                    return response.json({'ok': False, 'message': f'Falha no conversor remoto: {e.reason}'})
+
+            if data is None:
+                response.status_code = 500
+                return response.json({'ok': False, 'message': 'Conversão executada, mas nenhum DWG foi gerado'})
 
         response.status_code = 200
         response.headers['Content-Type'] = 'application/acad'
