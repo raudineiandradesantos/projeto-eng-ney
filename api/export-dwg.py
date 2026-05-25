@@ -81,6 +81,19 @@ def _find_oda_binary():
     return None
 
 
+def _find_alt_dwg_converter():
+    # Conversores alternativos (quando ODA não estiver disponível)
+    # Ex.: pacote libredwg (dxf2dwg)
+    env_alt = os.getenv('DWG_ALT_CONVERTER')
+    if env_alt and shutil.which(env_alt):
+        return shutil.which(env_alt)
+    for candidate in ['dxf2dwg', 'dwgwrite']:
+        found = shutil.which(candidate)
+        if found:
+            return found
+    return None
+
+
 def handler(request, response):
     if request.method != 'POST':
         response.status_code = 405
@@ -93,12 +106,13 @@ def handler(request, response):
         return response.json({'ok': False, 'message': 'Payload inválido'})
 
     oda_bin = _find_oda_binary()
+    alt_bin = _find_alt_dwg_converter()
     remote_converter = os.getenv('DWG_CONVERTER_URL', '').strip()
-    if not oda_bin and not remote_converter:
+    if not oda_bin and not alt_bin and not remote_converter:
         response.status_code = 501
         return response.json({
             'ok': False,
-            'message': 'Conversor DWG não encontrado. Configure ODA_FILE_CONVERTER no servidor ou DWG_CONVERTER_URL para um conversor remoto.'
+            'message': 'Conversor DWG não encontrado. Configure ODA_FILE_CONVERTER, DWG_ALT_CONVERTER ou DWG_CONVERTER_URL.'
         })
 
     try:
@@ -127,9 +141,21 @@ def handler(request, response):
                     if os.path.exists(dwg_path):
                         with open(dwg_path, 'rb') as f:
                             data = f.read()
-                elif not remote_converter:
+                elif not remote_converter and not alt_bin:
                     response.status_code = 500
                     return response.json({'ok': False, 'message': 'Falha na conversão DWG', 'detail': (proc.stderr or proc.stdout or '').strip()[:500]})
+
+            if data is None and alt_bin:
+                # Conversor alternativo: espera dxf2dwg <input.dxf> <output.dwg>
+                dwg_alt_path = os.path.join(out_dir, f'{safe_name}.dwg')
+                alt_cmd = [alt_bin, dxf_path, dwg_alt_path]
+                alt_proc = subprocess.run(alt_cmd, capture_output=True, text=True, timeout=45)
+                if alt_proc.returncode == 0 and os.path.exists(dwg_alt_path):
+                    with open(dwg_alt_path, 'rb') as f:
+                        data = f.read()
+                elif not remote_converter:
+                    response.status_code = 500
+                    return response.json({'ok': False, 'message': 'Falha na conversão DWG (alternativa)', 'detail': (alt_proc.stderr or alt_proc.stdout or '').strip()[:500]})
 
             if data is None and remote_converter:
                 req = urllib.request.Request(
