@@ -9,7 +9,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length 1828 >>
+<< /Length 1908 >>
 stream
 BT
 /F1 12 Tf
@@ -21,23 +21,23 @@ T*
 T*
 () Tj
 T*
-(1\) O que ja foi implementado) Tj
+(1\) Implementacoes concludas) Tj
 T*
-(- Fluxo web completo: upload, validacao, calculo, sistemas, QAI e entregaveis.) Tj
+(- Fluxo web operacional: upload, validacao, calculo, sistemas, QAI e entregaveis.) Tj
 T*
-(- Extracao automatica de PDF via endpoint /api/extract-pdf \(PyMuPDF + fallback\).) Tj
+(- Endpoint /api/extract-pdf com PyMuPDF para extracao de ambientes e atributos.) Tj
 T*
-(- Exportacao CAD: DXF funcional e rota DWG preparada no backend.) Tj
+(- Endpoint /api/export-dwg com pipeline DXF->DWG quando ODA estiver disponivel.) Tj
 T*
 (- Upload ampliado para PDF, DXF e DWG com limite de 300MB.) Tj
 T*
-(- Historico dinamico de aprovacao/reprovacao \(sem itens fixos\).) Tj
+(- Historico dinamico de aprovacoes e reprovacoes sem dados fixos.) Tj
 T*
-(- Resumos e previews de relatorio atualizados para dados reais do projeto.) Tj
+(- Resumos e previews de relatorio atualizados com dados reais do projeto.) Tj
 T*
 () Tj
 T*
-(2\) O que falta \(prioridade cliente\)) Tj
+(2\) Pendencias prioritarias) Tj
 T*
 (- Modulo 1 \(Cloud corporativa\):) Tj
 T*
@@ -49,39 +49,39 @@ T*
 T*
 (- Modulo 2 \(Mobilidade / APK\):) Tj
 T*
-(  * Estrutura de app mobile em montagem.) Tj
+(  * Estrutura mobile em montagem para publicacao de APK.) Tj
 T*
-(  * Checklist offline-first com sincronizacao em background.) Tj
+(  * Operacao offline-first e sincronizacao em segundo plano.) Tj
 T*
-(  * Captura de fotos/notas integrada ao gerador documental.) Tj
-T*
-() Tj
-T*
-(3\) Solucao e proximos passos) Tj
-T*
-(- Fase A: consolidar backend cloud persistente e governanca de dados.) Tj
-T*
-(- Fase B: finalizar base APK com operacao offline e sync resiliente.) Tj
-T*
-(- Fase C: automatizar relatorios DOCX/PDF com templates dinamicos.) Tj
+(  * Captura de fotos e notas integrada ao gerador documental.) Tj
 T*
 () Tj
 T*
-(4\) Observacao tecnica sobre DWG) Tj
+(3\) Proximo plano de execucao) Tj
 T*
-(- DWG real depende de ODA File Converter instalado no ambiente.) Tj
+(- Fase A: consolidacao de backend cloud persistente e governanca de dados.) Tj
 T*
-(- Sem ODA, sistema segue com fallback DXF para manter operacao.) Tj
+(- Fase B: finalizacao da base APK com cache offline e fila de sincronizacao.) Tj
+T*
+(- Fase C: automacao documental DOCX/PDF com templates dinamicos por cliente.) Tj
+T*
+() Tj
+T*
+(4\) Nota tecnica sobre DWG) Tj
+T*
+(- A geracao de DWG real depende de ODA File Converter no ambiente.) Tj
+T*
+(- Sem ODA, o fluxo permanece operacional com fallback DXF compativel.) Tj
 T*
 () Tj
 T*
 (5\) Status executivo) Tj
 T*
-(- Base tecnica funcional entregue para MVP web.) Tj
+(- A base tecnica do MVP web encontra-se operacional.) Tj
 T*
-(- Modulos 1 e 2 ja mapeados como prioridade imediata.) Tj
+(- Modulos 1 e 2 estao definidos como prioridade imediata de entrega.) Tj
 T*
-(- Email de teste disponivel para homologacao cloud.) Tj
+(- Ambiente com email de teste disponivel para homologacao cloud.) Tj
 ET
 endstream
 endobj
@@ -95,9 +95,9 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000241 00000 n 
-0000002121 00000 n 
+0000002201 00000 n 
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-2191
+2271
 %%EOF
