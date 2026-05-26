@@ -3728,6 +3728,29 @@
   }
 
 
+
+  async function syncProjectToCloud(projectRecord){
+    const cloud = loadCloudSettings();
+    const provider = (cloud.cloudProvider || '').toLowerCase();
+    if(provider.indexOf('onedrive') === -1){
+      return { ok:false, skipped:true, message:'Provedor cloud atual não usa API OneDrive.' };
+    }
+    try{
+      const res = await fetch('/api/save-cloud', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project: projectRecord, cloud: cloud })
+      });
+      const data = await res.json().catch(function(){ return {}; });
+      if(!res.ok || !data.ok){
+        return { ok:false, message:(data && data.message) || 'Falha ao salvar no cloud.' };
+      }
+      return { ok:true, data:data };
+    }catch(e){
+      return { ok:false, message: e && e.message ? e.message : 'Erro de rede ao salvar no cloud.' };
+    }
+  }
+
   function hashPass(p){
     let h = 0;
     for(let i=0; i<p.length; i++){ h = ((h<<5)-h) + p.charCodeAt(i); h |= 0; }
@@ -4486,6 +4509,14 @@
         state.currentProjectId = id;
         state.unsavedChanges = false;
         addAuditEntry('salvou projeto ' + projectName + ' (' + projectVer + ')', 'ok');
+        syncProjectToCloud(record).then(function(cloudRes){
+          if(cloudRes && cloudRes.ok){
+            addAuditEntry('backup cloud concluído (' + (record.cloud && record.cloud.cloudProvider ? record.cloud.cloudProvider : 'OneDrive') + ')', 'ok');
+            toastShow('Backup cloud concluído', (cloudRes.data && cloudRes.data.folder ? cloudRes.data.folder : 'OneDrive') + ' · arquivo atualizado', 'success');
+          }else if(cloudRes && !cloudRes.skipped){
+            toastShow('Cloud não sincronizado', cloudRes.message || 'Verifique configuração do servidor cloud.', 'warn');
+          }
+        });
       }catch(e){}
       btn.innerHTML = original;
       btn.disabled = false;
@@ -4569,6 +4600,13 @@
         }
         state.currentProjectId = id;
         addAuditEntry('enviou projeto ' + projectName + ' (' + projectVer + ') para aprovação', 'ok');
+        syncProjectToCloud(record).then(function(cloudRes){
+          if(cloudRes && cloudRes.ok){
+            addAuditEntry('snapshot cloud enviado para aprovação', 'ok');
+          }else if(cloudRes && !cloudRes.skipped){
+            toastShow('Cloud não sincronizado', cloudRes.message || 'Verifique configuração do servidor cloud.', 'warn');
+          }
+        });
       }catch(e){}
       btn.innerHTML = original;
       btn.disabled = false;
