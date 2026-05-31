@@ -1,0 +1,103 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1908 >>
+stream
+BT
+/F1 12 Tf
+50 800 Td
+14 TL
+(RELATORIO EXECUTIVO - SmartHVAC \(MVP\)) Tj
+T*
+(Data: 23/05/2026) Tj
+T*
+() Tj
+T*
+(1\) Implementacoes concludas) Tj
+T*
+(- Fluxo web operacional: upload, validacao, calculo, sistemas, QAI e entregaveis.) Tj
+T*
+(- Endpoint /api/extract-pdf com PyMuPDF para extracao de ambientes e atributos.) Tj
+T*
+(- Endpoint /api/export-dwg com pipeline DXF->DWG quando ODA estiver disponivel.) Tj
+T*
+(- Upload ampliado para PDF, DXF e DWG com limite de 300MB.) Tj
+T*
+(- Historico dinamico de aprovacoes e reprovacoes sem dados fixos.) Tj
+T*
+(- Resumos e previews de relatorio atualizados com dados reais do projeto.) Tj
+T*
+() Tj
+T*
+(2\) Pendencias prioritarias) Tj
+T*
+(- Modulo 1 \(Cloud corporativa\):) Tj
+T*
+(  * Migracao governada de arquivos com validacao por hash.) Tj
+T*
+(  * Banco relacional corporativo e versionamento centralizado.) Tj
+T*
+(  * Politicas de backup, auditoria e retencao.) Tj
+T*
+(- Modulo 2 \(Mobilidade / APK\):) Tj
+T*
+(  * Estrutura mobile em montagem para publicacao de APK.) Tj
+T*
+(  * Operacao offline-first e sincronizacao em segundo plano.) Tj
+T*
+(  * Captura de fotos e notas integrada ao gerador documental.) Tj
+T*
+() Tj
+T*
+(3\) Proximo plano de execucao) Tj
+T*
+(- Fase A: consolidacao de backend cloud persistente e governanca de dados.) Tj
+T*
+(- Fase B: finalizacao da base APK com cache offline e fila de sincronizacao.) Tj
+T*
+(- Fase C: automacao documental DOCX/PDF com templates dinamicos por cliente.) Tj
+T*
+() Tj
+T*
+(4\) Nota tecnica sobre DWG) Tj
+T*
+(- A geracao de DWG real depende de ODA File Converter no ambiente.) Tj
+T*
+(- Sem ODA, o fluxo permanece operacional com fallback DXF compativel.) Tj
+T*
+() Tj
+T*
+(5\) Status executivo) Tj
+T*
+(- A base tecnica do MVP web encontra-se operacional.) Tj
+T*
+(- Modulos 1 e 2 estao definidos como prioridade imediata de entrega.) Tj
+T*
+(- Ambiente com email de teste disponivel para homologacao cloud.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002201 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2271
+%%EOF
