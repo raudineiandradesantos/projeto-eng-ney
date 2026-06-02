@@ -1,0 +1,17 @@
+{
+  "appId": "io.smarthvac.app",
+  "appName": "SmartHVAC",
+  "webDir": "app-mobile",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": null,
+      "keystorePassword": null,
+      "keystoreAlias": null,
+      "keystoreAliasPassword": null,
+      "releaseType": "APK"
+    }
+  }
+}
