@@ -696,7 +696,7 @@ select.form-input{appearance:none}
 </div>
 
 </div><!-- #appRoot -->
-<script>
+<script type="module">>
 // ============================================================
 // FIREBASE CONFIG (usa mesma config do projeto principal)
 // ============================================================
@@ -1327,7 +1327,8 @@ document.getElementById('loginPass')?.addEventListener('keypress', e => { if(e.k
 // ============================================================
 // BOOT
 // ============================================================
-initFirebase();
+// expose functions to window for onclick handlersObject.assign(window,{doLogin,doLogout,goTo,openNewProjectModal,createProject,selectProject,addActivity,confirmAddActivity,removeActivity,addTeamMember,removeTeam,saveRDO,handlePhoto,deletePhoto,viewPhoto,setDrawColor,setDrawSize,clearCanvas,undoCanvas,convertHandwriting,saveAnnotation,deleteAnnotation,toggleCheck,openAddCheckModal,confirmAddCheck,generateReport,shareReport,closeModal,openInfoModal:()=>{}});
+  initFirebase();
 </script>
 </body>
 </html>
