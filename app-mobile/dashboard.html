@@ -6,7 +6,7 @@
 <title>SmartHVAC — Dashboard Mobile</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#050608;--bg1:#0a0c10;--bg2:#11141a;--line:#1e232d;--ink:#e7ecf2;--dim:#8a94a6;--muted:#525d70;--cyan:#00e5ff;--ok:#34d399;--hot:#ff5b3c;--warm:#ffb547;--font:'Geist','Inter',sans-serif;--mono:'JetBrains Mono',monospace}
+:root{--bg:#050608;--bg1:#0a0c10;--bg2:#11141a;--line:#1e232d;--ink:#e7ecf2;--dim:#8a94a6;--muted:#525d70;--cyan:#00e5ff;--ok:#34d399;--hot:#ff5b3c;--warm:#ffb547;--font:'Inter',sans-serif;--mono:'monospace'}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
 .auth{min-height:100vh;display:grid;place-items:center;padding:24px}
 .card{background:var(--bg1);border:1px solid var(--line);border-radius:16px;padding:32px 28px;width:100%;max-width:380px}
@@ -16,8 +16,8 @@ h2{font-size:22px;font-weight:500;margin-bottom:6px}
 .sub{font-size:13px;color:var(--dim);margin-bottom:24px}
 .field{margin-bottom:14px}
 .field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.field input{width:100%;padding:12px 14px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;font-size:14px;color:var(--ink)}
-.field input:focus{outline:none;border-color:var(--cyan)}
+.field input{width:100%;padding:12px 14px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;font-size:14px;color:var(--ink);outline:none}
+.field input:focus{border-color:var(--cyan)}
 .btn{width:100%;padding:14px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;margin-top:8px}
 .btn-primary{background:linear-gradient(180deg,#00e5ff,#00b8d4);color:#001419}
 .err{margin-top:12px;padding:10px;background:rgba(255,91,60,.1);border:1px solid rgba(255,91,60,.3);border-radius:6px;font-size:12px;color:var(--hot);display:none}
@@ -44,119 +44,175 @@ h2{font-size:22px;font-weight:500;margin-bottom:6px}
 .pill-bad{background:rgba(255,91,60,.12);color:var(--hot);border:1px solid rgba(255,91,60,.25)}
 .logout-btn{font-size:12px;color:var(--dim);cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--bg2);border:1px solid var(--line)}
 .empty{color:var(--muted);font-size:13px;padding:20px 0;text-align:center}
+.user-email{font-size:11px;color:var(--dim);margin-right:8px;font-family:var(--mono)}
 </style>
 </head>
 <body>
 
 <div class="auth" id="authScreen">
-<div class="card">
-<div class="logo">
-<svg viewBox="0 0 28 28" width="26" height="26"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#00b8d4"/></linearGradient></defs><path d="M4 8L14 3L24 8L24 20L14 25L4 20Z" fill="none" stroke="url(#g)" stroke-width="1.5"/><circle cx="14" cy="14" r="1.8" fill="#00e5ff"/></svg>
-<span>Smart<span class="accent">HVAC</span></span>
-</div>
-<h2>Dashboard</h2>
-<p class="sub">Acesso do proprietário — dados em tempo real</p>
-<div class="field"><label>E-mail</label><input type="email" id="email" placeholder="seu@email.com.br"/></div>
-<div class="field"><label>Senha</label><input type="password" id="pass" placeholder="sua senha"/></div>
-<button class="btn btn-primary" onclick="login()">Entrar</button>
-<div class="err" id="err"></div>
-</div>
+  <div class="card">
+    <div class="logo">
+      <svg viewBox="0 0 28 28" width="26" height="26"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#00b8d4"/></linearGradient></defs><path d="M4 8L14 3L24 8L24 20L14 25L4 20Z" fill="none" stroke="url(#g)" stroke-width="1.5"/><circle cx="14" cy="14" r="1.8" fill="#00e5ff"/></svg>
+      <span>Smart<span class="accent">HVAC</span></span>
+    </div>
+    <h2>Dashboard</h2>
+    <p class="sub">Acesso do proprietário — dados em tempo real</p>
+    <div class="field"><label>E-mail</label><input type="email" id="email" placeholder="seu@email.com.br" autocomplete="email"/></div>
+    <div class="field"><label>Senha</label><input type="password" id="pass" placeholder="sua senha" autocomplete="current-password"/></div>
+    <button class="btn btn-primary" id="loginBtn" onclick="login()">Entrar</button>
+    <div class="err" id="err"></div>
+  </div>
 </div>
 
 <div class="dashboard" id="dashScreen">
-<div class="topbar">
-<div class="topbar-logo">
-<svg viewBox="0 0 28 28" width="22" height="22"><defs><linearGradient id="g2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#00b8d4"/></linearGradient></defs><path d="M4 8L14 3L24 8L24 20L14 25L4 20Z" fill="none" stroke="url(#g2)" stroke-width="1.5"/><circle cx="14" cy="14" r="1.8" fill="#00e5ff"/></svg>
-Smart<span class="accent">HVAC</span>
-</div>
-<div style="display:flex;align-items:center;gap:10px">
-<div class="sync"><div class="dot"></div>Live</div>
-<button class="logout-btn" onclick="logout()">Sair</button>
-</div>
-</div>
-<div class="content">
-<div class="section-title">Visão geral</div>
-<div class="stats">
-<div class="stat"><div class="stat-label">Pendentes</div><div class="stat-val" id="sPending" style="color:var(--warm)">—</div><div class="stat-sub">aprovações</div></div>
-<div class="stat"><div class="stat-label">Aprovados</div><div class="stat-val" id="sApproved" style="color:var(--ok)">—</div><div class="stat-sub">projetos</div></div>
-<div class="stat"><div class="stat-label">Rejeitados</div><div class="stat-val" id="sRejected" style="color:var(--hot)">—</div><div class="stat-sub">projetos</div></div>
-<div class="stat"><div class="stat-label">Usuários</div><div class="stat-val" id="sUsers">—</div><div class="stat-sub">cadastrados</div></div>
-</div>
-<div class="section">
-<div class="section-title">Projetos aguardando aprovação</div>
-<div id="approvalList"><div class="empty">Carregando...</div></div>
-</div>
-<div class="section">
-<div class="section-title">Atividade recente</div>
-<div id="auditList"><div class="empty">Carregando...</div></div>
-</div>
-</div>
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 28 28" width="22" height="22"><defs><linearGradient id="g2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#00b8d4"/></linearGradient></defs><path d="M4 8L14 3L24 8L24 20L14 25L4 20Z" fill="none" stroke="url(#g2)" stroke-width="1.5"/><circle cx="14" cy="14" r="1.8" fill="#00e5ff"/></svg>
+      Smart<span class="accent">HVAC</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sync"><div class="dot"></div>Live</div>
+      <span class="user-email" id="userEmail"></span>
+      <button class="logout-btn" onclick="logout()">Sair</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="section-title">Visão geral</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Pendentes</div><div class="stat-val" id="sPending" style="color:var(--warm)">—</div><div class="stat-sub">aprovações</div></div>
+      <div class="stat"><div class="stat-label">Aprovados</div><div class="stat-val" id="sApproved" style="color:var(--ok)">—</div><div class="stat-sub">projetos</div></div>
+      <div class="stat"><div class="stat-label">Rejeitados</div><div class="stat-val" id="sRejected" style="color:var(--hot)">—</div><div class="stat-sub">projetos</div></div>
+      <div class="stat"><div class="stat-label">Usuários</div><div class="stat-val" id="sUsers">—</div><div class="stat-sub">cadastrados</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Projetos aguardando aprovação</div>
+      <div id="approvalList"><div class="empty">Carregando...</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Atividade recente</div>
+      <div id="auditList"><div class="empty">Carregando...</div></div>
+    </div>
+  </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, query, orderBy, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const app = initializeApp({
-  apiKey:"AIzaSyA60Q8QWVt2ZZ9cyoQoVeQJWRPo9wWvpYs",
-  authDomain:"smarthvac-eng-ney.firebaseapp.com",
-  projectId:"smarthvac-eng-ney",
-  storageBucket:"smarthvac-eng-ney.firebasestorage.app",
-  messagingSenderId:"246187990177",
-  appId:"1:246187990177:web:3318f44b46900da7c2e4e0"
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyA60Q8QWVt2ZZ9cyoQoVeQJWRPo9wWvpYs",
+  authDomain: "smarthvac-eng-ney.firebaseapp.com",
+  projectId: "smarthvac-eng-ney",
+  storageBucket: "smarthvac-eng-ney.firebasestorage.app",
+  messagingSenderId: "246187990177",
+  appId: "1:246187990177:web:3318f44b46900da7c2e4e0"
+};
+
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 let unsubs = [];
 
 window.login = async () => {
+  const btn = document.getElementById('loginBtn');
   const email = document.getElementById('email').value.trim();
   const pass = document.getElementById('pass').value;
   const err = document.getElementById('err');
-  err.style.display='none';
-  try { await signInWithEmailAndPassword(auth,email,pass); }
-  catch(e){ err.textContent='Credenciais inválidas.'; err.style.display='block'; }
+  err.style.display = 'none';
+  if(!email || !pass){ err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
+  btn.textContent = 'Entrando...';
+  btn.disabled = true;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/wrong-password': 'Senha incorreta.',
+      'auth/user-not-found': 'Usuário não encontrado.',
+      'auth/invalid-email': 'E-mail inválido.',
+      'auth/too-many-requests': 'Muitas tentativas. Tente novamente em breve.',
+      'auth/invalid-credential': 'Credenciais inválidas.'
+    };
+    err.textContent = msgs[e.code] || 'Erro ao entrar: ' + e.message;
+    err.style.display = 'block';
+    btn.textContent = 'Entrar';
+    btn.disabled = false;
+  }
 };
 
-window.logout = async () => { unsubs.forEach(u=>u()); unsubs=[]; await signOut(auth); };
+window.logout = async () => {
+  unsubs.forEach(u => u());
+  unsubs = [];
+  await signOut(auth);
+};
 
-onAuthStateChanged(auth, user => {
-  if(user){
-    document.getElementById('authScreen').style.display='none';
-    document.getElementById('dashScreen').style.display='block';
+onAuthStateChanged(auth, async (user) => {
+  if(user) {
+    // Verificar se usuário tem perfil no Firestore
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if(!snap.exists()){
+      await signOut(auth);
+      const err = document.getElementById('err');
+      err.textContent = 'Acesso negado. Usuário sem perfil no sistema.';
+      err.style.display = 'block';
+      return;
+    }
+    document.getElementById('userEmail').textContent = user.email;
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('dashScreen').style.display = 'block';
     startListeners();
   } else {
-    document.getElementById('authScreen').style.display='grid';
-    document.getElementById('dashScreen').style.display='none';
+    unsubs.forEach(u => u());
+    unsubs = [];
+    document.getElementById('authScreen').style.display = 'grid';
+    document.getElementById('dashScreen').style.display = 'none';
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Entrar';
+    btn.disabled = false;
   }
 });
 
+function safeStr(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function startListeners(){
   // Approvals
-  const q1 = query(collection(db,'approvals'),orderBy('createdAt','desc'));
-  unsubs.push(onSnapshot(q1, snap=>{
-    const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+  const q1 = query(collection(db,'approvals'), orderBy('createdAt','desc'));
+  unsubs.push(onSnapshot(q1, snap => {
+    const all = snap.docs.map(d => ({id:d.id,...d.data()}));
     document.getElementById('sPending').textContent = all.filter(i=>i.status==='pending').length;
     document.getElementById('sApproved').textContent = all.filter(i=>i.status==='approved').length;
     document.getElementById('sRejected').textContent = all.filter(i=>i.status==='rejected').length;
-    const list = document.getElementById('approvalList');
     const pending = all.filter(i=>i.status==='pending');
+    const list = document.getElementById('approvalList');
     if(!pending.length){ list.innerHTML='<div class="empty">Nenhum projeto pendente.</div>'; return; }
-    list.innerHTML = pending.map(i=>'<div class="item"><div class="item-title">'+i.title+'</div><div class="item-meta">'+i.engineer+' · '+i.area+'m²</div><span class="pill pill-warn">aguardando</span></div>').join('');
-  }));
+    list.innerHTML = pending.map(i=>
+      '<div class="item">' +
+      '<div class="item-title">'+safeStr(i.title)+'</div>' +
+      '<div class="item-meta">'+safeStr(i.engineer)+' · '+safeStr(i.area)+'m²</div>' +
+      '<span class="pill pill-warn">aguardando</span>' +
+      '</div>'
+    ).join('');
+  }, err => console.error('approvals error', err)));
+
   // Users
-  unsubs.push(onSnapshot(collection(db,'users'), snap=>{
+  unsubs.push(onSnapshot(collection(db,'users'), snap => {
     document.getElementById('sUsers').textContent = snap.size;
-  }));
+  }, err => console.error('users error', err)));
+
   // Audit
-  const q3 = query(collection(db,'audit'),orderBy('createdAt','desc'));
-  unsubs.push(onSnapshot(q3, snap=>{
+  const q3 = query(collection(db,'audit'), orderBy('createdAt','desc'));
+  unsubs.push(onSnapshot(q3, snap => {
     const entries = snap.docs.slice(0,10).map(d=>d.data());
     const list = document.getElementById('auditList');
     if(!entries.length){ list.innerHTML='<div class="empty">Nenhuma atividade.</div>'; return; }
-    list.innerHTML = entries.map(e=>'<div class="item"><div class="item-title">'+e.who+'</div><div class="item-meta">'+e.msg+'</div><div class="item-meta">'+e.time+'</div></div>').join('');
-  }));
+    list.innerHTML = entries.map(e=>
+      '<div class="item">' +
+      '<div class="item-title">'+safeStr(e.who)+'</div>' +
+      '<div class="item-meta">'+safeStr(e.msg)+'</div>' +
+      '<div class="item-meta">'+safeStr(e.time)+'</div>' +
+      '</div>'
+    ).join('');
+  }, err => console.error('audit error', err)));
 }
 </script>
 </body>
