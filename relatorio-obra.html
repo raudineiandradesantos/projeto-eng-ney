@@ -1329,6 +1329,35 @@ document.getElementById('loginPass')?.addEventListener('keypress', e => { if(e.k
 // ============================================================
 // expose functions to window for onclick handlersObject.assign(window,{doLogin,doLogout,goTo,openNewProjectModal,createProject,selectProject,addActivity,confirmAddActivity,removeActivity,addTeamMember,removeTeam,saveRDO,handlePhoto,deletePhoto,viewPhoto,setDrawColor,setDrawSize,clearCanvas,undoCanvas,convertHandwriting,saveAnnotation,deleteAnnotation,toggleCheck,openAddCheckModal,confirmAddCheck,generateReport,shareReport,closeModal,openInfoModal:()=>{}});
   initFirebase();
+
+// Expose functions to global scope (required for onclick in module scripts)
+window.doLogin = typeof doLogin !== "undefined" ? doLogin : function(){};
+window.doLogout = typeof doLogout !== "undefined" ? doLogout : function(){};
+window.openNewProjectModal = typeof openNewProjectModal !== "undefined" ? openNewProjectModal : function(){};
+window.addActivity = typeof addActivity !== "undefined" ? addActivity : function(){};
+window.addTeamMember = typeof addTeamMember !== "undefined" ? addTeamMember : function(){};
+window.saveRDO = typeof saveRDO !== "undefined" ? saveRDO : function(){};
+window.setDrawColor = typeof setDrawColor !== "undefined" ? setDrawColor : function(){};
+window.setDrawSize = typeof setDrawSize !== "undefined" ? setDrawSize : function(){};
+window.clearCanvas = typeof clearCanvas !== "undefined" ? clearCanvas : function(){};
+window.undoCanvas = typeof undoCanvas !== "undefined" ? undoCanvas : function(){};
+window.convertHandwriting = typeof convertHandwriting !== "undefined" ? convertHandwriting : function(){};
+window.saveAnnotation = typeof saveAnnotation !== "undefined" ? saveAnnotation : function(){};
+window.openAddCheckModal = typeof openAddCheckModal !== "undefined" ? openAddCheckModal : function(){};
+window.generateReport = typeof generateReport !== "undefined" ? generateReport : function(){};
+window.shareReport = typeof shareReport !== "undefined" ? shareReport : function(){};
+window.goTo = typeof goTo !== "undefined" ? goTo : function(){};
+window.closeModal = typeof closeModal !== "undefined" ? closeModal : function(){};
+window.createProject = typeof createProject !== "undefined" ? createProject : function(){};
+window.confirmAddActivity = typeof confirmAddActivity !== "undefined" ? confirmAddActivity : function(){};
+window.confirmAddCheck = typeof confirmAddCheck !== "undefined" ? confirmAddCheck : function(){};
+window.selectProject = typeof selectProject !== "undefined" ? selectProject : function(){};
+window.removeActivity = typeof removeActivity !== "undefined" ? removeActivity : function(){};
+window.removeTeam = typeof removeTeam !== "undefined" ? removeTeam : function(){};
+window.viewPhoto = typeof viewPhoto !== "undefined" ? viewPhoto : function(){};
+window.deletePhoto = typeof deletePhoto !== "undefined" ? deletePhoto : function(){};
+window.deleteAnnotation = typeof deleteAnnotation !== "undefined" ? deleteAnnotation : function(){};
+window.toggleCheck = typeof toggleCheck !== "undefined" ? toggleCheck : function(){};
 </script>
 </body>
 </html>
