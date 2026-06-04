@@ -733,7 +733,8 @@ async function initFirebase() {
     auth = getAuth(app);
     db = getFirestore(app);
     onAuthStateChanged(auth, user => {
-      if (user) { currentUser = user; afterLogin(); }
+      if (user) { currentUser = user;
+      loadProjects(); afterLogin(); }
       else { showScreen('Login'); }
     });
   } catch(e) {
@@ -854,6 +855,7 @@ async function createProject() {
       uid: currentUser.uid, stage: 'Ativo', createdAt: serverTimestamp()
     });
     closeModal('modalNewProject');
+    await loadProjects();
     showToast('Projeto criado com sucesso!');
     loadProjects();
   } catch(e) { showToast('Erro ao criar: ' + e.message, 'error'); }
