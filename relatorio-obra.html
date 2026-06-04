@@ -720,14 +720,15 @@ let rdoActivities = [], rdoTeam = [];
 async function initFirebase() {
   try {
     const cfg = await fetch('/api/firebase-config').then(r => r.json()).catch(() => null);
-    const firebaseConfig = cfg || {
-      apiKey: "AIzaSyExample",
-      authDomain: "projeto-eng-ney.firebaseapp.com",
-      projectId: "projeto-eng-ney",
-      storageBucket: "projeto-eng-ney.appspot.com",
-      messagingSenderId: "000000000",
-      appId: "1:000:web:000"
-    };
+    const firebaseConfig = {
+    apiKey: "AIzaSyA60Q8QWVt2ZZ9cyoQoVeQJWRPo9wWvpYs",
+    authDomain: "smarthvac-eng-ney.firebaseapp.com",
+    projectId: "smarthvac-eng-ney",
+    storageBucket: "smarthvac-eng-ney.firebasestorage.app",
+    messagingSenderId: "246187990177",
+    appId: "1:246187990177:web:3318f44b46900da7c2e4e0",
+    measurementId: "G-L2TGBGG9VX"
+  }
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
