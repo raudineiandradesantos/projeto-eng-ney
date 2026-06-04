@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>RDO â RelatÃ³rio de Obra</title>
+<title>RDO — Relatório de Obra</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <style>
@@ -221,7 +221,7 @@ select.form-input{appearance:none}
           </div>
           <span style="font-size:20px;font-weight:700">Eng<span style="color:var(--cyan)">Ney</span></span>
         </div>
-        <p>GestÃ£o de Obra &amp; RelatÃ³rios TÃ©cnicos</p>
+        <p>Gestão de Obra &amp; Relatórios Técnicos</p>
       </div>
       <div class="form-group">
         <label class="form-label">E-mail</label>
@@ -229,13 +229,13 @@ select.form-input{appearance:none}
       </div>
       <div class="form-group">
         <label class="form-label">Senha</label>
-        <input id="loginPass" type="password" class="form-input" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"/>
+        <input id="loginPass" type="password" class="form-input" placeholder="••••••••"/>
       </div>
       <button class="btn btn-primary" onclick="doLogin()">
         <i class="fa-solid fa-right-to-bracket"></i> Entrar
       </button>
       <p style="text-align:center;font-size:12px;color:var(--ink3);margin-top:12px">
-        Conectado ao Firebase â dados em tempo real
+        Conectado ao Firebase — dados em tempo real
       </p>
     </div>
   </div>
@@ -283,18 +283,18 @@ select.form-input{appearance:none}
   </div>
 </div>
 
-<!-- ===== SCREEN: RDO (RelatÃ³rio DiÃ¡rio de Obra) ===== -->
+<!-- ===== SCREEN: RDO (Relatório Diário de Obra) ===== -->
 <div id="screenRDO" class="screen">
   <div class="content">
     <div class="section-header">
-      <h2>RelatÃ³rio DiÃ¡rio de Obra</h2>
+      <h2>Relatório Diário de Obra</h2>
       <p id="rdoProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
 
     <!-- Data e Clima -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title"><i class="fa-solid fa-calendar-day" style="color:var(--cyan)"></i> Data &amp; CondiÃ§Ãµes</span>
+        <span class="card-title"><i class="fa-solid fa-calendar-day" style="color:var(--cyan)"></i> Data &amp; Condições</span>
         <span id="rdoDate" class="badge badge-cyan"></span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -305,24 +305,24 @@ select.form-input{appearance:none}
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label">Tempo</label>
           <select id="rdoWeather" class="form-input">
-            <option value="Ensolarado">âï¸ Ensolarado</option>
-            <option value="Nublado">â Nublado</option>
-            <option value="Chuvoso">ð§ï¸ Chuvoso</option>
-            <option value="Parcialmente nublado">ð¤ï¸ Parcial</option>
+            <option value="Ensolarado">☀️ Ensolarado</option>
+            <option value="Nublado">⛅ Nublado</option>
+            <option value="Chuvoso">🌧️ Chuvoso</option>
+            <option value="Parcialmente nublado">🌤️ Parcial</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Temperatura (Â°C)</label>
+          <label class="form-label">Temperatura (°C)</label>
           <input type="number" id="rdoTemp" class="form-input" placeholder="ex: 28"/>
         </div>
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label">Etapa da Obra</label>
           <select id="rdoStage" class="form-input">
-            <option>FundaÃ§Ã£o</option>
+            <option>Fundação</option>
             <option>Estrutura</option>
             <option>Alvenaria</option>
             <option>Cobertura</option>
-            <option>InstalaÃ§Ãµes</option>
+            <option>Instalações</option>
             <option>Acabamento</option>
             <option>Entrega</option>
           </select>
@@ -347,7 +347,7 @@ select.form-input{appearance:none}
       </div>
       <div id="teamList"></div>
       <div style="display:flex;gap:8px;margin-top:10px">
-        <input id="teamNameInput" type="text" class="form-input" placeholder="Nome do funcionÃ¡rio" style="flex:1"/>
+        <input id="teamNameInput" type="text" class="form-input" placeholder="Nome do funcionário" style="flex:1"/>
         <select id="teamRoleInput" class="form-input" style="flex:1">
           <option>Mestre de obras</option>
           <option>Pedreiro</option>
@@ -360,19 +360,19 @@ select.form-input{appearance:none}
         </select>
       </div>
       <button class="btn btn-outline" style="margin-top:8px" onclick="addTeamMember()">
-        <i class="fa-solid fa-user-plus"></i> Adicionar Ã  Equipe
+        <i class="fa-solid fa-user-plus"></i> Adicionar à Equipe
       </button>
     </div>
 
-    <!-- OcorrÃªncias -->
+    <!-- Ocorrências -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber)"></i> OcorrÃªncias</span>
+        <span class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber)"></i> Ocorrências</span>
       </div>
-      <textarea id="rdoOcorrencias" class="form-input" rows="3" placeholder="Descreva ocorrÃªncias, problemas ou observaÃ§Ãµes do dia..."></textarea>
+      <textarea id="rdoOcorrencias" class="form-input" rows="3" placeholder="Descreva ocorrências, problemas ou observações do dia..."></textarea>
     </div>
 
-    <!-- BotÃ£o salvar RDO -->
+    <!-- Botão salvar RDO -->
     <button class="btn btn-primary" onclick="saveRDO()">
       <i class="fa-solid fa-floppy-disk"></i> Salvar RDO do Dia
     </button>
@@ -383,7 +383,7 @@ select.form-input{appearance:none}
 <div id="screenFotos" class="screen">
   <div class="content">
     <div class="section-header">
-      <h2>Registro FotogrÃ¡fico</h2>
+      <h2>Registro Fotográfico</h2>
       <p id="fotosProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
     <div class="card">
@@ -393,13 +393,13 @@ select.form-input{appearance:none}
       </div>
       <div class="form-group">
         <label class="form-label">Legenda da Foto</label>
-        <input type="text" id="photoCaption" class="form-input" placeholder="Ex: FundaÃ§Ã£o bloco B, 03/06/2026"/>
+        <input type="text" id="photoCaption" class="form-input" placeholder="Ex: Fundação bloco B, 03/06/2026"/>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <label style="cursor:pointer">
           <div class="photo-add" style="display:flex">
             <i class="fa-solid fa-camera"></i>
-            <span>CÃ¢mera</span>
+            <span>Câmera</span>
           </div>
           <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none" onchange="handlePhoto(event,'camera')"/>
         </label>
@@ -414,10 +414,10 @@ select.form-input{appearance:none}
       <div id="photosGrid" class="photos-grid"></div>
     </div>
 
-    <!-- AnotaÃ§Ãµes sobre as fotos -->
+    <!-- Anotações sobre as fotos -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title"><i class="fa-solid fa-pen" style="color:var(--cyan)"></i> AnotaÃ§Ã£o Escrita Manual</span>
+        <span class="card-title"><i class="fa-solid fa-pen" style="color:var(--cyan)"></i> Anotação Escrita Manual</span>
         <span class="badge badge-amber">Croqui/Desenho</span>
       </div>
       <div class="canvas-wrap">
@@ -430,9 +430,9 @@ select.form-input{appearance:none}
             <div class="color-btn" style="background:#d97706" data-color="#d97706" onclick="setDrawColor(this)"></div>
           </div>
           <div style="margin-left:auto;display:flex;gap:6px">
-            <button class="size-btn active" data-size="2" onclick="setDrawSize(this)">â¢</button>
-            <button class="size-btn" data-size="5" onclick="setDrawSize(this)">â</button>
-            <button class="size-btn" data-size="10" onclick="setDrawSize(this)" style="font-size:18px">â</button>
+            <button class="size-btn active" data-size="2" onclick="setDrawSize(this)">•</button>
+            <button class="size-btn" data-size="5" onclick="setDrawSize(this)">●</button>
+            <button class="size-btn" data-size="10" onclick="setDrawSize(this)" style="font-size:18px">●</button>
           </div>
         </div>
         <canvas id="drawCanvas" height="280" style="background:#fff"></canvas>
@@ -453,13 +453,13 @@ select.form-input{appearance:none}
       </div>
     </div>
 
-    <!-- Lista de anotaÃ§Ãµes salvas -->
+    <!-- Lista de anotações salvas -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title"><i class="fa-solid fa-note-sticky" style="color:var(--cyan)"></i> AnotaÃ§Ãµes Salvas</span>
+        <span class="card-title"><i class="fa-solid fa-note-sticky" style="color:var(--cyan)"></i> Anotações Salvas</span>
         <span id="annotationCount" class="badge badge-cyan">0</span>
       </div>
-      <div id="annotationList"><div class="empty"><i class="fa-solid fa-pen-to-square"></i><p>Nenhuma anotaÃ§Ã£o ainda</p></div></div>
+      <div id="annotationList"><div class="empty"><i class="fa-solid fa-pen-to-square"></i><p>Nenhuma anotação ainda</p></div></div>
     </div>
   </div>
 </div>
@@ -468,7 +468,7 @@ select.form-input{appearance:none}
 <div id="screenChecklist" class="screen">
   <div class="content">
     <div class="section-header">
-      <h2>Checklist TÃ©cnico</h2>
+      <h2>Checklist Técnico</h2>
       <p id="checkProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
     <div class="card">
@@ -480,7 +480,7 @@ select.form-input{appearance:none}
     </div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title"><i class="fa-solid fa-list-check" style="color:var(--cyan)"></i> Itens de VerificaÃ§Ã£o</span>
+        <span class="card-title"><i class="fa-solid fa-list-check" style="color:var(--cyan)"></i> Itens de Verificação</span>
         <button class="btn btn-outline btn-sm" onclick="openAddCheckModal()"><i class="fa-solid fa-plus"></i></button>
       </div>
       <div id="checklistItems"></div>
@@ -488,11 +488,11 @@ select.form-input{appearance:none}
   </div>
 </div>
 
-<!-- ===== SCREEN: RELATÃRIO TÃCNICO ===== -->
+<!-- ===== SCREEN: RELATÓRIO TÉCNICO ===== -->
 <div id="screenRelatorio" class="screen">
   <div class="content">
     <div class="section-header">
-      <h2>RelatÃ³rio TÃ©cnico</h2>
+      <h2>Relatório Técnico</h2>
       <p id="relProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
 
@@ -510,7 +510,7 @@ select.form-input{appearance:none}
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-num stat-amber" id="relAnotacoes">0</div>
-        <div class="stat-label">AnotaÃ§Ãµes</div>
+        <div class="stat-label">Anotações</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" id="relChecks" style="color:var(--purple)">0%</div>
@@ -518,35 +518,35 @@ select.form-input{appearance:none}
       </div>
     </div>
 
-    <!-- Preview do relatÃ³rio -->
+    <!-- Preview do relatório -->
     <div id="relatorioPreview">
       <div class="rdo-section">
         <div class="rdo-section-title"><i class="fa-solid fa-building"></i> Dados do Projeto</div>
-        <div class="rdo-row"><span class="rdo-key">Projeto</span><span class="rdo-val" id="relNomeProjeto">â</span></div>
-        <div class="rdo-row"><span class="rdo-key">EndereÃ§o</span><span class="rdo-val" id="relEndereco">â</span></div>
-        <div class="rdo-row"><span class="rdo-key">Engenheiro</span><span class="rdo-val" id="relEngenheiro">â</span></div>
-        <div class="rdo-row"><span class="rdo-key">InÃ­cio</span><span class="rdo-val" id="relInicio">â</span></div>
-        <div class="rdo-row"><span class="rdo-key">Prazo</span><span class="rdo-val" id="relPrazo">â</span></div>
+        <div class="rdo-row"><span class="rdo-key">Projeto</span><span class="rdo-val" id="relNomeProjeto">—</span></div>
+        <div class="rdo-row"><span class="rdo-key">Endereço</span><span class="rdo-val" id="relEndereco">—</span></div>
+        <div class="rdo-row"><span class="rdo-key">Engenheiro</span><span class="rdo-val" id="relEngenheiro">—</span></div>
+        <div class="rdo-row"><span class="rdo-key">Início</span><span class="rdo-val" id="relInicio">—</span></div>
+        <div class="rdo-row"><span class="rdo-key">Prazo</span><span class="rdo-val" id="relPrazo">—</span></div>
       </div>
 
       <div class="rdo-section">
-        <div class="rdo-section-title"><i class="fa-solid fa-calendar-check"></i> HistÃ³rico de RDOs</div>
+        <div class="rdo-section-title"><i class="fa-solid fa-calendar-check"></i> Histórico de RDOs</div>
         <div id="relRDOHistory"><div class="empty"><i class="fa-solid fa-calendar"></i><p>Nenhum RDO registrado</p></div></div>
       </div>
 
       <div class="rdo-section">
-        <div class="rdo-section-title"><i class="fa-solid fa-camera"></i> Registro FotogrÃ¡fico</div>
+        <div class="rdo-section-title"><i class="fa-solid fa-camera"></i> Registro Fotográfico</div>
         <div id="relFotosPreview" class="photos-grid" style="margin-top:0"></div>
       </div>
 
       <div class="rdo-section">
-        <div class="rdo-section-title"><i class="fa-solid fa-pen-to-square"></i> AnotaÃ§Ãµes TÃ©cnicas</div>
+        <div class="rdo-section-title"><i class="fa-solid fa-pen-to-square"></i> Anotações Técnicas</div>
         <div id="relAnotacoesPreview"></div>
       </div>
     </div>
 
     <button class="btn btn-primary" onclick="generateReport()">
-      <i class="fa-solid fa-file-pdf"></i> Gerar RelatÃ³rio Completo
+      <i class="fa-solid fa-file-pdf"></i> Gerar Relatório Completo
     </button>
     <button class="btn btn-outline" onclick="shareReport()" style="margin-top:0">
       <i class="fa-solid fa-share-nodes"></i> Compartilhar
@@ -569,7 +569,7 @@ select.form-input{appearance:none}
     <i class="fa-solid fa-list-check"></i><span>Checklist</span>
   </button>
   <button class="nav-btn" id="navRelatorio" onclick="goTo('Relatorio')">
-    <i class="fa-solid fa-file-lines"></i><span>RelatÃ³rio</span>
+    <i class="fa-solid fa-file-lines"></i><span>Relatório</span>
   </button>
 </nav>
 
@@ -586,19 +586,19 @@ select.form-input{appearance:none}
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Nome do Projeto *</label>
-        <input type="text" id="newProjectName" class="form-input" placeholder="Ex: ResidÃªncia Silva â Bloco A"/>
+        <input type="text" id="newProjectName" class="form-input" placeholder="Ex: Residência Silva — Bloco A"/>
       </div>
       <div class="form-group">
-        <label class="form-label">EndereÃ§o da Obra *</label>
-        <input type="text" id="newProjectAddr" class="form-input" placeholder="Rua, nÃºmero, bairro, cidade"/>
+        <label class="form-label">Endereço da Obra *</label>
+        <input type="text" id="newProjectAddr" class="form-input" placeholder="Rua, número, bairro, cidade"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Engenheiro ResponsÃ¡vel</label>
+        <label class="form-label">Engenheiro Responsável</label>
         <input type="text" id="newProjectEng" class="form-input" placeholder="Nome do engenheiro"/>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="form-group">
-          <label class="form-label">InÃ­cio</label>
+          <label class="form-label">Início</label>
           <input type="date" id="newProjectStart" class="form-input"/>
         </div>
         <div class="form-group">
@@ -635,21 +635,21 @@ select.form-input{appearance:none}
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">DescriÃ§Ã£o da Atividade</label>
-        <input type="text" id="actDesc" class="form-input" placeholder="Ex: Concretagem da laje do 2Âº pavimento"/>
+        <label class="form-label">Descrição da Atividade</label>
+        <input type="text" id="actDesc" class="form-input" placeholder="Ex: Concretagem da laje do 2º pavimento"/>
       </div>
       <div class="form-group">
         <label class="form-label">Status</label>
         <select id="actStatus" class="form-input">
-          <option value="ConcluÃ­da">â ConcluÃ­da</option>
-          <option value="Em andamento">ð Em andamento</option>
-          <option value="Pendente">â³ Pendente</option>
-          <option value="Bloqueada">ð« Bloqueada</option>
+          <option value="Concluída">✅ Concluída</option>
+          <option value="Em andamento">🔄 Em andamento</option>
+          <option value="Pendente">⏳ Pendente</option>
+          <option value="Bloqueada">🚫 Bloqueada</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">ObservaÃ§Ã£o</label>
-        <textarea id="actObs" class="form-input" rows="2" placeholder="ObservaÃ§Ãµes adicionais..."></textarea>
+        <label class="form-label">Observação</label>
+        <textarea id="actObs" class="form-input" rows="2" placeholder="Observações adicionais..."></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -671,16 +671,16 @@ select.form-input{appearance:none}
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Item a verificar</label>
-        <input type="text" id="checkItemText" class="form-input" placeholder="Ex: NÃ­vel da fundaÃ§Ã£o conferido"/>
+        <input type="text" id="checkItemText" class="form-input" placeholder="Ex: Nível da fundação conferido"/>
       </div>
       <div class="form-group">
         <label class="form-label">Categoria</label>
         <select id="checkItemCat" class="form-input">
-          <option>SeguranÃ§a</option>
+          <option>Segurança</option>
           <option>Qualidade</option>
           <option>Estrutura</option>
-          <option>InstalaÃ§Ãµes</option>
-          <option>DocumentaÃ§Ã£o</option>
+          <option>Instalações</option>
+          <option>Documentação</option>
           <option>Equipe</option>
           <option>Material</option>
         </select>
@@ -720,14 +720,15 @@ let rdoActivities = [], rdoTeam = [];
 async function initFirebase() {
   try {
     const cfg = await fetch('/api/firebase-config').then(r => r.json()).catch(() => null);
-    const firebaseConfig = cfg || {
-      apiKey: "AIzaSyExample",
-      authDomain: "projeto-eng-ney.firebaseapp.com",
-      projectId: "projeto-eng-ney",
-      storageBucket: "projeto-eng-ney.appspot.com",
-      messagingSenderId: "000000000",
-      appId: "1:000:web:000"
-    };
+    const firebaseConfig = {
+    apiKey: "AIzaSyA60Q8QWVt2ZZ9cyoQoVeQJWRPo9wWvpYs",
+    authDomain: "smarthvac-eng-ney.firebaseapp.com",
+    projectId: "smarthvac-eng-ney",
+    storageBucket: "smarthvac-eng-ney.firebasestorage.app",
+    messagingSenderId: "246187990177",
+    appId: "1:246187990177:web:3318f44b46900da7c2e4e0",
+    measurementId: "G-L2TGBGG9VX"
+  }
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
@@ -751,7 +752,7 @@ async function doLogin() {
   try {
     await signInWithEmailAndPassword(auth, email, pass);
   } catch(e) {
-    showToast('Login invÃ¡lido: ' + e.message, 'error');
+    showToast('Login inválido: ' + e.message, 'error');
   }
 }
 
@@ -781,7 +782,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const nb = document.getElementById('nav' + name);
   if (nb) nb.classList.add('active');
-  const titles = {Projects:'Projetos',RDO:'RDO DiÃ¡rio',Fotos:'Fotos & Croquis',Checklist:'Checklist',Relatorio:'RelatÃ³rio TÃ©cnico'};
+  const titles = {Projects:'Projetos',RDO:'RDO Diário',Fotos:'Fotos & Croquis',Checklist:'Checklist',Relatorio:'Relatório Técnico'};
   if (titles[name]) document.getElementById('topBarTitle').textContent = titles[name];
   if (name === 'Fotos') setTimeout(initCanvas, 100);
   if (name === 'RDO') setTodayDate();
@@ -819,7 +820,7 @@ function renderProjects(projects) {
   list.innerHTML = projects.map(p => '<div class="project-item" onclick="selectProject(' + JSON.stringify(JSON.stringify(p)) + ')">' +
     '<div class="project-icon"><i class="fa-solid fa-hard-hat"></i></div>' +
     '<div class="project-info"><div class="project-name">' + escHtml(p.name) + '</div>' +
-    '<div class="project-meta">' + escHtml(p.type || 'Obra') + ' Â· ' + escHtml(p.address || '') + '</div></div>' +
+    '<div class="project-meta">' + escHtml(p.type || 'Obra') + ' · ' + escHtml(p.address || '') + '</div></div>' +
     '<span class="badge badge-cyan">' + escHtml(p.stage || 'Ativo') + '</span>' +
     '<i class="fa-solid fa-chevron-right project-arrow"></i></div>'
   ).join('');
@@ -841,8 +842,8 @@ function openNewProjectModal() { document.getElementById('modalNewProject').clas
 async function createProject() {
   const name = document.getElementById('newProjectName').value.trim();
   const addr = document.getElementById('newProjectAddr').value.trim();
-  if (!name) { showToast('Nome do projeto Ã© obrigatÃ³rio', 'warn'); return; }
-  if (!db) { showToast('Banco de dados nÃ£o conectado', 'error'); return; }
+  if (!name) { showToast('Nome do projeto é obrigatório', 'warn'); return; }
+  if (!db) { showToast('Banco de dados não conectado', 'error'); return; }
   try {
     const ref = await addDoc(collection(db, 'projects'), {
       name, address: addr,
@@ -886,7 +887,7 @@ function confirmAddActivity() {
 
 function renderActivities() {
   const list = document.getElementById('activityList');
-  const statusColors = {'ConcluÃ­da':'badge-green','Em andamento':'badge-cyan','Pendente':'badge-amber','Bloqueada':'badge-red'};
+  const statusColors = {'Concluída':'badge-green','Em andamento':'badge-cyan','Pendente':'badge-amber','Bloqueada':'badge-red'};
   if (!rdoActivities.length) {
     list.innerHTML = '<div class="empty" style="padding:20px"><i class="fa-solid fa-list-check"></i><p>Nenhuma atividade ainda</p></div>';
     return;
@@ -998,7 +999,7 @@ async function savePhotosToFirestore() {
       photos: photos.map(p => ({caption: p.caption, date: p.date, src: p.src.substring(0,100)})),
       projectId: currentProject.id, uid: currentUser.uid, updatedAt: serverTimestamp()
     }, {merge: true});
-  } catch(e) { console.warn('Foto nÃ£o persistida no storage:', e); }
+  } catch(e) { console.warn('Foto não persistida no storage:', e); }
 }
 
 function viewPhoto(i) {
@@ -1090,18 +1091,18 @@ async function convertHandwriting() {
       const text = data.responses?.[0]?.fullTextAnnotation?.text || '';
       resultText.textContent = text || 'Nenhum texto detectado. Verifique a qualidade da escrita.';
     } else {
-      resultText.innerHTML = '<em style="color:var(--amber)">Configure a Vision API para conversÃ£o automÃ¡tica. Por enquanto, adicione o texto manualmente abaixo:</em>';
+      resultText.innerHTML = '<em style="color:var(--amber)">Configure a Vision API para conversão automática. Por enquanto, adicione o texto manualmente abaixo:</em>';
       const inp = document.createElement('textarea');
       inp.className = 'form-input'; inp.rows = 3;
-      inp.placeholder = 'Digite o conteÃºdo da anotaÃ§Ã£o manualmente...';
+      inp.placeholder = 'Digite o conteúdo da anotação manualmente...';
       inp.style.marginTop = '8px';
       resultText.appendChild(inp);
     }
   } catch(e) {
-    resultText.innerHTML = '<em style="color:var(--amber)">Insira o texto da anotaÃ§Ã£o:</em>';
+    resultText.innerHTML = '<em style="color:var(--amber)">Insira o texto da anotação:</em>';
     const inp = document.createElement('textarea');
     inp.className = 'form-input'; inp.rows = 3; inp.id = 'manualAnnotationText';
-    inp.placeholder = 'Transcreva sua anotaÃ§Ã£o aqui...';
+    inp.placeholder = 'Transcreva sua anotação aqui...';
     inp.style.marginTop = '8px';
     resultText.appendChild(inp);
   }
@@ -1125,14 +1126,14 @@ async function saveAnnotation() {
     clearCanvas();
     document.getElementById('convertResult').style.display = 'none';
     document.getElementById('annotationCount').textContent = annotations.length;
-    showToast('AnotaÃ§Ã£o salva!');
+    showToast('Anotação salva!');
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
 function renderAnnotations() {
   const list = document.getElementById('annotationList');
   if (!annotations.length) {
-    list.innerHTML = '<div class="empty"><i class="fa-solid fa-pen-to-square"></i><p>Nenhuma anotaÃ§Ã£o ainda</p></div>';
+    list.innerHTML = '<div class="empty"><i class="fa-solid fa-pen-to-square"></i><p>Nenhuma anotação ainda</p></div>';
     return;
   }
   list.innerHTML = annotations.map((a,i) =>
@@ -1153,14 +1154,14 @@ function deleteAnnotation(i) { annotations.splice(i,1); renderAnnotations(); doc
 // ============================================================
 let checklist = [];
 const defaultChecklist = [
-  {text:'EPI fornecido a todos os trabalhadores',cat:'SeguranÃ§a',done:false},
-  {text:'SinalizaÃ§Ã£o de seguranÃ§a instalada',cat:'SeguranÃ§a',done:false},
-  {text:'NÃ­vel e prumo conferidos',cat:'Estrutura',done:false},
+  {text:'EPI fornecido a todos os trabalhadores',cat:'Segurança',done:false},
+  {text:'Sinalização de segurança instalada',cat:'Segurança',done:false},
+  {text:'Nível e prumo conferidos',cat:'Estrutura',done:false},
   {text:'Materiais em conformidade com projeto',cat:'Qualidade',done:false},
-  {text:'InstalaÃ§Ãµes elÃ©tricas aprovadas',cat:'InstalaÃ§Ãµes',done:false},
-  {text:'InstalaÃ§Ãµes hidrÃ¡ulicas testadas',cat:'InstalaÃ§Ãµes',done:false},
-  {text:'ART/RRT atualizada',cat:'DocumentaÃ§Ã£o',done:false},
-  {text:'DiÃ¡rio de obra preenchido',cat:'DocumentaÃ§Ã£o',done:false},
+  {text:'Instalações elétricas aprovadas',cat:'Instalações',done:false},
+  {text:'Instalações hidráulicas testadas',cat:'Instalações',done:false},
+  {text:'ART/RRT atualizada',cat:'Documentação',done:false},
+  {text:'Diário de obra preenchido',cat:'Documentação',done:false},
 ];
 
 function initChecklist() { if (!checklist.length) checklist = defaultChecklist.map(i => ({...i})); }
@@ -1168,7 +1169,7 @@ function initChecklist() { if (!checklist.length) checklist = defaultChecklist.m
 function renderChecklist() {
   initChecklist();
   const list = document.getElementById('checklistItems');
-  const catColors = {SeguranÃ§a:'badge-red',Qualidade:'badge-green',Estrutura:'badge-cyan',InstalaÃ§Ãµes:'badge-amber',DocumentaÃ§Ã£o:'badge-cyan',Equipe:'badge-cyan',Material:'badge-amber'};
+  const catColors = {Segurança:'badge-red',Qualidade:'badge-green',Estrutura:'badge-cyan',Instalações:'badge-amber',Documentação:'badge-cyan',Equipe:'badge-cyan',Material:'badge-amber'};
   const done = checklist.filter(i => i.done).length;
   const pct = checklist.length ? Math.round(done/checklist.length*100) : 0;
   document.getElementById('checkProgress').textContent = pct + '%';
@@ -1206,15 +1207,15 @@ function confirmAddCheck() {
 }
 
 // ============================================================
-// RELATÃRIO TÃCNICO
+// RELATÓRIO TÉCNICO
 // ============================================================
 async function loadRelatorio() {
   if (!currentProject) return;
-  document.getElementById('relNomeProjeto').textContent = currentProject.name || 'â';
-  document.getElementById('relEndereco').textContent = currentProject.address || 'â';
-  document.getElementById('relEngenheiro').textContent = currentProject.engineer || 'â';
-  document.getElementById('relInicio').textContent = currentProject.startDate || 'â';
-  document.getElementById('relPrazo').textContent = currentProject.endDate || 'â';
+  document.getElementById('relNomeProjeto').textContent = currentProject.name || '—';
+  document.getElementById('relEndereco').textContent = currentProject.address || '—';
+  document.getElementById('relEngenheiro').textContent = currentProject.engineer || '—';
+  document.getElementById('relInicio').textContent = currentProject.startDate || '—';
+  document.getElementById('relPrazo').textContent = currentProject.endDate || '—';
   await loadRelatorioStats();
   renderRelatorioFotos();
   renderRelatorioAnotacoes();
@@ -1251,7 +1252,7 @@ function renderRDOHistory(rdos) {
   if (!rdos.length) { el.innerHTML = '<div class="empty" style="padding:16px"><i class="fa-solid fa-calendar"></i><p>Nenhum RDO registrado</p></div>'; return; }
   el.innerHTML = rdos.sort((a,b) => b.date > a.date ? 1 : -1).map(r =>
     '<div class="rdo-row"><span class="rdo-key">' + r.date + '</span>' +
-    '<span class="rdo-val">' + escHtml(r.stage || '') + ' â ' + r.weather + '</span></div>'
+    '<span class="rdo-val">' + escHtml(r.stage || '') + ' — ' + r.weather + '</span></div>'
   ).join('');
 }
 
@@ -1270,26 +1271,26 @@ function renderRelatorioAnotacoes() {
     '<div style="font-size:11px;color:var(--ink3);margin-bottom:4px">' + new Date(a.date||Date.now()).toLocaleString('pt-BR') + '</div>' +
     (a.text ? '<p style="font-size:13px">' + escHtml(a.text) + '</p>' : '<em style="color:var(--ink3);font-size:12px">Croqui visual (sem texto)</em>') +
     '</div>'
-  ).join('') : '<p style="color:var(--ink3);font-size:13px">Nenhuma anotaÃ§Ã£o tÃ©cnica</p>';
+  ).join('') : '<p style="color:var(--ink3);font-size:13px">Nenhuma anotação técnica</p>';
 }
 
 async function generateReport() {
   if (!currentProject) { showToast('Selecione um projeto', 'warn'); return; }
-  showToast('Gerando relatÃ³rio PDF...');
+  showToast('Gerando relatório PDF...');
   setTimeout(() => {
     const content = document.getElementById('relatorioPreview').innerHTML;
     const w = window.open('', '_blank');
-    w.document.write('<html><head><title>RelatÃ³rio â ' + currentProject.name + '</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}.rdo-section{margin-bottom:20px;page-break-inside:avoid}.rdo-section-title{font-size:14px;font-weight:700;border-bottom:2px solid #0099cc;padding-bottom:6px;margin-bottom:10px;color:#0099cc}.rdo-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.photos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo-thumb img{width:100%;border-radius:6px}h1{color:#0099cc;font-size:22px;margin-bottom:4px}@media print{button{display:none}}</style></head><body>');
-    w.document.write('<h1>RelatÃ³rio TÃ©cnico de Obra</h1><p style="color:#666;margin-bottom:20px">Projeto: ' + currentProject.name + ' Â· Gerado em ' + new Date().toLocaleString('pt-BR') + '</p>');
+    w.document.write('<html><head><title>Relatório — ' + currentProject.name + '</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}.rdo-section{margin-bottom:20px;page-break-inside:avoid}.rdo-section-title{font-size:14px;font-weight:700;border-bottom:2px solid #0099cc;padding-bottom:6px;margin-bottom:10px;color:#0099cc}.rdo-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.photos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.photo-thumb img{width:100%;border-radius:6px}h1{color:#0099cc;font-size:22px;margin-bottom:4px}@media print{button{display:none}}</style></head><body>');
+    w.document.write('<h1>Relatório Técnico de Obra</h1><p style="color:#666;margin-bottom:20px">Projeto: ' + currentProject.name + ' · Gerado em ' + new Date().toLocaleString('pt-BR') + '</p>');
     w.document.write(content);
-    w.document.write('<br/><button onclick="window.print()" style="padding:12px 24px;background:#0099cc;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">ð¨ï¸ Imprimir / Salvar PDF</button></body></html>');
+    w.document.write('<br/><button onclick="window.print()" style="padding:12px 24px;background:#0099cc;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨️ Imprimir / Salvar PDF</button></body></html>');
     w.document.close();
   }, 500);
 }
 
 async function shareReport() {
   if (navigator.share) {
-    navigator.share({title: 'RelatÃ³rio â ' + (currentProject?.name||'Obra'), text: 'RelatÃ³rio tÃ©cnico de obra gerado pelo EngNey', url: window.location.href});
+    navigator.share({title: 'Relatório — ' + (currentProject?.name||'Obra'), text: 'Relatório técnico de obra gerado pelo EngNey', url: window.location.href});
   } else {
     navigator.clipboard.writeText(window.location.href);
     showToast('Link copiado!');
