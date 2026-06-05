@@ -681,7 +681,7 @@ select.form-input{appearance:none}
           <option>Estrutura</option>
           <option>Instalações</option>
           <option>Documentação</option>
-          <option>Equipe</option>h
+          <option>Equipe</option>
           <option>Material</option>
         </select>
       </div>
@@ -858,7 +858,7 @@ async function createProject() {
     closeModal('modalNewProject');
     await loadProjects();
     showToast('Projeto criado com sucesso!');
-    loadProjects();
+    selectProject({id: ref.id, name, address: addr, engineer: document.getElementById('newProjectEng').value.trim(), startDate: document.getElementById('newProjectStart').value, endDate: document.getElementById('newProjectEnd').value, type: document.getElementById('newProjectType').value, stage: 'Ativo'});
   } catch(e) { showToast('Erro ao criar: ' + e.message, 'error'); }
 }
 
