@@ -792,9 +792,6 @@ function showScreen(name) {
 }
 
 function goTo(name) {
-  if (!currentProject && name !== 'Projects') {
-    showToast('Selecione um projeto primeiro!', 'warn'); showScreen('Projects'); return;
-  }
   showScreen(name);
 }
 
