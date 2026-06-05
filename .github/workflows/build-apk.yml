@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK (React Native)
 
 on:
   push:
@@ -14,43 +14,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli@5.7.8
-
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+          node-version: 18
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Node deps
+        working-directory: rn-app
+        run: npm install
+
+      - name: Initialize RN Android directory
+        working-directory: rn-app
+        run: |
+          npx react-native@0.73.6 init EngNeyRDO --skip-install --directory _scaffold
+          mv _scaffold/android ./android
+          rm -rf _scaffold
+
+      - name: Copy app source into RN project
+        working-directory: rn-app
+        run: |
+          sed -i "s/EngNeyRDO/EngNeyRDO/g" android/app/src/main/res/values/strings.xml
+
+      - name: Write google-services.json
+        working-directory: rn-app
+        run: |
+          echo $GOOGLE_JSON > android/app/google-services.json
+        env:
+          GOOGLE_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
       - name: Make gradlew executable
+        working-directory: rn-app
         run: chmod +x android/gradlew
 
-      - name: Build debug APK
-        run: |
-          cd android
-          ./gradlew assembleDebug
+      - name: Assemble debug APK
+        working-directory: rn-app
+        run: cd android && ./gradlew assembleDebug --no-daemon -x test
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: smarthvac-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 7
+          name: EngNeyRDO-debug
+          path: rn-app/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
