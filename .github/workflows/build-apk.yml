@@ -2,19 +2,18 @@ name: Build Android APK (React Native)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js 18
+      - name: Setup Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -28,26 +27,27 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Node deps
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: rn-app/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('rn-app/package-lock.json') }}
+
+      - name: Install dependencies
         working-directory: rn-app
         run: npm install
 
-      - name: Initialize RN Android directory
-        working-directory: rn-app
-        run: |
-          npx react-native@0.73.6 init EngNeyRDO --skip-install --directory _scaffold
-          mv _scaffold/android ./android
-          rm -rf _scaffold
-
-      - name: Copy app source into RN project
-        working-directory: rn-app
-        run: |
-          sed -i "s/EngNeyRDO/EngNeyRDO/g" android/app/src/main/res/values/strings.xml
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('rn-app/android/**/*.gradle*') }}
 
       - name: Write google-services.json
         working-directory: rn-app
-        run: |
-          echo $GOOGLE_JSON > android/app/google-services.json
+        run: echo "$GOOGLE_JSON" > android/app/google-services.json
         env:
           GOOGLE_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
@@ -55,9 +55,11 @@ jobs:
         working-directory: rn-app
         run: chmod +x android/gradlew
 
-      - name: Assemble debug APK
+      - name: Build debug APK
         working-directory: rn-app
-        run: cd android && ./gradlew assembleDebug --no-daemon -x test
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon -x test
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
