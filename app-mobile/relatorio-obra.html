@@ -20,6 +20,7 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
 .screen{display:none}
+.section-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.btn-refresh{background:var(--bg3);border:1px solid var(--line);color:var(--cyan);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;transition:transform .3s}.btn-refresh:active{transform:rotate(180deg)}
 .screen.active{display:block;animation:fadeUp .35s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
@@ -288,6 +289,7 @@ select.form-input{appearance:none}
   <div class="content">
     <div class="section-header">
       <h2>Relatório Diário de Obra</h2>
+      <button class="btn-refresh" onclick="setTodayDate();renderActivities();renderTeam();" title="Atualizar"><i class="fa-solid fa-rotate-right"></i></button>
       <p id="rdoProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
 
@@ -384,6 +386,7 @@ select.form-input{appearance:none}
   <div class="content">
     <div class="section-header">
       <h2>Registro Fotográfico</h2>
+      <button class="btn-refresh" onclick="loadPhotosFromFirestore();" title="Atualizar"><i class="fa-solid fa-rotate-right"></i></button>
       <p id="fotosProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
     <div class="card">
@@ -469,6 +472,7 @@ select.form-input{appearance:none}
   <div class="content">
     <div class="section-header">
       <h2>Checklist Técnico</h2>
+      <button class="btn-refresh" onclick="renderChecklist();" title="Atualizar"><i class="fa-solid fa-rotate-right"></i></button>
       <p id="checkProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
     <div class="card">
@@ -493,6 +497,7 @@ select.form-input{appearance:none}
   <div class="content">
     <div class="section-header">
       <h2>Relatório Técnico</h2>
+      <button class="btn-refresh" onclick="loadRelatorio();" title="Atualizar"><i class="fa-solid fa-rotate-right"></i></button>
       <p id="relProjectName" style="color:var(--cyan)">Selecione um projeto</p>
     </div>
 
@@ -785,7 +790,7 @@ function showScreen(name) {
   if (nb) nb.classList.add('active');
   const titles = {Projects:'Projetos',RDO:'RDO Diário',Fotos:'Fotos & Croquis',Checklist:'Checklist',Relatorio:'Relatório Técnico'};
   if (titles[name]) document.getElementById('topBarTitle').textContent = titles[name];
-  if (name === 'Fotos') setTimeout(initCanvas, 100);
+  if (name === 'Fotos') { setTimeout(initCanvas, 100); loadPhotosFromFirestore(); }
   if (name === 'RDO') setTodayDate();
   if (name === 'Checklist') renderChecklist();
   if (name === 'Relatorio') loadRelatorio();
@@ -833,6 +838,7 @@ function selectProject(projectJson) {
     if (el) el.textContent = p.name;
   });
   showToast('Projeto: ' + p.name);
+  setTimeout(() => { loadPhotosFromFirestore(); loadRelatorio(); renderChecklist(); }, 400);
   showScreen('RDO');
 }
 
@@ -996,10 +1002,28 @@ async function savePhotosToFirestore() {
   if (!currentProject || !db) return;
   try {
     await setDoc(doc(db, 'photos', currentProject.id + '_' + currentUser.uid), {
-      photos: photos.map(p => ({caption: p.caption, date: p.date, src: p.src.substring(0,100)})),
+      photos: photos.map(p => ({caption: p.caption, date: p.date, src: p.src || ''})),
       projectId: currentProject.id, uid: currentUser.uid, updatedAt: serverTimestamp()
     }, {merge: true});
   } catch(e) { console.warn('Foto não persistida no storage:', e); }
+}
+
+async function loadPhotosFromFirestore() {
+  if (!currentProject || !db) return;
+  try {
+    const snap = await getDoc(doc(db, 'photos', currentProject.id + '_' + currentUser.uid));
+    photos = snap.exists() ? (snap.data().photos || []).filter(p => p && p.src) : [];
+    renderPhotos();
+  } catch(e) { console.error('Fotos:', e); }
+}
+
+async function loadPhotosFromFirestore() {
+  if (!currentProject || !db) return;
+  try {
+    const snap = await getDoc(doc(db, 'photos', currentProject.id + '_' + currentUser.uid));
+    photos = snap.exists() ? (snap.data().photos || []).filter(p => p && p.src) : [];
+    renderPhotos();
+  } catch(e) { console.error('Fotos:', e); }
 }
 
 function viewPhoto(i) {
@@ -1072,62 +1096,35 @@ function undoCanvas() {
 let annotations = [];
 
 async function convertHandwriting() {
-  const canvas = document.getElementById('drawCanvas');
   const resultDiv = document.getElementById('convertResult');
-  const resultText = document.getElementById('convertResultText');
+  if (!resultDiv) return;
   resultDiv.style.display = 'block';
-  resultText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Convertendo escrita manual...';
-
-  // Tenta Google Cloud Vision via proxy, fallback para mensagem descritiva
-  try {
-    const imgData = canvas.toDataURL('image/png').split(',')[1];
-    const res = await fetch('https://vision.googleapis.com/v1/images:annotate?key=VISION_API_KEY', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({requests:[{image:{content:imgData},features:[{type:'DOCUMENT_TEXT_DETECTION'}]}]})
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const text = data.responses?.[0]?.fullTextAnnotation?.text || '';
-      resultText.textContent = text || 'Nenhum texto detectado. Verifique a qualidade da escrita.';
-    } else {
-      resultText.innerHTML = '<em style="color:var(--amber)">Configure a Vision API para conversão automática. Por enquanto, adicione o texto manualmente abaixo:</em>';
-      const inp = document.createElement('textarea');
-      inp.className = 'form-input'; inp.rows = 3;
-      inp.placeholder = 'Digite o conteúdo da anotação manualmente...';
-      inp.style.marginTop = '8px';
-      resultText.appendChild(inp);
-    }
-  } catch(e) {
-    resultText.innerHTML = '<em style="color:var(--amber)">Insira o texto da anotação:</em>';
-    const inp = document.createElement('textarea');
-    inp.className = 'form-input'; inp.rows = 3; inp.id = 'manualAnnotationText';
-    inp.placeholder = 'Transcreva sua anotação aqui...';
-    inp.style.marginTop = '8px';
-    resultText.appendChild(inp);
-  }
-}
-
-async function saveAnnotation() {
-  if (!currentProject) { showToast('Selecione um projeto', 'warn'); return; }
-  const canvas = document.getElementById('drawCanvas');
-  const manualInput = document.getElementById('manualAnnotationText');
-  const text = manualInput ? manualInput.value.trim() :
-    document.getElementById('convertResultText').textContent.trim();
-  const imgData = canvas.toDataURL('image/png');
-  const annotation = {
-    text, drawing: imgData, projectId: currentProject.id,
-    uid: currentUser.uid, date: new Date().toISOString(), createdAt: serverTimestamp()
-  };
-  try {
-    await addDoc(collection(db, 'annotations'), annotation);
-    annotations.unshift({...annotation, id: Date.now().toString()});
+  const old = document.getElementById('manualAnnotTa');
+  if (old) old.remove();
+  const old2 = document.getElementById('manualAnnotBtn');
+  if (old2) old2.remove();
+  const ta = document.createElement('textarea');
+  ta.id = 'manualAnnotTa';
+  ta.className = 'form-input';
+  ta.style.cssText = 'margin-top:8px;width:100%;min-height:80px';
+  ta.placeholder = 'Digite a anotacao tecnica aqui...';
+  resultDiv.appendChild(ta);
+  const btn = document.createElement('button');
+  btn.id = 'manualAnnotBtn';
+  btn.className = 'btn btn-primary';
+  btn.style.marginTop = '8px';
+  btn.textContent = 'Salvar Anotacao';
+  btn.onclick = () => {
+    const txt = ta.value.trim();
+    if (!txt) { showToast('Digite o texto', 'warn'); return; }
+    annotations.push({type:'text', text: txt, date: new Date()});
     renderAnnotations();
-    clearCanvas();
-    document.getElementById('convertResult').style.display = 'none';
-    document.getElementById('annotationCount').textContent = annotations.length;
-    showToast('Anotação salva!');
-  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+    saveAnnotations();
+    resultDiv.style.display = 'none';
+    ta.value = '';
+    showToast('Anotacao salva!');
+  };
+  resultDiv.appendChild(btn);
 }
 
 function renderAnnotations() {
@@ -1288,12 +1285,40 @@ async function generateReport() {
   }, 500);
 }
 
-async function shareReport() {
+async function gerarTextoRelatorio() {
+  if (!currentProject) return 'Nenhum projeto selecionado.';
+  const rdos = document.getElementById('relRDOs')?.textContent||'0';
+  const fts  = document.getElementById('relFotos')?.textContent||'0';
+  const chks = document.getElementById('relChecklist')?.textContent||'0';
+  const atvs = document.getElementById('relAtividades')?.textContent||'0';
+  return 'RELATORIO TECNICO - EngNey\n' +
+    'Projeto: '+(currentProject.name||'-')+'\n' +
+    'Endereco: '+(currentProject.address||'-')+'\n' +
+    'Engenheiro: '+(currentProject.engineer||'-')+'\n' +
+    'RDOs: '+rdos+' | Fotos: '+fts+' | Checklist: '+chks+' | Atividades: '+atvs+'\n' +
+    'Gerado: '+new Date().toLocaleString('pt-BR');
+}
+
+function gerarTextoRelatorio() {
+  if (!currentProject) return 'Nenhum projeto selecionado.';
+  const rdos = document.getElementById('relRDOs')?.textContent||'0';
+  const fts  = document.getElementById('relFotos')?.textContent||'0';
+  const chks = document.getElementById('relChecklist')?.textContent||'0';
+  const atvs = document.getElementById('relAtividades')?.textContent||'0';
+  return 'RELATORIO TECNICO - EngNey\n' +
+    'Projeto: '+(currentProject.name||'-')+'\n' +
+    'Endereco: '+(currentProject.address||'-')+'\n' +
+    'Engenheiro: '+(currentProject.engineer||'-')+'\n' +
+    'RDOs: '+rdos+' | Fotos: '+fts+' | Checklist: '+chks+' | Atividades: '+atvs+'\n' +
+    'Gerado: '+new Date().toLocaleString('pt-BR');
+}
+
+function shareReport() {
   if (navigator.share) {
-    navigator.share({title: 'Relatório — ' + (currentProject?.name||'Obra'), text: 'Relatório técnico de obra gerado pelo EngNey', url: window.location.href});
+    navigator.share({title: 'Relatório — ' + (currentProject?.name||'Obra'), text: gerarTextoRelatorio()});
   } else {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('Link copiado!');
+    navigator.clipboard.writeText(gerarTextoRelatorio());
+    showToast('Resumo copiado!');
   }
 }
 
