@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "246187990177",
+    "project_id": "smarthvac-eng-ney",
+    "storage_bucket": "smarthvac-eng-ney.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246187990177:android:8262b8ff58fa095dc2e4e0",
+        "android_client_info": {
+          "package_name": "com.engneyRDO"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA60Q8QWVt2ZZ9cyoQoVeQJWRPo9wWvpYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
