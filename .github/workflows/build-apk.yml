@@ -31,12 +31,17 @@ jobs:
         working-directory: rn-app
         run: npm install
 
+      - name: Fix gradle-wrapper.jar for plugin
+        run: |
+          WRAPPER_DIR="rn-app/node_modules/@react-native/gradle-plugin/gradle/wrapper"
+          mkdir -p "$WRAPPER_DIR"
+          curl -fSL -o "$WRAPPER_DIR/gradle-wrapper.jar" https://github.com/gradle/gradle/raw/v8.3.0/gradle/wrapper/gradle-wrapper.jar
+
       - name: Write settings.gradle
         working-directory: rn-app/android
         run: |
           PLUGIN="$(realpath ../node_modules/@react-native/gradle-plugin)"
           printf 'pluginManagement { includeBuild("%s") }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN" "$PLUGIN" > settings.gradle
-          echo "=== settings.gradle ==="
           cat settings.gradle
 
       - name: Download gradle-wrapper.jar
