@@ -24,8 +24,8 @@
     "@react-native-firebase/firestore": "20.3.0"
   },
   "devDependencies": {
-    "@babel/core": "7.20.0",
-    "@babel/runtime": "7.20.0",
+    "@babel/core": "^7.23.0",
+    "@babel/runtime": "^7.23.0",
     "@react-native/babel-preset": "0.73.21",
     "@react-native/metro-config": "0.73.5",
     "typescript": "5.0.4"
