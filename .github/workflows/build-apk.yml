@@ -27,15 +27,17 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: rn-app/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('rn-app/package.json') }}
-
       - name: Install dependencies
         working-directory: rn-app
         run: npm install
+
+      - name: Write settings.gradle
+        working-directory: rn-app/android
+        run: |
+          PLUGIN_PATH="$(realpath ../node_modules/@react-native/gradle-plugin)"
+          printf 'pluginManagement { includeBuild("%s"); repositories { google(); mavenCentral(); gradlePluginPortal() } }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN_PATH" "$PLUGIN_PATH" > settings.gradle
+          echo "=== settings.gradle content ==="
+          cat settings.gradle
 
       - name: Download gradle-wrapper.jar
         working-directory: rn-app/android/gradle/wrapper
@@ -54,7 +56,7 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('rn-app/android/**/*.gradle*') }}
 
-      - name: Build debug APK
+      - name: Build Debug APK
         working-directory: rn-app/android
         run: ./gradlew assembleDebug --no-daemon -x lint
 
