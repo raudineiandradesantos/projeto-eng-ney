@@ -31,15 +31,11 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Patch plugin settings.gradle.kts
+      - name: Simplify plugin settings.gradle.kts
         working-directory: rn-app/node_modules/@react-native/gradle-plugin
         run: |
-          echo "=== Original settings.gradle.kts ==="
-          cat settings.gradle.kts
-          echo "=== Patching: removing foojay-resolver-convention ==="
-          sed -i '/foojay/d' settings.gradle.kts
-          sed -i '/org.gradle.toolchains/d' settings.gradle.kts
-          echo "=== Patched settings.gradle.kts ==="
+          echo 'rootProject.name = "react-native-gradle-plugin"' > settings.gradle.kts
+          echo "=== New settings.gradle.kts ==="
           cat settings.gradle.kts
 
       - name: Write settings.gradle with includeBuild
