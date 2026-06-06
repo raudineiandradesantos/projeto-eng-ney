@@ -31,12 +31,21 @@ jobs:
         working-directory: rn-app
         run: npm install
 
+      - name: Debug plugin structure
+        working-directory: rn-app
+        run: |
+          echo "=== Checking @react-native/gradle-plugin ==="
+          ls node_modules/@react-native/gradle-plugin/ || echo "PLUGIN NOT FOUND"
+          ls node_modules/@react-native/gradle-plugin/settings.gradle 2>/dev/null && echo "settings.gradle EXISTS" || echo "settings.gradle MISSING"
+          ls node_modules/@react-native/gradle-plugin/build.gradle 2>/dev/null && echo "build.gradle EXISTS" || echo "build.gradle MISSING"
+          ls node_modules/@react-native/gradle-plugin/*.gradle 2>/dev/null || echo "no .gradle files at root"
+
       - name: Write settings.gradle
         working-directory: rn-app/android
         run: |
-          PLUGIN_PATH="$(realpath ../node_modules/@react-native/gradle-plugin)"
-          printf 'pluginManagement { includeBuild("%s"); repositories { google(); mavenCentral(); gradlePluginPortal() } }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN_PATH" "$PLUGIN_PATH" > settings.gradle
-          echo "=== settings.gradle content ==="
+          PLUGIN="$(realpath ../node_modules/@react-native/gradle-plugin)"
+          printf 'pluginManagement { includeBuild("%s"); repositories { google(); mavenCentral(); gradlePluginPortal() } }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN" "$PLUGIN" > settings.gradle
+          echo "=== settings.gradle ==="
           cat settings.gradle
 
       - name: Download gradle-wrapper.jar
@@ -58,7 +67,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: rn-app/android
-        run: ./gradlew assembleDebug --no-daemon -x lint
+        run: ./gradlew assembleDebug --no-daemon -x lint --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
