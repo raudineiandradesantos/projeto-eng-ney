@@ -31,18 +31,41 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Check plugin build error
+      - name: Build React Native Gradle Plugin
         working-directory: rn-app/node_modules/@react-native/gradle-plugin
         run: |
           mkdir -p gradle/wrapper
           curl -fSL -o gradle/wrapper/gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.3.0/gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
-          echo "=== Plugin build.gradle.kts ==="
-          head -30 build.gradle.kts
-          echo "=== Plugin settings.gradle.kts ==="
-          cat settings.gradle.kts
-          echo "=== Trying build ==="
-          ./gradlew tasks --no-daemon 2>&1 | head -50
+          ./gradlew assemble --no-daemon 2>&1 | tail -20
+          echo "=== Plugin JARs ==="
+          find build/libs -name "*.jar" 2>/dev/null || echo "No JARs found"
+
+      - name: Create Gradle init script
+        run: |
+          mkdir -p ~/.gradle/init.d
+          PLUGIN_JAR="$(find rn-app/node_modules/@react-native/gradle-plugin/build/libs -name "*.jar" | head -1)"
+          echo "Plugin JAR: $PLUGIN_JAR"
+          if [ -n "$PLUGIN_JAR" ]; then
+            PLUGIN_JAR_ABS="$(realpath $PLUGIN_JAR)"
+            cat > ~/.gradle/init.d/react-native.gradle << EOF
+          initscript {
+            dependencies {
+              classpath files('${PLUGIN_JAR_ABS}')
+            }
+          }
+          EOF
+            echo "=== Init script ==="
+            cat ~/.gradle/init.d/react-native.gradle
+          else
+            echo "ERROR: No plugin JAR found!"
+          fi
+
+      - name: Write settings.gradle
+        working-directory: rn-app/android
+        run: |
+          PLUGIN="$(realpath ../node_modules/@react-native/gradle-plugin)"
+          printf 'pluginManagement { includeBuild("%s") }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN" "$PLUGIN" > settings.gradle
 
       - name: Download gradle-wrapper.jar
         working-directory: rn-app/android/gradle/wrapper
@@ -53,15 +76,9 @@ jobs:
         working-directory: rn-app/android
         run: chmod +x gradlew
 
-      - name: Write settings.gradle
-        working-directory: rn-app/android
-        run: |
-          PLUGIN="$(realpath ../node_modules/@react-native/gradle-plugin)"
-          printf 'pluginManagement { includeBuild("%s") }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN" "$PLUGIN" > settings.gradle
-
       - name: Build Debug APK
         working-directory: rn-app/android
-        run: ./gradlew assembleDebug --no-daemon -x lint 2>&1
+        run: ./gradlew assembleDebug --no-daemon -x lint
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
