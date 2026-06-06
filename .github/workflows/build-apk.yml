@@ -37,6 +37,15 @@ jobs:
         working-directory: rn-app
         run: npm install
 
+      - name: Download gradle-wrapper.jar
+        working-directory: rn-app/android/gradle/wrapper
+        run: |
+          curl -fSL -o gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.3.0/gradle/wrapper/gradle-wrapper.jar
+
+      - name: Make gradlew executable
+        working-directory: rn-app/android
+        run: chmod +x gradlew
+
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -44,12 +53,6 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('rn-app/android/**/*.gradle*') }}
-
-      - name: Generate gradlew
-        working-directory: rn-app/android
-        run: |
-          gradle wrapper --gradle-version 8.3 --distribution-type bin
-          chmod +x gradlew
 
       - name: Build debug APK
         working-directory: rn-app/android
