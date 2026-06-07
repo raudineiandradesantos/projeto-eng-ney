@@ -31,7 +31,12 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Write settings.gradle with includeBuild
+      - name: Simplify react-native gradle-plugin settings
+        working-directory: rn-app/node_modules/@react-native/gradle-plugin
+        run: |
+          echo 'rootProject.name = "react-native-gradle-plugin"' > settings.gradle.kts
+
+      - name: Write settings.gradle
         working-directory: rn-app/android
         run: |
           echo "pluginManagement {" > settings.gradle
@@ -48,7 +53,6 @@ jobs:
           echo "extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }" >> settings.gradle
           echo 'rootProject.name = "EngNeyRDO"' >> settings.gradle
           echo "include ':app'" >> settings.gradle
-          echo "=== settings.gradle ==="
           cat settings.gradle
 
       - name: Download gradle-wrapper.jar
