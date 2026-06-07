@@ -15,4 +15,3 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autol
 
 rootProject.name = 'EngNeyRDO'
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
