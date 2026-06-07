@@ -42,7 +42,7 @@ jobs:
         working-directory: rn-app/android
         run: |
           PLUGIN="$(realpath ../node_modules/@react-native/gradle-plugin)"
-          printf 'pluginManagement { includeBuild("%s") }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\nincludeBuild("%s")\n' "$PLUGIN" "$PLUGIN" > settings.gradle
+          printf 'pluginManagement { includeBuild("%s") }\nplugins { id("com.facebook.react.settings") }\nextensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }\nrootProject.name = "EngNeyRDO"\ninclude ":app"\n' "$PLUGIN" > settings.gradle
           cat settings.gradle
 
       - name: Download gradle-wrapper.jar
