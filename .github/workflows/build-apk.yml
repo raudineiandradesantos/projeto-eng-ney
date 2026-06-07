@@ -31,13 +31,35 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Show settings.gradle
-        working-directory: rn-app/android
-        run: cat settings.gradle
-
-      - name: Check gradle-plugin exists
+      - name: Patch gradle-plugin nested settings
         working-directory: rn-app
-        run: ls -la node_modules/@react-native/gradle-plugin/ || echo "Plugin directory not found"
+        run: |
+          echo 'rootProject.name = "react-native-gradle-plugin"' > node_modules/@react-native/gradle-plugin/settings.gradle.kts
+          cat node_modules/@react-native/gradle-plugin/settings.gradle.kts
+
+      - name: Write main settings.gradle
+        working-directory: rn-app/android
+        run: |
+          echo 'pluginManagement {' > settings.gradle
+          echo '    includeBuild("../node_modules/@react-native/gradle-plugin")' >> settings.gradle
+          echo '    repositories {' >> settings.gradle
+          echo '        google()' >> settings.gradle
+          echo '        mavenCentral()' >> settings.gradle
+          echo '        gradlePluginPortal()' >> settings.gradle
+          echo '    }' >> settings.gradle
+          echo '}' >> settings.gradle
+          echo '' >> settings.gradle
+          echo 'plugins {' >> settings.gradle
+          echo '    id("com.facebook.react.settings")' >> settings.gradle
+          echo '}' >> settings.gradle
+          echo '' >> settings.gradle
+          echo 'extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->' >> settings.gradle
+          echo '    ex.autolinkLibrariesFromCommand()' >> settings.gradle
+          echo '}' >> settings.gradle
+          echo '' >> settings.gradle
+          echo "rootProject.name = 'EngNeyRDO'" >> settings.gradle
+          echo "include ':app'" >> settings.gradle
+          cat settings.gradle
 
       - name: Download gradle-wrapper.jar
         working-directory: rn-app/android/gradle/wrapper
@@ -50,7 +72,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: rn-app/android
-        run: ./gradlew assembleDebug --info
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
