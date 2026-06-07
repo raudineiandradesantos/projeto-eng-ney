@@ -43,22 +43,20 @@ jobs:
         run: |
           PLUGIN="$(realpath ../node_modules/@react-native/gradle-plugin)"
           echo "Plugin path: $PLUGIN"
-          cat > settings.gradle << GRADLE_EOF
-pluginManagement {
-    includeBuild("$PLUGIN")
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-plugins {
-    id("com.facebook.react.settings")
-}
-extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }
-rootProject.name = "EngNeyRDO"
-include ":app"
-GRADLE_EOF
+          echo "pluginManagement {" > settings.gradle
+          echo "    includeBuild(\"$PLUGIN\")" >> settings.gradle
+          echo "    repositories {" >> settings.gradle
+          echo "        google()" >> settings.gradle
+          echo "        mavenCentral()" >> settings.gradle
+          echo "        gradlePluginPortal()" >> settings.gradle
+          echo "    }" >> settings.gradle
+          echo "}" >> settings.gradle
+          echo "plugins {" >> settings.gradle
+          echo '    id("com.facebook.react.settings")' >> settings.gradle
+          echo "}" >> settings.gradle
+          echo "extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }" >> settings.gradle
+          echo "rootProject.name = \"EngNeyRDO\"" >> settings.gradle
+          echo "include ':app'" >> settings.gradle
           echo "=== settings.gradle ==="
           cat settings.gradle
 
