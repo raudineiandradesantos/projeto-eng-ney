@@ -2,7 +2,7 @@ name: Build Android APK (React Native)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, principal ]
   workflow_dispatch:
 
 jobs:
@@ -31,56 +31,15 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Patch gradle-plugin nested settings
-        working-directory: rn-app
-        run: |
-          echo 'rootProject.name = "react-native-gradle-plugin"' > node_modules/@react-native/gradle-plugin/settings.gradle.kts
-          cat node_modules/@react-native/gradle-plugin/settings.gradle.kts
-
-      - name: Build and publish gradle-plugin to mavenLocal
-        working-directory: rn-app/node_modules/@react-native/gradle-plugin
-        run: |
-          chmod +x gradlew
-          ./gradlew publishToMavenLocal --no-daemon
-          echo "=== Published to Maven Local ==="
-          find ~/.m2 -name "*.jar" | head -20
-
-      - name: Write main settings.gradle
-        working-directory: rn-app/android
-        run: |
-          echo 'pluginManagement {' > settings.gradle
-          echo '    repositories {' >> settings.gradle
-          echo '        mavenLocal()' >> settings.gradle
-          echo '        google()' >> settings.gradle
-          echo '        mavenCentral()' >> settings.gradle
-          echo '        gradlePluginPortal()' >> settings.gradle
-          echo '    }' >> settings.gradle
-          echo '}' >> settings.gradle
-          echo '' >> settings.gradle
-          echo 'plugins {' >> settings.gradle
-          echo '    id("com.facebook.react.settings") version "0.73.6"' >> settings.gradle
-          echo '}' >> settings.gradle
-          echo '' >> settings.gradle
-          echo 'extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->' >> settings.gradle
-          echo '    ex.autolinkLibrariesFromCommand()' >> settings.gradle
-          echo '}' >> settings.gradle
-          echo '' >> settings.gradle
-          echo "rootProject.name = 'EngNeyRDO'" >> settings.gradle
-          echo "include ':app'" >> settings.gradle
-          cat settings.gradle
-
-      - name: Download gradle-wrapper.jar
-        working-directory: rn-app/android/gradle/wrapper
-        run: |
-          curl -fSL -o gradle-wrapper.jar https://github.com/gradle/gradle/raw/v8.3.0/gradle/wrapper/gradle-wrapper.jar
-
       - name: Make gradlew executable
         working-directory: rn-app/android
         run: chmod +x gradlew
 
       - name: Build Debug APK
         working-directory: rn-app/android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
