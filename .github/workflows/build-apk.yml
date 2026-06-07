@@ -37,12 +37,20 @@ jobs:
           echo 'rootProject.name = "react-native-gradle-plugin"' > node_modules/@react-native/gradle-plugin/settings.gradle.kts
           cat node_modules/@react-native/gradle-plugin/settings.gradle.kts
 
+      - name: Build and publish gradle-plugin to mavenLocal
+        working-directory: rn-app/node_modules/@react-native/gradle-plugin
+        run: |
+          chmod +x gradlew
+          ./gradlew publishToMavenLocal --no-daemon
+          echo "=== Published to Maven Local ==="
+          find ~/.m2 -name "*.jar" | head -20
+
       - name: Write main settings.gradle
         working-directory: rn-app/android
         run: |
           echo 'pluginManagement {' > settings.gradle
-          echo '    includeBuild("../node_modules/@react-native/gradle-plugin")' >> settings.gradle
           echo '    repositories {' >> settings.gradle
+          echo '        mavenLocal()' >> settings.gradle
           echo '        google()' >> settings.gradle
           echo '        mavenCentral()' >> settings.gradle
           echo '        gradlePluginPortal()' >> settings.gradle
@@ -50,7 +58,7 @@ jobs:
           echo '}' >> settings.gradle
           echo '' >> settings.gradle
           echo 'plugins {' >> settings.gradle
-          echo '    id("com.facebook.react.settings")' >> settings.gradle
+          echo '    id("com.facebook.react.settings") version "0.73.6"' >> settings.gradle
           echo '}' >> settings.gradle
           echo '' >> settings.gradle
           echo 'extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->' >> settings.gradle
@@ -72,7 +80,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: rn-app/android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
