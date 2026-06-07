@@ -35,6 +35,10 @@ jobs:
         working-directory: rn-app/android
         run: cat settings.gradle
 
+      - name: Check gradle-plugin exists
+        working-directory: rn-app
+        run: ls -la node_modules/@react-native/gradle-plugin/ || echo "Plugin directory not found"
+
       - name: Download gradle-wrapper.jar
         working-directory: rn-app/android/gradle/wrapper
         run: |
@@ -46,7 +50,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: rn-app/android
-        run: ./gradlew assembleDebug --stacktrace 2>&1 | tail -200
+        run: ./gradlew assembleDebug --info
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
