@@ -5,7 +5,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import auth from '@react-native-firebase/auth';
-import {ActivityIndicator, View, StatusBar} from 'react-native';
+import {ActivityIndicator, View, StatusBar} from 'react-nativhe';
 
 import LoginScreen from './screens/LoginScreen';
 import ProjectsScreen from './screens/ProjectsScreen';
@@ -70,8 +70,15 @@ export default function App() {
 
   useEffect(() => {
     const unsub = auth().onAuthStateChanged(u => {
-      setUser(u);
-      setLoading(false);
+      if (u) {
+        setUser(u);
+        setLoading(false);
+      } else {
+        auth().signInAnonymously().then(cred => {
+          setUser(cred.user);
+          setLoading(false);
+        }).catch(() => setLoading(false));
+      }
     });
     return unsub;
   }, []);
