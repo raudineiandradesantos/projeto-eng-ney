@@ -31,6 +31,17 @@ jobs:
         working-directory: rn-app
         run: npm install
 
+      - name: Rewrite settings.gradle
+        working-directory: rn-app/android
+        run: |
+          cat > settings.gradle << 'SETTINGS_EOF'
+apply from: file("../node_modules/@react-native/gradle-plugin/settings.gradle.kts")
+rootProject.name = 'EngNeyRDO'
+include ':app'
+SETTINGS_EOF
+          echo "=== settings.gradle content ==="
+          cat settings.gradle
+
       - name: Download gradle-wrapper.jar
         working-directory: rn-app/android/gradle/wrapper
         run: |
@@ -40,10 +51,9 @@ jobs:
         working-directory: rn-app/android
         run: chmod +x gradlew
 
-      - name: Build Debug APK via React Native CLI
-        working-directory: rn-app
-        run: |
-          npx react-native build-android --mode=debug
+      - name: Build Debug APK
+        working-directory: rn-app/android
+        run: ./gradlew assembleDebug --stacktrace 2>&1 | tail -100
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
