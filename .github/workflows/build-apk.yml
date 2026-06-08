@@ -31,21 +31,6 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Fix gradle-plugin settings.gradle.kts
-        working-directory: rn-app
-        run: |
-          PLUGIN_SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
-          echo "=== ORIGINAL ==="
-          cat "$PLUGIN_SETTINGS"
-          echo "=== REMOVING foojay line ==="
-          sed -i '/foojay/d' "$PLUGIN_SETTINGS"
-          echo "=== FIXED ==="
-          cat "$PLUGIN_SETTINGS"
-
-      - name: Show android settings.gradle
-        working-directory: rn-app/android
-        run: cat settings.gradle
-
       - name: Make gradlew executable
         working-directory: rn-app/android
         run: chmod +x gradlew
@@ -62,6 +47,7 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m"
 
       - name: Find APK files
+        if: always()
         run: find rn-app/android -name "*.apk" 2>/dev/null || echo "No APK found"
 
       - name: Upload APK
