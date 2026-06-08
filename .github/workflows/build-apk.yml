@@ -31,15 +31,14 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Show and fix gradle-plugin settings.gradle.kts
+      - name: Fix gradle-plugin settings.gradle.kts
         working-directory: rn-app
         run: |
           PLUGIN_SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
           echo "=== ORIGINAL ==="
           cat "$PLUGIN_SETTINGS"
-          echo "=== FIXING: removing plugins{} block with foojay ==="
-          # Use perl to remove the plugins{} block (handles multiline)
-          perl -i -0pe 's/pluginss*{[^}]*foojay[^}]*}s*//gs' "$PLUGIN_SETTINGS"
+          echo "=== REMOVING foojay line ==="
+          sed -i '/foojay/d' "$PLUGIN_SETTINGS"
           echo "=== FIXED ==="
           cat "$PLUGIN_SETTINGS"
 
