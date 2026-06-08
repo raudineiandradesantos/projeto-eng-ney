@@ -31,6 +31,16 @@ jobs:
         working-directory: rn-app
         run: npm install
 
+      - name: Fix gradle-plugin settings.gradle.kts (remove foojay line)
+        working-directory: rn-app
+        run: |
+          PLUGIN_SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
+          echo "=== Before fix ==="
+          grep -n "foojay" "$PLUGIN_SETTINGS" || echo "foojay not found"
+          sed -i '/foojay/d' "$PLUGIN_SETTINGS"
+          echo "=== After fix ==="
+          cat "$PLUGIN_SETTINGS"
+
       - name: Make gradlew executable
         working-directory: rn-app/android
         run: chmod +x gradlew
