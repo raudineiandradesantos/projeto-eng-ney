@@ -35,8 +35,29 @@ jobs:
         working-directory: rn-app
         run: |
           PLUGIN_SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
-          echo 'rootProject.name = "react-native-gradle-plugin"' > $PLUGIN_SETTINGS
+          cat > $PLUGIN_SETTINGS << 'EOF'
+          pluginManagement { includeBuild("../../../../../..") }
+          rootProject.name = "react-native-gradle-plugin"
+          EOF
           cat $PLUGIN_SETTINGS
+
+      - name: Override android settings.gradle
+        working-directory: rn-app/android
+        run: |
+          cat > settings.gradle << 'EOF'
+          pluginManagement {
+            includeBuild('../node_modules/@react-native/gradle-plugin')
+            repositories {
+              google()
+              mavenCentral()
+              gradlePluginPortal()
+            }
+          }
+          rootProject.name = 'EngNeyRDO'
+          apply from: file('../node_modules/@react-native/gradle-plugin/settings.gradle.kts')
+          include ':app'
+          EOF
+          cat settings.gradle
 
       - name: Make gradlew executable
         working-directory: rn-app/android
