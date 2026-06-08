@@ -31,29 +31,21 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Show original plugin settings.gradle.kts
-        working-directory: rn-app
-        run: cat node_modules/@react-native/gradle-plugin/settings.gradle.kts
-
-      - name: Fix gradle-plugin settings.gradle.kts (remove foojay plugin block)
+      - name: Show and fix gradle-plugin settings.gradle.kts
         working-directory: rn-app
         run: |
           PLUGIN_SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
-          # Remove only the plugins{} block that has foojay, keep pluginManagement
-          python3 -c "
-          import re
-          with open('$PLUGIN_SETTINGS', 'r') as f:
-              content = f.read()
-          # Remove the plugins block that causes issues
-          content = re.sub(r'plugins\s*\{[^}]*foojay[^}]*\}', '', content, flags=re.DOTALL)
-          # Ensure rootProject.name is set
-          if 'rootProject.name' not in content:
-              content += '\nrootProject.name = "react-native-gradle-plugin"\n'
-          with open('$PLUGIN_SETTINGS', 'w') as f:
-              f.write(content)
-          print('Fixed settings.gradle.kts:')
-          print(content)
-          "
+          echo "=== ORIGINAL ==="
+          cat "$PLUGIN_SETTINGS"
+          echo "=== FIXING: removing plugins{} block with foojay ==="
+          # Use perl to remove the plugins{} block (handles multiline)
+          perl -i -0pe 's/pluginss*{[^}]*foojay[^}]*}s*//gs' "$PLUGIN_SETTINGS"
+          echo "=== FIXED ==="
+          cat "$PLUGIN_SETTINGS"
+
+      - name: Show android settings.gradle
+        working-directory: rn-app/android
+        run: cat settings.gradle
 
       - name: Make gradlew executable
         working-directory: rn-app/android
@@ -69,6 +61,9 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon --stacktrace
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m"
+
+      - name: Find APK files
+        run: find rn-app/android -name "*.apk" 2>/dev/null || echo "No APK found"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
