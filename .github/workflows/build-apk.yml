@@ -31,33 +31,29 @@ jobs:
         working-directory: rn-app
         run: npm install
 
-      - name: Fix gradle-plugin settings.gradle.kts
+      - name: Show original plugin settings.gradle.kts
+        working-directory: rn-app
+        run: cat node_modules/@react-native/gradle-plugin/settings.gradle.kts
+
+      - name: Fix gradle-plugin settings.gradle.kts (remove foojay plugin block)
         working-directory: rn-app
         run: |
           PLUGIN_SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
-          cat > $PLUGIN_SETTINGS << 'EOF'
-          pluginManagement { includeBuild("../../../../../..") }
-          rootProject.name = "react-native-gradle-plugin"
-          EOF
-          cat $PLUGIN_SETTINGS
-
-      - name: Override android settings.gradle
-        working-directory: rn-app/android
-        run: |
-          cat > settings.gradle << 'EOF'
-          pluginManagement {
-            includeBuild('../node_modules/@react-native/gradle-plugin')
-            repositories {
-              google()
-              mavenCentral()
-              gradlePluginPortal()
-            }
-          }
-          rootProject.name = 'EngNeyRDO'
-          apply from: file('../node_modules/@react-native/gradle-plugin/settings.gradle.kts')
-          include ':app'
-          EOF
-          cat settings.gradle
+          # Remove only the plugins{} block that has foojay, keep pluginManagement
+          python3 -c "
+          import re
+          with open('$PLUGIN_SETTINGS', 'r') as f:
+              content = f.read()
+          # Remove the plugins block that causes issues
+          content = re.sub(r'plugins\s*\{[^}]*foojay[^}]*\}', '', content, flags=re.DOTALL)
+          # Ensure rootProject.name is set
+          if 'rootProject.name' not in content:
+              content += '\nrootProject.name = "react-native-gradle-plugin"\n'
+          with open('$PLUGIN_SETTINGS', 'w') as f:
+              f.write(content)
+          print('Fixed settings.gradle.kts:')
+          print(content)
+          "
 
       - name: Make gradlew executable
         working-directory: rn-app/android
