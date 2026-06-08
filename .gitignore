@@ -1,2 +1,10 @@
-node_modules
-android
+node_modules/
+.expo/
+dist/
+package-lock.json
+
+# Android (use EAS for builds)
+android/app/debug.keystore
+android/app/build/
+android/build/
+android/.gradle/

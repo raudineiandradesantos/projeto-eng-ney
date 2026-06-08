@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "EngNey RDO",
+    "slug": "engney-rdo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0a0e1a"
+    },
+    "android": {
+      "package": "com.engneyRDO",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Acesso às fotos para documentar a obra."
+        }
+      ],
+      "expo-font"
+    ]
+  }
+}
