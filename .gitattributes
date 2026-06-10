@@ -1,0 +1,9 @@
+# Normalize line endings
+* text=auto
+
+# Windows batch files must have CRLF
+*.bat text eol=crlf
+
+# Shell scripts must have LF
+*.sh text eol=lf
+gradlew text eol=lf
