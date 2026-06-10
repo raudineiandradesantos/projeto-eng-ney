@@ -2,9 +2,11 @@ node_modules/
 .expo/
 dist/
 package-lock.json
-
 # Android (use EAS for builds)
+android
 android/app/debug.keystore
+android/app/engney-release.keystore
+android/keystore.properties
 android/app/build/
 android/build/
 android/.gradle/

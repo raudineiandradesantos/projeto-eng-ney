@@ -20,7 +20,7 @@ interface Annotation {
 }
 
 interface CheckItem {
-  text: string; done: boolean;
+  id: string; label: string; checked: boolean; obs: string;
 }
 
 const PAGE_SIZE = 10;
@@ -114,7 +114,7 @@ export default function RelatorioScreen() {
     // Resumo
     const totalActivities = rdos.reduce((sum, r) => sum + (r.activities?.length || 0), 0);
     const totalWorkers = rdos.reduce((sum, r) => sum + (r.workers || 0), 0);
-    const doneChecks = checkItems.filter(c => c.done).length;
+    const doneChecks = checkItems.filter(c => c.checked).length;
     lines.push('=== RESUMO ===');
     lines.push('RDOs registrados: ' + rdos.length);
     lines.push('Total de atividades: ' + totalActivities);
@@ -155,7 +155,7 @@ export default function RelatorioScreen() {
     if (checkItems.length > 0) {
       lines.push('=== CHECKLIST ===');
       checkItems.forEach(item => {
-        lines.push((item.done ? '[X] ' : '[ ] ') + item.text);
+        lines.push((item.checked ? '[X] ' : '[ ] ') + item.label);
       });
       lines.push('');
     }
@@ -186,7 +186,7 @@ export default function RelatorioScreen() {
   const hasMore = paged.length < rdos.length;
   const totalWorkers = rdos.reduce((sum, r) => sum + (r.workers || 0), 0);
   const totalActivities = rdos.reduce((sum, r) => sum + (r.activities?.length || 0), 0);
-  const doneChecks = checkItems.filter(c => c.done).length;
+  const doneChecks = checkItems.filter(c => c.checked).length;
 
   if (!currentProject) {
     return (

@@ -1,6 +1,10 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getAuth, inMemoryPersistence } from 'firebase/auth';
+import { initializeAuth, getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+// Metro resolves firebase/auth to the React Native bundle at runtime,
+// which exports getReactNativePersistence — the browser TS types don't include it.
+const { getReactNativePersistence } = require('firebase/auth') as any;
 
 const firebaseConfig = {
   apiKey: "AIzaSyA60Q8QWVt2ZZ9cyoQoVeQJWRPo9wWvpYs",
@@ -14,11 +18,8 @@ const firebaseConfig = {
 const isFirstInit = getApps().length === 0;
 const app = isFirstInit ? initializeApp(firebaseConfig) : getApp();
 
-// inMemoryPersistence is used because getReactNativePersistence requires
-// the native Firebase SDK. For EAS production builds, migrate to
-// @react-native-firebase for full AsyncStorage persistence.
 export const auth = isFirstInit
-  ? initializeAuth(app, { persistence: inMemoryPersistence })
+  ? initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) })
   : getAuth(app);
 
 export const db = getFirestore(app);
