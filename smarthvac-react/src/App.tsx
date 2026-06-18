@@ -1,19 +1,20 @@
 import { useEffect, useRef } from 'react'
 import { bodyHtml } from './htmlContent'
-import { initAppLogic } from './appLogic'
 
 function App() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const initialized = useRef(false)
 
   useEffect(() => {
-    if (!containerRef.current) return
-    // The logic is already initialized via the script tag approach
-    // We run it after the DOM is ready
-    try {
-      initAppLogic()
-    } catch (e) {
-      console.error('App init error:', e)
-    }
+    if (initialized.current) return
+    initialized.current = true
+    
+    // Inject the original app logic as a script tag
+    // This ensures it runs after the HTML is fully in the DOM
+    const script = document.createElement('script')
+    script.type = 'text/javascript'
+    script.src = '/app-logic.js'
+    document.body.appendChild(script)
   }, [])
 
   return (
