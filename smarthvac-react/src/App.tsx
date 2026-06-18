@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { bodyHtml } from './htmlContent'
+import { initAppLogic } from './appLogic'
 
 function App() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -8,13 +9,14 @@ function App() {
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
-    
-    // Inject the original app logic as a script tag
-    // This ensures it runs after the HTML is fully in the DOM
-    const script = document.createElement('script')
-    script.type = 'text/javascript'
-    script.src = '/app-logic.js'
-    document.body.appendChild(script)
+    // Small delay to ensure DOM is fully rendered before running logic
+    setTimeout(() => {
+      try {
+        initAppLogic()
+      } catch (e) {
+        console.error('SmartHVAC init error:', e)
+      }
+    }, 50)
   }, [])
 
   return (
